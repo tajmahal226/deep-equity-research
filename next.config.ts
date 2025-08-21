@@ -40,7 +40,7 @@ export default async function Config(phase: string) {
   const nextConfig: NextConfig = {
     /* config options here */
     experimental: {
-      reactCompiler: true,
+      reactCompiler: process.env.REACT_COMPILER === "true",
     },
     env: {
       NEXT_PUBLIC_VERSION: pkg.version,

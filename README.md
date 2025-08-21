@@ -19,4 +19,14 @@ Deep Research uses a variety of powerful AI models to generate in-depth research
     - [pnpm](https://pnpm.io/) or [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/) 
   2. Set the LLM API key
   3. Set the LLM API base URL (optional)
-  4. Choose your adventure
+    4. Choose your adventure
+
+**React Compiler (experimental)**
+
+This project can optionally enable Next.js's experimental React Compiler. The feature is disabled by default.
+
+To toggle it when deploying on Vercel:
+
+1. In your Vercel dashboard, open the project and go to **Settings → Environment Variables**.
+2. Add a variable named `REACT_COMPILER` with the value `true` to enable it.
+3. Deploy the project. Remove the variable or set it to `false` to disable the React Compiler.
