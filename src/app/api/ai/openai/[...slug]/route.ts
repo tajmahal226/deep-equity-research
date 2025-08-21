@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { OPENAI_BASE_URL } from "@/constants/urls";
+import { env } from "@/utils/env";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -13,7 +14,7 @@ export const preferredRegion = [
   "kix1",
 ];
 
-const API_PROXY_BASE_URL = process.env.OPENAI_API_BASE_URL || OPENAI_BASE_URL;
+const API_PROXY_BASE_URL = env.OPENAI_API_BASE_URL || OPENAI_BASE_URL;
 
 async function handler(req: NextRequest) {
   let body;

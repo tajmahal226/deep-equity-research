@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GEMINI_BASE_URL } from "@/constants/urls";
+import { env } from "@/utils/env";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -14,8 +15,8 @@ export const preferredRegion = [
 ];
 
 const API_PROXY_BASE_URL =
-  process.env.API_PROXY_BASE_URL ||
-  process.env.GOOGLE_GENERATIVE_AI_API_BASE_URL ||
+  env.API_PROXY_BASE_URL ||
+  env.GOOGLE_GENERATIVE_AI_API_BASE_URL ||
   GEMINI_BASE_URL;
 
 async function handler(req: NextRequest) {

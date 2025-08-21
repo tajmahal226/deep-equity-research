@@ -1,0 +1,55 @@
+import { z } from "zod";
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  HEAD_SCRIPTS: z.string().optional(),
+  ACCESS_PASSWORD: z.string().optional(),
+  NEXT_PUBLIC_ACCESS_PASSWORD: z.string().optional(),
+  NEXT_PUBLIC_BUILD_MODE: z.string().optional(),
+  NEXT_PUBLIC_VERSION: z.string().default("0.0.0"),
+  NEXT_PUBLIC_DISABLED_AI_PROVIDER: z.string().optional(),
+  NEXT_PUBLIC_DISABLED_SEARCH_PROVIDER: z.string().optional(),
+  NEXT_PUBLIC_MODEL_LIST: z.string().optional(),
+  API_PROXY_BASE_URL: z.string().optional(),
+  GOOGLE_GENERATIVE_AI_API_BASE_URL: z
+    .string()
+    .optional(),
+  OPENROUTER_API_BASE_URL: z.string().optional(),
+  OPENAI_API_BASE_URL: z.string().optional(),
+  ANTHROPIC_API_BASE_URL: z.string().optional(),
+  DEEPSEEK_API_BASE_URL: z.string().optional(),
+  XAI_API_BASE_URL: z.string().optional(),
+  MISTRAL_API_BASE_URL: z.string().optional(),
+  AZURE_RESOURCE_NAME: z.string().optional(),
+  AZURE_API_VERSION: z.string().optional(),
+  OPENAI_COMPATIBLE_API_BASE_URL: z.string().optional(),
+  POLLINATIONS_API_BASE_URL: z.string().optional(),
+  OLLAMA_API_BASE_URL: z.string().optional(),
+  TAVILY_API_BASE_URL: z.string().optional(),
+  FIRECRAWL_API_BASE_URL: z.string().optional(),
+  EXA_API_BASE_URL: z.string().optional(),
+  BOCHA_API_BASE_URL: z.string().optional(),
+  SEARXNG_API_BASE_URL: z.string().optional(),
+  GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENAI_API_KEY: z.string().optional(),
+  ANTHROPIC_API_KEY: z.string().optional(),
+  DEEPSEEK_API_KEY: z.string().optional(),
+  XAI_API_KEY: z.string().optional(),
+  MISTRAL_API_KEY: z.string().optional(),
+  AZURE_API_KEY: z.string().optional(),
+  OPENAI_COMPATIBLE_API_KEY: z.string().optional(),
+  TAVILY_API_KEY: z.string().optional(),
+  FIRECRAWL_API_KEY: z.string().optional(),
+  EXA_API_KEY: z.string().optional(),
+  BOCHA_API_KEY: z.string().optional(),
+  MCP_AI_PROVIDER: z.string().optional(),
+  MCP_SEARCH_PROVIDER: z.string().optional(),
+  MCP_THINKING_MODEL: z.string().optional(),
+  MCP_TASK_MODEL: z.string().optional(),
+  REACT_COMPILER: z.string().optional(),
+});
+
+export const env = envSchema.parse(process.env);
+
+export type Env = z.infer<typeof envSchema>;
