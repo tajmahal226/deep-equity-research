@@ -25,6 +25,7 @@ import { NextRequest } from "next/server";
 import { CompanyDeepResearch } from "@/utils/company-deep-research";
 import { createSSEStream, getSSEHeaders } from "@/utils/sse";
 import { nanoid } from "nanoid";
+import { logger } from "@/utils/logger";
 
 // Define the shape of our request body for TypeScript type safety
 interface CompanyResearchRequest {
@@ -86,7 +87,7 @@ export async function POST(req: NextRequest) {
     // Step 3: Generate a unique ID for this research session
     // This helps track the research in logs and for debugging
     const researchId = nanoid();
-    console.log(`[Company Research ${researchId}] Starting research for: ${body.companyName}`);
+    logger.log(`[Company Research ${researchId}] Starting research for: ${body.companyName}`);
 
     // Step 4: Create the SSE (Server-Sent Events) stream
     // SSE allows us to send real-time updates to the client as research progresses
@@ -151,21 +152,21 @@ export async function POST(req: NextRequest) {
         case "fast":
           // Fast mode: Direct AI response, no web searches
           // Perfect for quick overviews or when you're in a hurry
-          console.log(`[Company Research ${researchId}] Running fast research`);
+          logger.log(`[Company Research ${researchId}] Running fast research`);
           result = await researcher.runFastResearch();
           break;
           
         case "medium":
           // Medium mode: Limited searches focusing on key areas
           // Good balance between speed and depth
-          console.log(`[Company Research ${researchId}] Running medium research`);
+          logger.log(`[Company Research ${researchId}] Running medium research`);
           result = await researcher.runMediumResearch();
           break;
           
         case "deep":
           // Deep mode: Comprehensive research with all investment sections
           // Use this when preparing for important meetings or decisions
-          console.log(`[Company Research ${researchId}] Running deep research`);
+          logger.log(`[Company Research ${researchId}] Running deep research`);
           result = await researcher.runDeepResearch();
           break;
           
@@ -187,7 +188,7 @@ export async function POST(req: NextRequest) {
         }
       });
 
-      console.log(`[Company Research ${researchId}] Research completed successfully`);
+      logger.log(`[Company Research ${researchId}] Research completed successfully`);
       
     } catch (error) {
       // Handle any errors during research

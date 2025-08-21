@@ -88,12 +88,12 @@ const nanoid = customAlphabet("1234567890abcdef");
  *   // sessionIdGenerator: undefined, // Stateless mode
  *   enableJsonResponse: false, // Or true for JSON-only responses
  *   // eventStore: myEventStore, // Optional resumability
- *   onsessioninitialized: (id) => console.log('Session initialized:', id)
+ *   onsessioninitialized: (id) => logger.log('Session initialized:', id)
  * });
  *
  * // Implement your message handling logic
  * transport.onmessage = async (message, { authInfo }) => {
- *   console.log('Received message:', message, 'Auth:', authInfo);
+ *   logger.log('Received message:', message, 'Auth:', authInfo);
  *   // Process the message and potentially send responses/notifications back
  *   if (message.id !== undefined) { // It's a request or response/error with ID
  *      // Example: Echo back a response for requests
@@ -122,7 +122,7 @@ const nanoid = customAlphabet("1234567890abcdef");
  * };
  *
  * transport.onclose = () => {
- *   console.log('Transport closed.');
+ *   logger.log('Transport closed.');
  * };
  *
  * // Start the transport (no-op for HTTP but good practice)

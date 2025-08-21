@@ -29,6 +29,7 @@ import { isNetworkingModel } from "@/utils/model";
 import { ThinkTagStreamProcessor, removeJsonMarkdown } from "@/utils/text";
 import { parseError } from "@/utils/error";
 import { pick, flat, unique } from "radash";
+import { logger } from "@/utils/logger";
 
 type ProviderOptions = Record<string, Record<string, JSONValue>>;
 type Tools = Record<string, Tool>;
@@ -91,7 +92,7 @@ function useDeepResearch() {
         reasoning += part.textDelta;
       }
     }
-    if (reasoning) console.log(reasoning);
+    if (reasoning) logger.log(reasoning);
   }
 
   async function writeReportPlan() {
@@ -126,7 +127,7 @@ function useDeepResearch() {
         reasoning += part.textDelta;
       }
     }
-    if (reasoning) console.log(reasoning);
+    if (reasoning) logger.log(reasoning);
     return content;
   }
 
@@ -174,7 +175,7 @@ function useDeepResearch() {
         reasoning += part.textDelta;
       }
     }
-    if (reasoning) console.log(reasoning);
+    if (reasoning) logger.log(reasoning);
     return content;
   }
 
@@ -395,7 +396,7 @@ function useDeepResearch() {
               }
             }
           }
-          if (reasoning) console.log(reasoning);
+          if (reasoning) logger.log(reasoning);
 
           if (sources.length > 0) {
             content +=
@@ -481,7 +482,7 @@ function useDeepResearch() {
         }
       );
     }
-    if (reasoning) console.log(reasoning);
+    if (reasoning) logger.log(reasoning);
     if (queries.length > 0) {
       taskStore.update([...tasks, ...queries]);
       await runSearchTask(queries);
@@ -555,7 +556,7 @@ function useDeepResearch() {
         reasoning += part.textDelta;
       }
     }
-    if (reasoning) console.log(reasoning);
+    if (reasoning) logger.log(reasoning);
     if (sources.length > 0) {
       content +=
         "\n\n" +
@@ -637,7 +638,7 @@ function useDeepResearch() {
           }
         );
       }
-      if (reasoning) console.log(reasoning);
+      if (reasoning) logger.log(reasoning);
       await runSearchTask(queries);
     } catch (err) {
       console.error(err);

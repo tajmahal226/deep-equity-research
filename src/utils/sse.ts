@@ -25,6 +25,8 @@
  * - Add reconnection logic: Implement EventSource retry on client side
  */
 
+import { logger } from "@/utils/logger";
+
 /**
  * Creates an SSE stream with helper functions
  * 
@@ -62,7 +64,7 @@ export function createSSEStream() {
     
     // Called when the client disconnects or we close the stream
     cancel() {
-      console.log("SSE stream cancelled by client");
+      logger.log("SSE stream cancelled by client");
       isStreamActive = false;
     }
   });
@@ -96,7 +98,7 @@ export function createSSEStream() {
       streamController.enqueue(encoder.encode(formattedEvent));
       
       // Log for debugging (remove in production for performance)
-      console.log(`SSE event sent: ${eventName}`, data);
+      logger.log(`SSE event sent: ${eventName}`, data);
     } catch (error) {
       console.error(`Error sending SSE event "${eventName}":`, error);
       // Don't throw here - we don't want one failed event to break the stream
@@ -119,7 +121,7 @@ export function createSSEStream() {
         // Close the stream controller
         streamController.close();
         isStreamActive = false;
-        console.log("SSE stream closed successfully");
+        logger.log("SSE stream closed successfully");
       } catch (error) {
         console.error("Error closing SSE stream:", error);
       }

@@ -49,6 +49,7 @@ import {
   Upload
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { logger } from "@/utils/logger";
 
 // Import MagicDown for rendering markdown
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
@@ -216,7 +217,7 @@ export default function BulkCompanyResearch() {
             if (dataLine) {
               try {
                 const data = JSON.parse(dataLine.substring(6));
-                console.log(`SSE Event: ${eventType}`, data); // Debug logging
+                logger.log(`SSE Event: ${eventType}`, data); // Debug logging
                 
                 // Handle different event types
                 switch (eventType) {
@@ -269,7 +270,7 @@ export default function BulkCompanyResearch() {
                       
                     case "complete":
                       // All companies processed
-                      console.log("Bulk research complete:", data);
+                      logger.log("Bulk research complete:", data);
                       setIsSearching(false);
                       break;
                       

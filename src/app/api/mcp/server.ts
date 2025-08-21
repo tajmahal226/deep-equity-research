@@ -8,6 +8,7 @@ import {
   getSearchProviderBaseURL,
   getSearchProviderApiKey,
 } from "../utils";
+import { logger } from "@/utils/logger";
 
 const AI_PROVIDER = process.env.MCP_AI_PROVIDER || "";
 const SEARCH_PROVIDER = process.env.MCP_SEARCH_PROVIDER || "model";
@@ -38,11 +39,11 @@ function initDeepResearchServer({
     },
     onMessage: (event, data) => {
       if (event === "progress") {
-        console.log(
+        logger.log(
           `[${data.step}]: ${data.name ? `"${data.name}" ` : ""}${data.status}`
         );
         if (data.status === "end" && data.data) {
-          console.log(data.data);
+          logger.log(data.data);
         }
       } else if (event === "error") {
         console.error(data.message);

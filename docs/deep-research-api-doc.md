@@ -315,18 +315,22 @@ fetchEventSource("/api/sse", {
         report += msgData.text;
       }
     } else if (msg.event === "progress") {
-      console.log(
-        `[${data.step}]: ${msgData.name ? `${msgData.name} ` : ""}${
-          msgData.status
-        }`
-      );
-      if (msgData.data) console.log(msgData.data);
+      if (process.env.NODE_ENV !== "production") {
+        logger.log(
+          `[${data.step}]: ${msgData.name ? `${msgData.name} ` : ""}${
+            msgData.status
+          }`
+        );
+        if (msgData.data) logger.log(msgData.data);
+      }
     } else if (msg.event === "error") {
       throw new Error(msgData.message);
     }
   },
   onclose() {
-    console.log(report);
+    if (process.env.NODE_ENV !== "production") {
+      logger.log(report);
+    }
   },
 });
 ```

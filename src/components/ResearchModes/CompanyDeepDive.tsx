@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { downloadFile } from "@/utils/file";
+import { logger } from "@/utils/logger";
 
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
 
@@ -161,17 +162,17 @@ export default function CompanyDeepDive() {
               // Handle different event types
               switch (eventType) {
                 case "progress":
-                  console.log("Progress:", data);
+                  logger.log("Progress:", data);
                   // You could update a progress indicator here
                   break;
-                  
+
                 case "message":
-                  console.log("Message:", data);
+                  logger.log("Message:", data);
                   // You could stream partial results here
                   break;
-                  
+
                 case "complete":
-                  console.log("Research complete:", data);
+                  logger.log("Research complete:", data);
                   setSearchResults(data);
                   setIsSearching(false);
                   break;
