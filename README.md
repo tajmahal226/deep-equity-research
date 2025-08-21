@@ -17,6 +17,7 @@ Deep Research uses a variety of powerful AI models to generate in-depth research
   1. Requirements 
     - [Node.js](https://nodejs.org/) (version 18.18.0 or later recommended)
     - [pnpm](https://pnpm.io/) or [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/) 
-  2. Set the LLM API key
+  2. Copy `.env.example` to `.env.local` and set the required API keys (e.g., `OPENAI_API_KEY`, `TAVILY_API_KEY`).
+     If deploying on Vercel, configure these variables in the project settings.
   3. Set the LLM API base URL (optional)
   4. Choose your adventure
