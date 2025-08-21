@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +29,8 @@ export default function MarketResearch() {
   const [specificQuestions, setSpecificQuestions] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<any>(null);
+  const [progress, setProgress] = useState(0);
+  const [progressMessage, setProgressMessage] = useState("");
 
   const handleDownloadMarkdown = () => {
     if (!analysisResults?.report) return;
@@ -53,18 +56,90 @@ export default function MarketResearch() {
 
   const handleAnalyze = async () => {
     if (!marketTopic.trim()) return;
-    
+
     setIsAnalyzing(true);
-    // TODO: Implement market research logic
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      setAnalysisResults({
+    setAnalysisResults(null);
+    setProgress(0);
+    setProgressMessage("");
+
+    try {
+      const requestBody = {
         topic: marketTopic,
         type: researchType,
-        timeframe: timeframe,
-        status: "Market research functionality to be implemented"
+        timeframe,
+        questions: specificQuestions,
+        language: "en-US",
+      };
+
+      const response = await fetch("/api/market-research", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(process.env.NEXT_PUBLIC_ACCESS_PASSWORD && {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_PASSWORD}`,
+          }),
+        },
+        body: JSON.stringify(requestBody),
       });
-    }, 2500);
+
+      if (!response.ok) {
+        throw new Error(`Research failed: ${response.statusText}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error("No response body");
+      }
+
+      let buffer = "";
+      let done = false;
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        if (readerDone) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split("\n\n");
+        buffer = events.pop() || "";
+
+        for (const event of events) {
+          const lines = event.split("\n");
+          const eventLine = lines.find((l) => l.startsWith("event:"));
+          const dataLine = lines.find((l) => l.startsWith("data:"));
+          if (!eventLine || !dataLine) continue;
+
+          const eventType = eventLine.replace("event:", "").trim();
+          const data = JSON.parse(dataLine.replace("data:", "").trim());
+
+          switch (eventType) {
+            case "progress":
+              setProgress(data.percentage ?? 0);
+              if (data.message) setProgressMessage(data.message);
+              break;
+            case "message":
+              setAnalysisResults((prev: any) => ({ ...prev, ...data }));
+              break;
+            case "complete":
+              setAnalysisResults(data);
+              setProgress(100);
+              done = true;
+              break;
+            case "error":
+              throw new Error(data.message || "Research failed");
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Market research error:", error);
+      setAnalysisResults({
+        error: error instanceof Error ? error.message : "Research failed",
+        topic: marketTopic,
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -166,8 +241,8 @@ export default function MarketResearch() {
             />
           </div>
 
-          <Button 
-            onClick={handleAnalyze} 
+          <Button
+            onClick={handleAnalyze}
             disabled={!marketTopic.trim() || isAnalyzing}
             className="w-full"
           >
@@ -183,6 +258,16 @@ export default function MarketResearch() {
               </>
             )}
           </Button>
+
+          {isAnalyzing && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>{progressMessage || t("marketResearch.analyzing", "Analyzing Market...")}</span>
+                <span>{progress}%</span>
+              </div>
+              <Progress value={progress} />
+            </div>
+          )}
         </CardContent>
       </Card>
 
