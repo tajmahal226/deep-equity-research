@@ -3,7 +3,7 @@
 
 </div>
 
-**Equity Deep Research Analyst**
+**Deep Equity Research Analyst**
 
 based off of https://github.com/u14app/deep-research
 
