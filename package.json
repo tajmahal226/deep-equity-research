@@ -1,12 +1,12 @@
 {
-  "name": "td-deep-research",
-  "description": "Growth Equity Research Assistant",
+  "name": "tj-deep-research",
+  "description": "Deep Equity Research Assistant",
   "version": "0.0.1",
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/tdrags"
+    "url": "https://github.com/tajmahal226"
   },
-  "bugs": "https://github.com/tdrags/",
+  "bugs": "https://github.com/tajmahal226/",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
