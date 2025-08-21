@@ -5,7 +5,6 @@ import {
 } from "@/utils/deep-research/provider";
 import {
   GEMINI_BASE_URL,
-  OPENROUTER_BASE_URL,
   OPENAI_BASE_URL,
   ANTHROPIC_BASE_URL,
 } from "@/constants/urls";

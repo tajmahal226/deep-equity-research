@@ -494,9 +494,9 @@ Create a research plan that prioritizes the most important aspects for this spec
 Consider what's most relevant given the industry, competitive dynamics, and any specific context provided.
 
 Available research sections:
-${Object.entries(INVESTMENT_RESEARCH_SECTIONS).map(([_, section]) => 
-  `- ${section.title}: ${section.prompts[0]}`
-).join("\n")}
+${Object.entries(INVESTMENT_RESEARCH_SECTIONS)
+  .map(([, section]) => `- ${section.title}: ${section.prompts[0]}`)
+  .join("\n")}
 
 Provide a brief rationale for which sections should be prioritized and any company-specific focus areas.`;
 

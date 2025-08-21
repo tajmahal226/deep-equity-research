@@ -24,7 +24,7 @@
  */
 
 "use client";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
@@ -34,22 +34,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { 
-  Building2, 
-  Search, 
-  Loader2, 
-  CheckCircle2, 
-  XCircle, 
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import {
+  Search,
+  Loader2,
+  CheckCircle2,
+  XCircle,
   Clock,
   ChevronDown,
   ChevronUp,
   AlertCircle,
-  FileText,
   Download,
   Users,
-  Upload,
-  X
+  Upload
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
@@ -84,14 +81,12 @@ export default function BulkCompanyResearch() {
   
   // State management
   const [companyNames, setCompanyNames] = useState<string>(""); // Raw input from user
-  const [companies, setCompanies] = useState<string[]>([]); // Parsed company list
+  const [, setCompanies] = useState<string[]>([]); // Parsed company list
   const [isSearching, setIsSearching] = useState(false); // Are we currently researching?
   const [results, setResults] = useState<CompanyResult[]>([]); // Results for each company
   const [progress, setProgress] = useState<BulkProgress | null>(null); // Overall progress
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set()); // Which cards are expanded
   
-  // Ref to store the EventSource for cleanup
-  const eventSourceRef = useRef<EventSource | null>(null);
 
   /**
    * Parse the input text to extract company names
