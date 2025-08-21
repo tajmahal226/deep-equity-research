@@ -1,46 +1,47 @@
 import type { NextConfig } from "next";
 import pkg from "./package.json";
+import { env } from "./src/utils/env";
 
 // AI provider API base url
-const API_PROXY_BASE_URL = process.env.API_PROXY_BASE_URL || "";
+const API_PROXY_BASE_URL = env.API_PROXY_BASE_URL || "";
 const GOOGLE_GENERATIVE_AI_API_BASE_URL =
-  process.env.GOOGLE_GENERATIVE_AI_API_BASE_URL ||
+  env.GOOGLE_GENERATIVE_AI_API_BASE_URL ||
   "https://generativelanguage.googleapis.com";
 const OPENROUTER_API_BASE_URL =
-  process.env.OPENROUTER_API_BASE_URL || "https://openrouter.ai/api";
+  env.OPENROUTER_API_BASE_URL || "https://openrouter.ai/api";
 const OPENAI_API_BASE_URL =
-  process.env.OPENAI_API_BASE_URL || "https://api.openai.com";
+  env.OPENAI_API_BASE_URL || "https://api.openai.com";
 const ANTHROPIC_API_BASE_URL =
-  process.env.ANTHROPIC_API_BASE_URL || "https://api.anthropic.com";
+  env.ANTHROPIC_API_BASE_URL || "https://api.anthropic.com";
 const DEEPSEEK_API_BASE_URL =
-  process.env.DEEPSEEK_API_BASE_URL || "https://api.deepseek.com";
-const XAI_API_BASE_URL = process.env.XAI_API_BASE_URL || "https://api.x.ai";
+  env.DEEPSEEK_API_BASE_URL || "https://api.deepseek.com";
+const XAI_API_BASE_URL = env.XAI_API_BASE_URL || "https://api.x.ai";
 const MISTRAL_API_BASE_URL =
-  process.env.MISTRAL_API_BASE_URL || "https://api.mistral.ai";
-const AZURE_API_BASE_URL = `https://${process.env.AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments`;
+  env.MISTRAL_API_BASE_URL || "https://api.mistral.ai";
+const AZURE_API_BASE_URL = `https://${env.AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments`;
 const OPENAI_COMPATIBLE_API_BASE_URL =
-  process.env.OPENAI_COMPATIBLE_API_BASE_URL || "";
+  env.OPENAI_COMPATIBLE_API_BASE_URL || "";
 const POLLINATIONS_API_BASE_URL =
-  process.env.POLLINATIONS_API_BASE_URL ||
+  env.POLLINATIONS_API_BASE_URL ||
   "https://text.pollinations.ai/openai";
 const OLLAMA_API_BASE_URL =
-  process.env.OLLAMA_API_BASE_URL || "http://0.0.0.0:11434";
+  env.OLLAMA_API_BASE_URL || "http://0.0.0.0:11434";
 // Search provider API base url
 const TAVILY_API_BASE_URL =
-  process.env.TAVILY_API_BASE_URL || "https://api.tavily.com";
+  env.TAVILY_API_BASE_URL || "https://api.tavily.com";
 const FIRECRAWL_API_BASE_URL =
-  process.env.FIRECRAWL_API_BASE_URL || "https://api.firecrawl.dev";
-const EXA_API_BASE_URL = process.env.EXA_API_BASE_URL || "https://api.exa.ai";
+  env.FIRECRAWL_API_BASE_URL || "https://api.firecrawl.dev";
+const EXA_API_BASE_URL = env.EXA_API_BASE_URL || "https://api.exa.ai";
 const BOCHA_API_BASE_URL =
-  process.env.BOCHA_API_BASE_URL || "https://api.bochaai.com";
+  env.BOCHA_API_BASE_URL || "https://api.bochaai.com";
 const SEARXNG_API_BASE_URL =
-  process.env.SEARXNG_API_BASE_URL || "http://0.0.0.0:8080";
+  env.SEARXNG_API_BASE_URL || "http://0.0.0.0:8080";
 
 export default async function Config(phase: string) {
   const nextConfig: NextConfig = {
     /* config options here */
     experimental: {
-      reactCompiler: process.env.REACT_COMPILER === "true",
+      reactCompiler: env.REACT_COMPILER === "true",
     },
     env: {
       NEXT_PUBLIC_VERSION: pkg.version,

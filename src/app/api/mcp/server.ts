@@ -8,11 +8,12 @@ import {
   getSearchProviderBaseURL,
   getSearchProviderApiKey,
 } from "../utils";
+import { env } from "@/utils/env";
 
-const AI_PROVIDER = process.env.MCP_AI_PROVIDER || "";
-const SEARCH_PROVIDER = process.env.MCP_SEARCH_PROVIDER || "model";
-const THINKING_MODEL = process.env.MCP_THINKING_MODEL || "";
-const TASK_MODEL = process.env.MCP_TASK_MODEL || "";
+const AI_PROVIDER = env.MCP_AI_PROVIDER || "";
+const SEARCH_PROVIDER = env.MCP_SEARCH_PROVIDER || "model";
+const THINKING_MODEL = env.MCP_THINKING_MODEL || "";
+const TASK_MODEL = env.MCP_TASK_MODEL || "";
 
 function initDeepResearchServer({
   language,

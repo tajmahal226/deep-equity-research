@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { env } from "@/utils/env";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -12,8 +13,8 @@ export const preferredRegion = [
   "kix1",
 ];
 
-const API_PROXY_BASE_URL = `https://${process.env.AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments`;
-const API_VERSION = process.env.AZURE_API_VERSION || "";
+const API_PROXY_BASE_URL = `https://${env.AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments`;
+const API_VERSION = env.AZURE_API_VERSION || "";
 
 async function handler(req: NextRequest) {
   let body;

@@ -24,13 +24,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useKnowledge from "@/hooks/useKnowledge";
 import { useSettingStore } from "@/store/setting";
+import { env } from "@/utils/env";
 
 type Props = {
   open: boolean;
   onClose: () => void;
 };
 
-const BUILD_MODE = process.env.NEXT_PUBLIC_BUILD_MODE;
+const BUILD_MODE = env.NEXT_PUBLIC_BUILD_MODE;
 const URLRegExp = /^https?:\/\/.+/;
 
 const formSchema = z.object({

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ANTHROPIC_BASE_URL } from "@/constants/urls";
+import { env } from "@/utils/env";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -14,7 +15,7 @@ export const preferredRegion = [
 ];
 
 const API_PROXY_BASE_URL =
-  process.env.ANTHROPIC_API_BASE_URL || ANTHROPIC_BASE_URL;
+  env.ANTHROPIC_API_BASE_URL || ANTHROPIC_BASE_URL;
 
 async function handler(req: NextRequest) {
   let body;

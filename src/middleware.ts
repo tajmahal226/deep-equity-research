@@ -2,30 +2,31 @@ import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { getCustomModelList, multiApiKeyPolling } from "@/utils/model";
 import { verifySignature } from "@/utils/signature";
+import { env } from "@/utils/env";
 
-const NODE_ENV = process.env.NODE_ENV;
-const accessPassword = process.env.ACCESS_PASSWORD || "";
+const NODE_ENV = env.NODE_ENV;
+const accessPassword = env.ACCESS_PASSWORD || "";
 // AI provider API key
 const GOOGLE_GENERATIVE_AI_API_KEY =
-  process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
-const XAI_API_KEY = process.env.XAI_API_KEY || "";
-const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY || "";
-const AZURE_API_KEY = process.env.AZURE_API_KEY || "";
-const OPENAI_COMPATIBLE_API_KEY = process.env.OPENAI_COMPATIBLE_API_KEY || "";
+  env.GOOGLE_GENERATIVE_AI_API_KEY || "";
+const OPENROUTER_API_KEY = env.OPENROUTER_API_KEY || "";
+const OPENAI_API_KEY = env.OPENAI_API_KEY || "";
+const ANTHROPIC_API_KEY = env.ANTHROPIC_API_KEY || "";
+const DEEPSEEK_API_KEY = env.DEEPSEEK_API_KEY || "";
+const XAI_API_KEY = env.XAI_API_KEY || "";
+const MISTRAL_API_KEY = env.MISTRAL_API_KEY || "";
+const AZURE_API_KEY = env.AZURE_API_KEY || "";
+const OPENAI_COMPATIBLE_API_KEY = env.OPENAI_COMPATIBLE_API_KEY || "";
 // Search provider API key
-const TAVILY_API_KEY = process.env.TAVILY_API_KEY || "";
-const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY || "";
-const EXA_API_KEY = process.env.EXA_API_KEY || "";
-const BOCHA_API_KEY = process.env.BOCHA_API_KEY || "";
+const TAVILY_API_KEY = env.TAVILY_API_KEY || "";
+const FIRECRAWL_API_KEY = env.FIRECRAWL_API_KEY || "";
+const EXA_API_KEY = env.EXA_API_KEY || "";
+const BOCHA_API_KEY = env.BOCHA_API_KEY || "";
 // Disabled Provider
-const DISABLED_AI_PROVIDER = process.env.NEXT_PUBLIC_DISABLED_AI_PROVIDER || "";
+const DISABLED_AI_PROVIDER = env.NEXT_PUBLIC_DISABLED_AI_PROVIDER || "";
 const DISABLED_SEARCH_PROVIDER =
-  process.env.NEXT_PUBLIC_DISABLED_SEARCH_PROVIDER || "";
-const MODEL_LIST = process.env.NEXT_PUBLIC_MODEL_LIST || "";
+  env.NEXT_PUBLIC_DISABLED_SEARCH_PROVIDER || "";
+const MODEL_LIST = env.NEXT_PUBLIC_MODEL_LIST || "";
 
 // Limit the middleware to paths starting with `/api/`
 export const config = {

@@ -49,6 +49,7 @@ import {
   Upload
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { env } from "@/utils/env";
 
 // Import MagicDown for rendering markdown
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
@@ -156,8 +157,8 @@ export default function BulkCompanyResearch() {
         headers: {
           "Content-Type": "application/json",
           // Add authorization header if ACCESS_PASSWORD is configured
-          ...(process.env.NEXT_PUBLIC_ACCESS_PASSWORD && {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_PASSWORD}`
+          ...(env.NEXT_PUBLIC_ACCESS_PASSWORD && {
+            Authorization: `Bearer ${env.NEXT_PUBLIC_ACCESS_PASSWORD}`
           })
         },
         body: JSON.stringify(requestBody),

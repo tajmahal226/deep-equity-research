@@ -25,6 +25,7 @@ import { NextRequest } from "next/server";
 import { CompanyDeepResearch } from "@/utils/company-deep-research";
 import { createSSEStream, getSSEHeaders } from "@/utils/sse";
 import { nanoid } from "nanoid";
+import { env } from "@/utils/env";
 
 // Define the shape of our request body for TypeScript type safety
 interface CompanyResearchRequest {
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
   try {
     // Step 1: Check for ACCESS_PASSWORD if configured
     // This is a simple way to protect your API endpoint
-    const accessPassword = process.env.ACCESS_PASSWORD;
+    const accessPassword = env.ACCESS_PASSWORD;
     if (accessPassword) {
       // Get the password from the Authorization header or query parameter
       const authHeader = req.headers.get("Authorization");

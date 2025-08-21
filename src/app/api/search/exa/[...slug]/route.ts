@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { EXA_BASE_URL } from "@/constants/urls";
+import { env } from "@/utils/env";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -13,7 +14,7 @@ export const preferredRegion = [
   "kix1",
 ];
 
-const API_PROXY_BASE_URL = process.env.EXA_API_BASE_URL || EXA_BASE_URL;
+const API_PROXY_BASE_URL = env.EXA_API_BASE_URL || EXA_BASE_URL;
 
 export async function POST(req: NextRequest) {
   const body = await req.json();

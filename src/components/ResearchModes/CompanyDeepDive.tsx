@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { downloadFile } from "@/utils/file";
+import { env } from "@/utils/env";
 
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
 
@@ -122,8 +123,8 @@ export default function CompanyDeepDive() {
         headers: {
           "Content-Type": "application/json",
           // Add authorization header if ACCESS_PASSWORD is configured
-          ...(process.env.NEXT_PUBLIC_ACCESS_PASSWORD && {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_PASSWORD}`
+          ...(env.NEXT_PUBLIC_ACCESS_PASSWORD && {
+            Authorization: `Bearer ${env.NEXT_PUBLIC_ACCESS_PASSWORD}`
           })
         },
         body: JSON.stringify(requestBody),

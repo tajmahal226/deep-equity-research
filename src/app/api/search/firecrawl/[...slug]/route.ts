@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { FIRECRAWL_BASE_URL } from "@/constants/urls";
+import { env } from "@/utils/env";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -14,7 +15,7 @@ export const preferredRegion = [
 ];
 
 const API_PROXY_BASE_URL =
-  process.env.FIRECRAWL_API_BASE_URL || FIRECRAWL_BASE_URL;
+  env.FIRECRAWL_API_BASE_URL || FIRECRAWL_BASE_URL;
 
 export async function POST(req: NextRequest) {
   const body = await req.json();

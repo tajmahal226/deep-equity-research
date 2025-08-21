@@ -4,10 +4,11 @@ import ThemeProvider from "@/components/Provider/Theme";
 import I18Provider from "@/components/Provider/I18n";
 import Debugger from "@/components/Internal/Debugger";
 import { Toaster } from "@/components/ui/sonner";
+import { env } from "@/utils/env";
 
 import "./globals.css";
 
-const HEAD_SCRIPTS = process.env.HEAD_SCRIPTS as string;
+const HEAD_SCRIPTS = env.HEAD_SCRIPTS as string | undefined;
 const APP_NAME = "TD Deep Research";
 const APP_DEFAULT_TITLE = "TD Deep Research";
 const APP_TITLE_TEMPLATE = "%s - PWA App";
