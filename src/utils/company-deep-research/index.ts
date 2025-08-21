@@ -253,9 +253,8 @@ export class CompanyDeepResearch {
         message: "AI is analyzing the company..."
       });
       
-      // TODO: Call the task model with the prompt
-      // For now, return a placeholder
-      const report = await this.generateFastReport(prompt);
+      // Generate analysis using the configured task model
+      const report = await this.callTaskModel(prompt);
       
       this.config.onProgress?.({
         step: "fast-research",
@@ -772,10 +771,10 @@ Be specific and include data points, dates, and concrete details when available.
   }
   
   /**
-   * Generate fast report without search results
-   * Uses the task model for quick generation
+   * Call the configured task model with the provided prompt
+   * Used for fast, search-free analysis
    */
-  private async generateFastReport(prompt: string): Promise<string> {
+  private async callTaskModel(prompt: string): Promise<string> {
     try {
       this.config.onMessage?.({
         type: "report-chunk",
@@ -799,7 +798,7 @@ Be specific and include data points, dates, and concrete details when available.
       return text;
       
     } catch (error) {
-      console.error("Error generating fast report:", error);
+      console.error("Error calling task model:", error);
       throw new Error(`Failed to generate fast analysis: ${error}`);
     }
   }
