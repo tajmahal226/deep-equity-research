@@ -38,6 +38,7 @@ import {
 import { streamText, generateText } from "ai";
 import { createAIProvider } from "@/utils/deep-research/provider";
 import { createSearchProvider } from "@/utils/deep-research/search";
+import { logger } from "@/utils/logger";
 import { ThinkTagStreamProcessor } from "@/utils/text";
 // Removed unused import: pick from radash
 
@@ -114,10 +115,14 @@ export class CompanyDeepResearch {
     this.config = config;
     
     // Debug: Check if imports are loaded
-    console.log("CompanyDeepResearch constructor - Checking imports:");
-    console.log("systemInstruction:", typeof systemInstruction, systemInstruction?.substring(0, 50) + "...");
-    console.log("outputGuidelinesPrompt:", typeof outputGuidelinesPrompt, outputGuidelinesPrompt?.substring(0, 50) + "...");
-    console.log("INVESTMENT_RESEARCH_SECTIONS:", typeof INVESTMENT_RESEARCH_SECTIONS, Object.keys(INVESTMENT_RESEARCH_SECTIONS || {}));
+    logger.log("CompanyDeepResearch constructor - Checking imports:");
+    logger.log("systemInstruction:", typeof systemInstruction, systemInstruction?.substring(0, 50) + "...");
+    logger.log("outputGuidelinesPrompt:", typeof outputGuidelinesPrompt, outputGuidelinesPrompt?.substring(0, 50) + "...");
+    logger.log(
+      "INVESTMENT_RESEARCH_SECTIONS:",
+      typeof INVESTMENT_RESEARCH_SECTIONS,
+      Object.keys(INVESTMENT_RESEARCH_SECTIONS || {})
+    );
   }
   
   /**
@@ -507,7 +512,7 @@ Provide a brief rationale for which sections should be prioritized and any compa
       });
       
       // Log the plan rationale for debugging
-      console.log("Research plan rationale:", planRationale);
+      logger.log("Research plan rationale:", planRationale);
       
       // Build the structured plan with all sections but customized priorities
       const plan = {
@@ -707,7 +712,7 @@ Provide a brief rationale for which sections should be prioritized and any compa
         const searchResult = await this.searchProvider(task.query);
         
         if (!searchResult || !searchResult.sources || searchResult.sources.length === 0) {
-          console.log(`No results for query: ${task.query}`);
+          logger.log(`No results for query: ${task.query}`);
           continue;
         }
         

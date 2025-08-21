@@ -7,6 +7,7 @@ import {
   getSearchProviderBaseURL,
   getSearchProviderApiKey,
 } from "../utils";
+import { logger } from "@/utils/logger";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
   const readableStream = new ReadableStream({
     start: async (controller) => {
-      console.log("Client connected");
+      logger.log("Client connected");
       controller.enqueue(
         encoder.encode(
           `event: infor\ndata: ${JSON.stringify({
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
         },
         onMessage: (event, data) => {
           if (event === "progress") {
-            console.log(
+            logger.log(
               `[${data.step}]: ${data.name ? `"${data.name}" ` : ""}${
                 data.status
               }`

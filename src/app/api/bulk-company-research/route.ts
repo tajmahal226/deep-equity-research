@@ -24,6 +24,7 @@ import { NextRequest } from "next/server";
 import { CompanyDeepResearch } from "@/utils/company-deep-research";
 import { createSSEStream, getSSEHeaders } from "@/utils/sse";
 import { nanoid } from "nanoid";
+import { logger } from "@/utils/logger";
 
 // Define how many companies to research at the same time
 // Lower = less resource usage, Higher = faster completion
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
 
     // Step 3: Generate a unique ID for this bulk research session
     const bulkResearchId = nanoid();
-    console.log(`[Bulk Research ${bulkResearchId}] Starting research for ${body.companies.length} companies`);
+    logger.log(`[Bulk Research ${bulkResearchId}] Starting research for ${body.companies.length} companies`);
 
     // Step 4: Create the SSE stream for real-time updates
     const { stream, sendEvent, closeStream } = createSSEStream();
@@ -114,7 +115,7 @@ export async function POST(req: NextRequest) {
     // Step 6: Process companies in batches
     // This function runs the research for a single company
     const processCompany = async (companyName: string) => {
-      console.log(`[Bulk Research ${bulkResearchId}] Starting research for: ${companyName}`);
+      logger.log(`[Bulk Research ${bulkResearchId}] Starting research for: ${companyName}`);
       
       try {
         // Update status to processing
@@ -191,7 +192,7 @@ export async function POST(req: NextRequest) {
           result
         });
 
-        console.log(`[Bulk Research ${bulkResearchId}] Completed: ${companyName}`);
+        logger.log(`[Bulk Research ${bulkResearchId}] Completed: ${companyName}`);
 
       } catch (error) {
         console.error(`[Bulk Research ${bulkResearchId}] Error researching ${companyName}:`, error);
@@ -252,7 +253,7 @@ export async function POST(req: NextRequest) {
       }
     });
 
-    console.log(`[Bulk Research ${bulkResearchId}] All companies processed`);
+    logger.log(`[Bulk Research ${bulkResearchId}] All companies processed`);
 
     // Add a small delay before closing to ensure all events are sent
     await new Promise(resolve => setTimeout(resolve, 1000));

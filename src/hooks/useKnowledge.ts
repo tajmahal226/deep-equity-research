@@ -16,6 +16,7 @@ import {
 } from "@/utils/text";
 import { parseError } from "@/utils/error";
 import { omit } from "radash";
+import { logger } from "@/utils/logger";
 
 const MAX_CHUNK_LENGTH = 10000;
 
@@ -116,7 +117,7 @@ function useKnowledge() {
           reasoning += part.textDelta;
         }
       }
-      if (reasoning) console.log(reasoning);
+      if (reasoning) logger.log(reasoning);
       return content;
     }
 

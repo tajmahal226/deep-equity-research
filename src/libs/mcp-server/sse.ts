@@ -2,6 +2,7 @@ import { customAlphabet } from "nanoid";
 import { Transport } from "./shared/transport";
 import type { ReadableStreamController } from "stream/web";
 import { JSONRPCMessage, JSONRPCMessageSchema } from "./types";
+import { logger } from "@/utils/logger";
 
 interface SSEServerTransportOptions {
   endpoint: string;
@@ -38,11 +39,11 @@ const nanoid = customAlphabet("1234567890abcdef");
  *   // Store the transport instance keyed by session ID
  *   activeTransports.set(sessionId, transport);
  *
- *   console.log(`[${sessionId}] New SSE session initiated.`);
+ *   logger.log(`[${sessionId}] New SSE session initiated.`);
  *
  *   // Set up the event handlers for this transport instance
  *   transport.onmessage = async (message, extra) => {
- *     console.log(`[${sessionId}] Received message:`, message, 'Auth:', extra?.authInfo);
+ *     logger.log(`[${sessionId}] Received message:`, message, 'Auth:', extra?.authInfo);
  *     // Add your core JSON-RPC handling logic here
  *     // Example: Echo back requests
  *     if (message.id !== undefined) {
@@ -65,7 +66,7 @@ const nanoid = customAlphabet("1234567890abcdef");
  *   };
  *
  *   transport.onclose = () => {
- *     console.log(`[${sessionId}] SSE session closed. Removing from map.`);
+ *     logger.log(`[${sessionId}] SSE session closed. Removing from map.`);
  *     activeTransports.delete(sessionId); // Clean up the instance
  *   };
  *
@@ -173,7 +174,7 @@ export class SSEServerTransport implements Transport {
     const stream = new ReadableStream<Uint8Array>({
       start: (controller) => {
         this._sseController = controller; // Store the controller to send messages later
-        console.log(`[${this._sessionId}] SSE stream started.`);
+        logger.log(`[${this._sessionId}] SSE stream started.`);
 
         // Send the initial 'endpoint' event as per spec
         // Construct the POST endpoint URL with the session ID query parameter
@@ -191,7 +192,7 @@ export class SSEServerTransport implements Transport {
         const endpointEventData = `event: endpoint\ndata: ${relativeUrlWithSession}\n\n`;
         try {
           controller.enqueue(encoder.encode(endpointEventData));
-          console.log(
+          logger.log(
             `[${this._sessionId}] Sent 'endpoint' event: ${relativeUrlWithSession}`
           );
         } catch (error) {
@@ -326,7 +327,7 @@ export class SSEServerTransport implements Transport {
     }
 
     // If processing succeeds, return 202 Accepted
-    console.log(`[${this._sessionId}] POST message accepted.`);
+    logger.log(`[${this._sessionId}] POST message accepted.`);
     return new Response(null, {
       status: 202,
       headers: { ...headers, "mcp-session-id": this._sessionId },
@@ -374,7 +375,7 @@ export class SSEServerTransport implements Transport {
    * This should be called when the session is ended on the server side.
    */
   async close(): Promise<void> {
-    console.log(`[${this._sessionId}] Closing transport.`);
+    logger.log(`[${this._sessionId}] Closing transport.`);
     // Close the SSE stream controller, triggering the 'cancel' handler
     try {
       this._sseController?.close();
@@ -428,7 +429,7 @@ export class SSEServerTransport implements Transport {
         throw error;
       }
       this._sseController.enqueue(encoder.encode(eventData));
-      // console.log(`[${this._sessionId}] Sent message (SSE event ID: ${this._messageIdCounter - 1})`); // Debug log
+      // logger.log(`[${this._sessionId}] Sent message (SSE event ID: ${this._messageIdCounter - 1})`); // Debug log
     } catch (error) {
       // Catch synchronous errors during enqueue (e.g. controller already errored)
       const sendError = new Error(

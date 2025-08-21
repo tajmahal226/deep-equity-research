@@ -7,6 +7,7 @@ import {
   getSearchProviderBaseURL,
   getSearchProviderApiKey,
 } from "../../utils";
+import { logger } from "@/utils/logger";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
@@ -40,10 +41,10 @@ export async function GET(req: NextRequest) {
   const encoder = new TextEncoder();
   const readableStream = new ReadableStream({
     start: async (controller) => {
-      console.log("Client connected");
+      logger.log("Client connected");
 
       req.signal.addEventListener("abort", () => {
-        console.log("Client disconnected");
+        logger.log("Client disconnected");
       });
 
       const deepResearch = new DeepResearch({
@@ -65,7 +66,7 @@ export async function GET(req: NextRequest) {
           if (event === "message") {
             controller.enqueue(encoder.encode(data.text));
           } else if (event === "progress") {
-            console.log(
+            logger.log(
               `[${data.step}]: ${data.name ? `"${data.name}" ` : ""}${
                 data.status
               }`
