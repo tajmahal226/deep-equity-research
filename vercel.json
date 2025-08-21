@@ -1,0 +1,7 @@
+{
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm build",
+  "functions": {
+    "nodeVersion": "18.x"
+  }
+}
