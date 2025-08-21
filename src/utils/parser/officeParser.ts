@@ -45,6 +45,8 @@ const ERRORMSG = {
     `Sorry, OfficeParser currently support docx, pptx, xlsx, odt, odp, ods files only. Create a ticket in Issues on github to add support for ${ext} files. Stay tuned for further updates.`,
   fileCorrupted: (filepath: string) =>
     `Your file ${filepath} seems to be corrupted. If you are sure it is fine, please create a ticket in Issues on github with the file to reproduce error.`,
+  filteredMoreThanProcessed: (filepath: string) =>
+    `Parser filtered more nodes than it processed for file ${filepath}.`,
 };
 
 function handleError(error: string, outputErrorToConsole = false) {
@@ -455,48 +457,59 @@ export function parseExcel(
           const sheetsXmlCNodesList =
             parseXMLString(sheetXmlContent).getElementsByTagName("c");
           // Traverse through the nodes list and fill responseText with either the number value in its v node or find a mapped string from sharedStrings or an inline string.
+
+          const filteredCNodes = Array.from(sheetsXmlCNodesList).filter(
+            (cNode) =>
+              isValidInlineStringCNode(cNode) || hasValidVNodeInCNode(cNode)
+          );
+
+          let processedCount = 0;
+
+          const sheetValues = filteredCNodes.map((cNode) => {
+            // Processing if this is a valid inline string c node.
+            if (isValidInlineStringCNode(cNode)) {
+              processedCount++;
+              return cNode
+                .getElementsByTagName("is")[0]
+                .getElementsByTagName("t")[0].childNodes[0].nodeValue;
+            }
+
+            // Processing if this c node has a valid v node.
+            if (hasValidVNodeInCNode(cNode)) {
+              /** Flag whether this node's value represents an index in the shared string array */
+              const isIndexInSharedStrings = cNode.getAttribute("t") == "s";
+
+              /** Find value nodes represented by v tags */
+              const cNodeValue =
+                cNode.getElementsByTagName("v")[0].childNodes[0].nodeValue;
+              if (cNodeValue) {
+                const value = parseInt(cNodeValue, 10);
+                // Validate text
+                if (isIndexInSharedStrings && value >= sharedStrings.length)
+                  handleError(
+                    ERRORMSG.fileCorrupted(file.name),
+                    config.outputErrorToConsole
+                  );
+
+                processedCount++;
+                return isIndexInSharedStrings
+                  ? sharedStrings[value]
+                  : value;
+              }
+            }
+            return "";
+          });
+
+          if (processedCount < filteredCNodes.length) {
+            const error = ERRORMSG.filteredMoreThanProcessed(file.name);
+            if (config.outputErrorToConsole)
+              console.error(ERRORHEADER + error);
+            else throw new Error(ERRORHEADER + error);
+          }
+
+          // Join each cell text within a sheet with a space.
           responseText.push(
-            Array.from(sheetsXmlCNodesList)
-              // Filter out invalid c nodes
-              .filter(
-                (cNode) =>
-                  isValidInlineStringCNode(cNode) || hasValidVNodeInCNode(cNode)
-              )
-              .map((cNode) => {
-                // Processing if this is a valid inline string c node.
-                if (isValidInlineStringCNode(cNode))
-                  return cNode
-                    .getElementsByTagName("is")[0]
-                    .getElementsByTagName("t")[0].childNodes[0].nodeValue;
-
-                // Processing if this c node has a valid v node.
-                if (hasValidVNodeInCNode(cNode)) {
-                  /** Flag whether this node's value represents an index in the shared string array */
-                  const isIndexInSharedStrings = cNode.getAttribute("t") == "s";
-
-                  /** Find value nodes represented by v tags */
-                  const cNodeValue =
-                    cNode.getElementsByTagName("v")[0].childNodes[0].nodeValue;
-                  if (cNodeValue) {
-                    const value = parseInt(cNodeValue, 10);
-                    // Validate text
-                    if (isIndexInSharedStrings && value >= sharedStrings.length)
-                      handleError(
-                        ERRORMSG.fileCorrupted(file.name),
-                        config.outputErrorToConsole
-                      );
-
-                    return isIndexInSharedStrings
-                      ? sharedStrings[value]
-                      : value;
-                  }
-                }
-                // TODO: Add debug asserts for if we reach here which would mean we are filtering more items than we are processing.
-                // Not the case now but it could happen and it is better to be safe.
-                return "";
-              })
-              // Join each cell text within a sheet with a space.
-              .join(config.newlineDelimiter ?? "\n")
+            sheetValues.join(config.newlineDelimiter ?? "\n")
           );
         }
 
