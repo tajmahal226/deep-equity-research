@@ -146,22 +146,25 @@ export class CompanyDeepResearch {
     
     try {
       // Step 1: Determine AI provider and models
-      // Default to OpenAI GPT-4o if not specified
-      const defaultProvider = "openai";
-      const defaultThinkingModel = "o3"; // Good for reasoning
-      const defaultTaskModel = "gpt-4o-mini"; // Faster for simple tasks
+      // Users must configure their API keys and models through the settings UI
+      if (!this.config.thinkingModelConfig?.providerId || !this.config.thinkingModelConfig?.modelId) {
+        throw new Error('Thinking model not configured. Please click the settings gear icon in the top-right corner to configure your AI provider, API key, and models.');
+      }
       
-      // Use provided config or defaults
-      const thinkingProvider = this.config.thinkingModelConfig?.providerId || defaultProvider;
-      const thinkingModel = this.config.thinkingModelConfig?.modelId || defaultThinkingModel;
-      const taskProvider = this.config.taskModelConfig?.providerId || defaultProvider;
-      const taskModel = this.config.taskModelConfig?.modelId || defaultTaskModel;
+      if (!this.config.taskModelConfig?.providerId || !this.config.taskModelConfig?.modelId) {
+        throw new Error('Task model not configured. Please click the settings gear icon in the top-right corner to configure your AI provider, API key, and models.');
+      }
+      
+      const thinkingProvider = this.config.thinkingModelConfig.providerId;
+      const thinkingModel = this.config.thinkingModelConfig.modelId;
+      const taskProvider = this.config.taskModelConfig.providerId;
+      const taskModel = this.config.taskModelConfig.modelId;
       
       // Step 2: Initialize thinking model (for complex reasoning)
       try {
         const apiKey = getAIProviderApiKey(thinkingProvider);
         if (!apiKey) {
-          throw new Error(`No API key found for provider: ${thinkingProvider}. Please set ${thinkingProvider.toUpperCase()}_API_KEY in your .env.local file.`);
+          throw new Error(`No API key found for ${thinkingProvider}. Please click the settings gear icon in the top-right corner to enter your ${thinkingProvider.toUpperCase()} API key.`);
         }
         
         this.thinkingModel = await createAIProvider({
@@ -179,7 +182,7 @@ export class CompanyDeepResearch {
       try {
         const apiKey = getAIProviderApiKey(taskProvider);
         if (!apiKey) {
-          throw new Error(`No API key found for provider: ${taskProvider}. Please set ${taskProvider.toUpperCase()}_API_KEY in your .env.local file.`);
+          throw new Error(`No API key found for ${taskProvider}. Please click the settings gear icon in the top-right corner to enter your ${taskProvider.toUpperCase()} API key.`);
         }
         
         this.taskModel = await createAIProvider({

@@ -80,12 +80,12 @@ interface SettingFunction {
 }
 
 export const defaultValues: SettingStore = {
-  provider: "google",
+  provider: "",
   mode: "",
   apiKey: "",
   apiProxy: "",
-  thinkingModel: "gemini-2.0-flash-thinking-exp",
-  networkingModel: "gemini-2.0-flash",
+  thinkingModel: "",
+  networkingModel: "",
   openRouterApiKey: "",
   openRouterApiProxy: "",
   openRouterThinkingModel: "",
