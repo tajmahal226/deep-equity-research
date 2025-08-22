@@ -15,7 +15,7 @@ Deep Research uses a variety of powerful AI models to generate in-depth research
 
 ## Installation
 1. **Requirements**
-   - [Node.js](https://nodejs.org/) (version 18.18.0 or later recommended)
+   - [Node.js](https://nodejs.org/) (version 18.18.0 LTS or later recommended)
    - [pnpm](https://pnpm.io/) (preferred) or [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 2. **Install dependencies**
    ```bash
