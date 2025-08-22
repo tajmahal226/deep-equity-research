@@ -54,6 +54,11 @@ export default function ResearchTabs({
       <div className="space-y-2 mb-6">
         {/* First row - Core Research Features */}
         <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="free-form" className="flex items-center gap-2">
+            <Search className="w-4 h-4" />
+            <span className="hidden sm:inline">{t("tabs.freeFormDeepResearch", "Free-Form Deep Research")}</span>
+            <span className="sm:hidden">Free-Form</span>
+          </TabsTrigger>
           <TabsTrigger value="company-deep-dive" className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
             <span className="hidden sm:inline">{t("tabs.companyDeepDive", "Company Deep Dive")}</span>
@@ -68,11 +73,6 @@ export default function ResearchTabs({
             <TrendingUp className="w-4 h-4" />
             <span className="hidden sm:inline">{t("tabs.marketResearch", "Market Research")}</span>
             <span className="sm:hidden">Market</span>
-          </TabsTrigger>
-          <TabsTrigger value="free-form" className="flex items-center gap-2">
-            <Search className="w-4 h-4" />
-            <span className="hidden sm:inline">{t("tabs.freeFormDeepResearch", "Free-Form Deep Research")}</span>
-            <span className="sm:hidden">Free-Form</span>
           </TabsTrigger>
         </TabsList>
 
@@ -102,6 +102,10 @@ export default function ResearchTabs({
       </div>
       
       {/* Tab Contents - First Row */}
+      <TabsContent value="free-form" className="mt-0">
+        {children.freeFormResearch}
+      </TabsContent>
+      
       <TabsContent value="company-deep-dive" className="mt-0">
         {children.companyDeepDive}
       </TabsContent>
@@ -112,10 +116,6 @@ export default function ResearchTabs({
       
       <TabsContent value="market-research" className="mt-0">
         {children.marketResearch}
-      </TabsContent>
-      
-      <TabsContent value="free-form" className="mt-0">
-        {children.freeFormResearch}
       </TabsContent>
 
       {/* Tab Contents - Second Row */}
