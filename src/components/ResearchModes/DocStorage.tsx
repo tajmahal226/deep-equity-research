@@ -103,7 +103,7 @@ export default function DocStorage() {
   // File type detection
   const getFileIcon = (type: string) => {
     if (type.includes('pdf')) return <FileText className="w-4 h-4 text-red-500" />;
-    if (type.includes('image')) return <Image className="w-4 h-4 text-green-500" />;
+    if (type.includes('image')) return <Image className="w-4 h-4 text-green-500" aria-hidden="true" />;
     if (type.includes('video')) return <Play className="w-4 h-4 text-blue-500" />;
     if (type.includes('presentation') || type.includes('powerpoint')) 
       return <FileText className="w-4 h-4 text-orange-500" />;
@@ -144,23 +144,6 @@ export default function DocStorage() {
   };
 
   // File upload handlers
-  const handleFileSelect = useCallback((files: FileList | null) => {
-    if (!files) return;
-    
-    const newFiles = Array.from(files).map(file => ({
-      ...file,
-      id: Math.random().toString(36),
-      uploadProgress: 0,
-      status: "uploading" as const,
-    }));
-    
-    setUploadFiles(prev => [...prev, ...newFiles]);
-    setShowUploadDialog(true);
-    
-    // Simulate file processing
-    newFiles.forEach(file => simulateFileProcessing(file));
-  }, [simulateFileProcessing]);
-
   const simulateFileProcessing = useCallback(async (file: UploadedFile) => {
     // Simulate upload progress
     const progressInterval = setInterval(() => {
@@ -205,6 +188,23 @@ export default function DocStorage() {
 
     toast.success(`${file.name} uploaded successfully!`);
   }, [addDocument]);
+
+  const handleFileSelect = useCallback((files: FileList | null) => {
+    if (!files) return;
+    
+    const newFiles = Array.from(files).map(file => ({
+      ...file,
+      id: Math.random().toString(36),
+      uploadProgress: 0,
+      status: "uploading" as const,
+    }));
+    
+    setUploadFiles(prev => [...prev, ...newFiles]);
+    setShowUploadDialog(true);
+    
+    // Simulate file processing
+    newFiles.forEach(file => simulateFileProcessing(file));
+  }, [simulateFileProcessing]);
 
   const extractFileContent = async (file: File): Promise<string> => {
     // Simple text extraction for demo purposes
