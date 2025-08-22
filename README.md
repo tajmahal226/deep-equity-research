@@ -68,7 +68,7 @@ pnpm lint
 ```
 
 ## Deployment Tips
-- **Vercel**: configure environment variables in project settings. Optionally enable the experimental React Compiler with `REACT_COMPILER=true`.
+- **Vercel**: configure environment variables in project settings. To opt into the experimental React Compiler, set `REACT_COMPILER=true`.
 - **Docker/Standalone**: build with `pnpm build:standalone` and run the resulting image.
 - **Static Hosting**: generate static export with `pnpm build:export`.
 
