@@ -6,20 +6,48 @@ interface PreFilledPrompt {
   id: string;
   title: string;
   content: string;
+  category: string;
+  tags: string[];
+  description?: string;
+  usageCount: number;
+  lastUsed?: Date;
+  isTemplate: boolean;
   createdAt: Date;
 }
 
 interface PreFilledPromptsState {
   prompts: PreFilledPrompt[];
+  categories: string[];
   addPrompt: (prompt: Omit<PreFilledPrompt, "id" | "createdAt">) => void;
   removePrompt: (id: string) => void;
   updatePrompt: (id: string, updates: Partial<Omit<PreFilledPrompt, "id" | "createdAt">>) => void;
+  incrementUsage: (id: string) => void;
+  addCategory: (category: string) => void;
+  getPromptsByCategory: (category: string) => PreFilledPrompt[];
+  searchPrompts: (query: string) => PreFilledPrompt[];
 }
+
+// Default categories
+const defaultCategories = [
+  "Company Research",
+  "Market Analysis", 
+  "Due Diligence",
+  "Competitive Analysis",
+  "Financial Analysis",
+  "Customer Research",
+  "Technology Assessment",
+  "Risk Analysis"
+];
 
 // Default company research prompt
 const defaultCompanyPrompt: PreFilledPrompt = {
   id: "default-company-research",
   title: "Comprehensive Company Research Template",
+  category: "Company Research",
+  tags: ["template", "growth-equity", "comprehensive", "due-diligence"],
+  description: "Complete template for growth equity company research covering all key areas",
+  usageCount: 0,
+  isTemplate: true,
   content: `The user is a growth equity analyst looking to learn about [company] [company-url].  The following is a template for the research report and areas the user wants to learn about.
 Section 1: Company Overview
 Brief overview
@@ -86,10 +114,173 @@ The user should be able to deeply understand the market context and the business
   createdAt: new Date(),
 };
 
+// Additional default prompts
+const marketAnalysisPrompt: PreFilledPrompt = {
+  id: "market-analysis-template",
+  title: "Market Analysis Framework",
+  category: "Market Analysis",
+  tags: ["market-research", "tam", "competitive-landscape", "trends"],
+  description: "Comprehensive market analysis covering TAM, competitive dynamics, and growth trends",
+  usageCount: 0,
+  isTemplate: true,
+  content: `Please conduct a comprehensive market analysis for [market/industry]. Focus on the following key areas:
+
+Market Overview:
+- Total Addressable Market (TAM) size and growth projections
+- Market segmentation and key customer segments
+- Geographic market distribution
+- Historical market evolution and key milestones
+
+Market Dynamics:
+- Primary market drivers and growth catalysts  
+- Key challenges and market headwinds
+- Technology trends reshaping the market
+- Regulatory environment and upcoming changes
+
+Competitive Landscape:
+- Market share analysis of top players
+- Competitive positioning and differentiation
+- New entrants and emerging threats
+- M&A activity and consolidation trends
+
+Customer Analysis:
+- Buyer personas and decision-making processes
+- Key purchase criteria and evaluation factors
+- Customer pain points and unmet needs
+- Channel preferences and go-to-market strategies
+
+Future Outlook:
+- 3-5 year market projections and scenarios
+- Emerging opportunities and white spaces
+- Potential disruption factors
+- Investment and funding trends
+
+Please provide quantitative data where available and cite all sources.`,
+  createdAt: new Date(),
+};
+
+const competitiveAnalysisPrompt: PreFilledPrompt = {
+  id: "competitive-analysis-template",
+  title: "Competitive Intelligence Deep Dive",
+  category: "Competitive Analysis",
+  tags: ["competitors", "benchmarking", "swot", "positioning"],
+  description: "In-depth competitive analysis template for evaluating market position",
+  usageCount: 0,
+  isTemplate: true,
+  content: `Conduct a detailed competitive analysis for [company] in the [industry] space. 
+
+Direct Competitors Analysis:
+For each major competitor, analyze:
+- Business model and revenue streams
+- Product/service offerings and differentiation
+- Pricing strategy and market positioning
+- Market share and financial performance
+- Strengths and weaknesses (SWOT)
+- Recent strategic moves and announcements
+
+Competitive Positioning Matrix:
+Create a positioning analysis across key dimensions:
+- Product features and capabilities
+- Target customer segments
+- Pricing and business model
+- Geographic presence
+- Technology and innovation
+- Customer satisfaction and brand strength
+
+Indirect Competitors & Substitutes:
+- Adjacent market players who could expand
+- Substitute solutions or alternative approaches
+- Potential new entrants and barriers to entry
+- Platform players and ecosystem threats
+
+Competitive Intelligence:
+- Recent funding rounds and valuations
+- Key executive hires and departures
+- Patent filings and IP strategy
+- Partnership and M&A activity
+- Customer wins and losses
+- Product roadmap insights
+
+Strategic Implications:
+- [Company]'s competitive advantages and vulnerabilities
+- Market gaps and opportunities
+- Recommended strategic responses
+- Potential partnership or acquisition targets
+- Areas for defensive positioning`,
+  createdAt: new Date(),
+};
+
+const dueDiligencePrompt: PreFilledPrompt = {
+  id: "due-diligence-checklist",
+  title: "Investment Due Diligence Checklist",
+  category: "Due Diligence",
+  tags: ["due-diligence", "investment", "risk-assessment", "checklist"],
+  description: "Comprehensive checklist for investment due diligence across key areas",
+  usageCount: 0,
+  isTemplate: true,
+  content: `Investment Due Diligence Analysis for [Company Name]
+
+Business Model & Strategy:
+- Revenue model sustainability and scalability
+- Unit economics and key metrics
+- Competitive moats and differentiation
+- Total addressable market and expansion opportunities
+- Go-to-market strategy effectiveness
+- Strategic partnerships and key relationships
+
+Financial Performance:
+- Revenue growth trends and quality
+- Profitability metrics and path to profitability
+- Cash flow generation and burn rate
+- Working capital requirements
+- Capital efficiency and return on invested capital
+- Budget vs. actual performance track record
+
+Management Team:
+- Leadership team backgrounds and track record
+- Management depth and succession planning
+- Board composition and governance
+- Equity ownership and alignment
+- Cultural fit and execution capability
+- Key person risk assessment
+
+Technology & Product:
+- Technology stack and scalability
+- Product-market fit evidence
+- Development roadmap and R&D capabilities
+- IP portfolio and defensibility
+- Technical debt and infrastructure needs
+- Cybersecurity and data privacy measures
+
+Market Position:
+- Customer concentration and retention
+- Brand strength and market perception
+- Sales and marketing effectiveness
+- Channel strategy and distribution
+- Customer acquisition cost trends
+- Competitive positioning and threats
+
+Risk Assessment:
+- Regulatory and compliance risks
+- Technology and cybersecurity risks
+- Market and competitive risks
+- Key personnel and operational risks
+- Financial and liquidity risks
+- ESG considerations and risks
+
+Investment Thesis Validation:
+- Key assumptions and stress testing
+- Value creation opportunities
+- Exit strategy considerations
+- Deal structure and terms evaluation`,
+  createdAt: new Date(),
+};
+
 export const usePreFilledPromptsStore = create<PreFilledPromptsState>()(
   persist(
-    (set) => ({
-      prompts: [defaultCompanyPrompt],
+    (set, get) => ({
+      prompts: [defaultCompanyPrompt, marketAnalysisPrompt, competitiveAnalysisPrompt, dueDiligencePrompt],
+      categories: defaultCategories,
       addPrompt: (prompt) =>
         set((state) => ({
           prompts: [
@@ -98,6 +289,7 @@ export const usePreFilledPromptsStore = create<PreFilledPromptsState>()(
               ...prompt,
               id: nanoid(),
               createdAt: new Date(),
+              usageCount: prompt.usageCount || 0,
             },
           ],
         })),
@@ -111,6 +303,32 @@ export const usePreFilledPromptsStore = create<PreFilledPromptsState>()(
             p.id === id ? { ...p, ...updates } : p
           ),
         })),
+      incrementUsage: (id) =>
+        set((state) => ({
+          prompts: state.prompts.map((p) =>
+            p.id === id ? { ...p, usageCount: p.usageCount + 1, lastUsed: new Date() } : p
+          ),
+        })),
+      addCategory: (category) =>
+        set((state) => ({
+          categories: state.categories.includes(category) 
+            ? state.categories 
+            : [...state.categories, category],
+        })),
+      getPromptsByCategory: (category) => {
+        const state = get();
+        return state.prompts.filter((p) => p.category === category);
+      },
+      searchPrompts: (query) => {
+        const state = get();
+        const lowercaseQuery = query.toLowerCase();
+        return state.prompts.filter((p) =>
+          p.title.toLowerCase().includes(lowercaseQuery) ||
+          p.content.toLowerCase().includes(lowercaseQuery) ||
+          p.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery)) ||
+          (p.description && p.description.toLowerCase().includes(lowercaseQuery))
+        );
+      },
     }),
     {
       name: "pre-filled-prompts-storage",
