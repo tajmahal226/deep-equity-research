@@ -12,6 +12,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:standalone": "next build --output standalone",
+    "build:export": "next build && next export",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run"
