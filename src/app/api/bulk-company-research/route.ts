@@ -47,6 +47,14 @@ interface BulkCompanyRequest {
   taskModelId?: string;
   thinkingProviderId?: string;
   taskProviderId?: string;
+  
+  // API keys for client-side configuration
+  thinkingApiKey?: string;
+  taskApiKey?: string;
+  
+  // Search provider settings
+  searchProviderId?: string;
+  searchApiKey?: string;
 }
 
 // This is what we'll send back for each company
@@ -146,12 +154,18 @@ export async function POST(req: NextRequest) {
           thinkingModelConfig: body.thinkingModelId && body.thinkingProviderId ? {
             modelId: body.thinkingModelId,
             providerId: body.thinkingProviderId,
+            apiKey: body.thinkingApiKey,
           } : undefined,
           
           taskModelConfig: body.taskModelId && body.taskProviderId ? {
             modelId: body.taskModelId,
             providerId: body.taskProviderId,
+            apiKey: body.taskApiKey,
           } : undefined,
+          
+          // Search provider configuration
+          searchProviderId: body.searchProviderId,
+          searchProviderApiKey: body.searchApiKey,
           
           // Callbacks for this specific company
           onProgress: (data) => {

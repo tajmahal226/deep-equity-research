@@ -54,8 +54,13 @@ interface CompanyResearchRequest {
   thinkingProviderId?: string;
   taskProviderId?: string;
   
+  // API keys for client-side configuration
+  thinkingApiKey?: string;
+  taskApiKey?: string;
+  
   // Search provider settings
   searchProviderId?: string;
+  searchApiKey?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -114,15 +119,18 @@ export async function POST(req: NextRequest) {
       thinkingModelConfig: body.thinkingModelId && body.thinkingProviderId ? {
         modelId: body.thinkingModelId,
         providerId: body.thinkingProviderId,
+        apiKey: body.thinkingApiKey,
       } : undefined,
       
       taskModelConfig: body.taskModelId && body.taskProviderId ? {
         modelId: body.taskModelId,
         providerId: body.taskProviderId,
+        apiKey: body.taskApiKey,
       } : undefined,
       
       // Search provider configuration
       searchProviderId: body.searchProviderId,
+      searchProviderApiKey: body.searchApiKey,
       
       // Callback functions to send real-time updates to the client
       onProgress: (data) => {

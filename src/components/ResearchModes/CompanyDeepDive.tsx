@@ -110,6 +110,11 @@ export default function CompanyDeepDive() {
       const currentProvider = settingStore.provider;
       const thinkingModel = settingStore[`${currentProvider}ThinkingModel` as keyof typeof settingStore] as string;
       const taskModel = settingStore[`${currentProvider}NetworkingModel` as keyof typeof settingStore] as string;
+      
+      // Get API keys from user settings
+      const thinkingApiKey = settingStore[`${currentProvider}ApiKey` as keyof typeof settingStore] as string;
+      const taskApiKey = settingStore[`${currentProvider}ApiKey` as keyof typeof settingStore] as string; // Usually same provider
+      const searchApiKey = settingStore[`${settingStore.mode}ApiKey` as keyof typeof settingStore] as string;
 
       // Prepare the request body with all company information and user's AI settings
       const requestBody = {
@@ -129,8 +134,13 @@ export default function CompanyDeepDive() {
         taskProviderId: currentProvider, 
         taskModelId: taskModel,
         
+        // Pass user's API keys
+        thinkingApiKey: thinkingApiKey,
+        taskApiKey: taskApiKey,
+        
         // Pass search provider if configured
         searchProviderId: settingStore.mode,
+        searchApiKey: searchApiKey,
       };
       
       // Make the API call to our company research endpoint

@@ -61,14 +61,17 @@ interface CompanyResearchConfig {
   thinkingModelConfig?: {
     modelId: string;
     providerId: string;
+    apiKey?: string;
   };
   taskModelConfig?: {
     modelId: string;
     providerId: string;
+    apiKey?: string;
   };
   
   // Search provider
   searchProviderId?: string;
+  searchProviderApiKey?: string;
   
   // Callback functions for real-time updates
   onProgress?: (data: any) => void;
@@ -162,7 +165,10 @@ export class CompanyDeepResearch {
       
       // Step 2: Initialize thinking model (for complex reasoning)
       try {
-        const apiKey = getAIProviderApiKey(thinkingProvider);
+        const clientApiKey = this.config.thinkingModelConfig?.apiKey;
+        const serverApiKey = getAIProviderApiKey(thinkingProvider);
+        const apiKey = clientApiKey || serverApiKey;
+        
         if (!apiKey) {
           throw new Error(`No API key found for ${thinkingProvider}. Please click the settings gear icon in the top-right corner to enter your ${thinkingProvider.toUpperCase()} API key.`);
         }
@@ -180,7 +186,10 @@ export class CompanyDeepResearch {
       
       // Step 3: Initialize task model (for quick processing)
       try {
-        const apiKey = getAIProviderApiKey(taskProvider);
+        const clientApiKey = this.config.taskModelConfig?.apiKey;
+        const serverApiKey = getAIProviderApiKey(taskProvider);
+        const apiKey = clientApiKey || serverApiKey;
+        
         if (!apiKey) {
           throw new Error(`No API key found for ${taskProvider}. Please click the settings gear icon in the top-right corner to enter your ${taskProvider.toUpperCase()} API key.`);
         }
@@ -203,9 +212,12 @@ export class CompanyDeepResearch {
         // Create a search function that uses the provider
         this.searchProvider = async (query: string) => {
           try {
-            const apiKey = getSearchProviderApiKey(searchProviderId);
+            const clientApiKey = this.config.searchProviderApiKey;
+            const serverApiKey = getSearchProviderApiKey(searchProviderId);
+            const apiKey = clientApiKey || serverApiKey;
+            
             if (searchProviderId !== "model" && !apiKey) {
-              throw new Error(`No API key found for search provider: ${searchProviderId}. Please set ${searchProviderId.toUpperCase()}_API_KEY in your .env.local file.`);
+              throw new Error(`No API key found for search provider: ${searchProviderId}. Please click the settings gear icon in the top-right corner to enter your ${searchProviderId.toUpperCase()} API key.`);
             }
             
             return await createSearchProvider({
