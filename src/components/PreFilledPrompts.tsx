@@ -41,6 +41,10 @@ function PreFilledPrompts({ open, onClose }: PreFilledPromptsProps) {
       addPrompt({
         title: newPromptTitle,
         content: newPromptContent,
+        category: "Custom",
+        tags: [],
+        usageCount: 0,
+        isTemplate: false,
       });
       setNewPromptTitle("");
       setNewPromptContent("");

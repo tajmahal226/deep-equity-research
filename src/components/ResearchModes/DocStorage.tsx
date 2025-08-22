@@ -144,7 +144,7 @@ export default function DocStorage() {
   };
 
   // File upload handlers
-  const handleFileSelect = (files: FileList | null) => {
+  const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files) return;
     
     const newFiles = Array.from(files).map(file => ({
@@ -159,9 +159,9 @@ export default function DocStorage() {
     
     // Simulate file processing
     newFiles.forEach(file => simulateFileProcessing(file));
-  };
+  }, [simulateFileProcessing]);
 
-  const simulateFileProcessing = async (file: UploadedFile) => {
+  const simulateFileProcessing = useCallback(async (file: UploadedFile) => {
     // Simulate upload progress
     const progressInterval = setInterval(() => {
       setUploadFiles(prev => prev.map(f => 
@@ -204,7 +204,7 @@ export default function DocStorage() {
     });
 
     toast.success(`${file.name} uploaded successfully!`);
-  };
+  }, [addDocument]);
 
   const extractFileContent = async (file: File): Promise<string> => {
     // Simple text extraction for demo purposes
