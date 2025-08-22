@@ -156,6 +156,11 @@ const formSchema = z.object({
   searxngScope: z.string().optional(),
   parallelSearch: z.number().min(1).max(5),
   searchMaxResult: z.number().min(1).max(10),
+  financialProvider: z.string().optional(),
+  alphaVantageApiKey: z.string().optional(),
+  alphaVantageApiProxy: z.string().optional(),
+  yahooFinanceApiKey: z.string().optional(),
+  yahooFinanceApiProxy: z.string().optional(),
   language: z.string().optional(),
   theme: z.string().optional(),
   debug: z.enum(["enable", "disable"]).optional(),
@@ -210,7 +215,7 @@ function HelpTip({ children, tip }: { children: ReactNode; tip: string }) {
 
 function Setting({ open, onClose }: SettingProps) {
   const { t } = useTranslation();
-  const { mode, provider, searchProvider, update } = useSettingStore();
+  const { mode, provider, searchProvider, financialProvider, update } = useSettingStore();
   const { modelList, refresh } = useModel();
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
@@ -324,6 +329,10 @@ function Setting({ open, onClose }: SettingProps) {
 
   async function handleSearchProviderChange(searchProvider: string) {
     update({ searchProvider });
+  }
+
+  async function handleFinancialProviderChange(financialProvider: string) {
+    update({ financialProvider });
   }
 
   async function updateSetting(key: string, value?: string | number) {
@@ -3163,6 +3172,93 @@ function Setting({ open, onClose }: SettingProps) {
                     />
                   </div>
                 </div>
+                
+                {/* Financial Data Provider Settings */}
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-medium mb-4">Financial Data Provider</h3>
+                  <FormField
+                    control={form.control}
+                    name="financialProvider"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Choose your financial data source. Mock data is free but not real-time. API providers require your own API key but provide real market data.">
+                            Financial Provider
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <Select
+                            value={field.value || "mock"}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              handleFinancialProviderChange(value);
+                            }}
+                          >
+                            <SelectTrigger className="form-field">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="mock">Mock Data (Free)</SelectItem>
+                              <SelectItem value="alpha-vantage">Alpha Vantage</SelectItem>
+                              <SelectItem value="yahoo-finance">Yahoo Finance</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className={cn("space-y-4 mt-4", {
+                    hidden: financialProvider !== "alpha-vantage",
+                  })}>
+                    <FormField
+                      control={form.control}
+                      name="alphaVantageApiKey"
+                      render={({ field }) => (
+                        <FormItem className="from-item">
+                          <FormLabel className="from-label">
+                            <HelpTip tip="Get your free API key from https://www.alphavantage.co/support/#api-key">
+                              Alpha Vantage API Key
+                            </HelpTip>
+                          </FormLabel>
+                          <FormControl>
+                            <Password
+                              placeholder="Enter Alpha Vantage API Key"
+                              className="form-field"
+                              {...field}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className={cn("space-y-4 mt-4", {
+                    hidden: financialProvider !== "yahoo-finance",
+                  })}>
+                    <FormField
+                      control={form.control}
+                      name="yahooFinanceApiKey"
+                      render={({ field }) => (
+                        <FormItem className="from-item">
+                          <FormLabel className="from-label">
+                            <HelpTip tip="Yahoo Finance API key from RapidAPI or similar providers">
+                              Yahoo Finance API Key
+                            </HelpTip>
+                          </FormLabel>
+                          <FormControl>
+                            <Password
+                              placeholder="Enter Yahoo Finance API Key"
+                              className="form-field"
+                              {...field}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
                 <FormField
                   control={form.control}
                   name="parallelSearch"

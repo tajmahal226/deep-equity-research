@@ -19,6 +19,53 @@ const FinancialDataRequestSchema = z.object({
   limit: z.number().optional(),
 });
 
+// Helper function to get financial provider configuration
+function getFinancialConfig() {
+  // In a real implementation, this would check user settings from the request
+  // For now, we check environment variables and default to mock
+  const provider = process.env.FINANCIAL_PROVIDER || "mock";
+  const alphaVantageKey = process.env.ALPHA_VANTAGE_API_KEY || "";
+  const yahooKey = process.env.YAHOO_FINANCE_API_KEY || "";
+  
+  return {
+    provider,
+    alphaVantageApiKey: alphaVantageKey,
+    yahooFinanceApiKey: yahooKey,
+    hasApiKey: alphaVantageKey.length > 0 || yahooKey.length > 0
+  };
+}
+
+// Helper function to fetch real stock data from Alpha Vantage
+async function fetchRealStockData(ticker: string, apiKey: string) {
+  try {
+    const response = await fetch(
+      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`
+    );
+    const data = await response.json();
+    
+    if (data["Global Quote"]) {
+      const quote = data["Global Quote"];
+      return {
+        ticker: ticker.toUpperCase(),
+        price: parseFloat(quote["05. price"]).toFixed(2),
+        change: parseFloat(quote["09. change"]).toFixed(2),
+        changePercent: parseFloat(quote["10. change percent"].replace('%', '')).toFixed(2),
+        volume: parseInt(quote["06. volume"]),
+        high: parseFloat(quote["03. high"]).toFixed(2),
+        low: parseFloat(quote["04. low"]).toFixed(2),
+        open: parseFloat(quote["02. open"]).toFixed(2),
+        previousClose: parseFloat(quote["08. previous close"]).toFixed(2),
+        lastUpdated: quote["07. latest trading day"],
+      };
+    }
+    
+    throw new Error("Invalid API response");
+  } catch (error) {
+    logger.log(`[Financial API] Error fetching real data for ${ticker}: ${error}`);
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -28,7 +75,9 @@ export async function POST(request: NextRequest) {
 
     logger.log(`[Financial Data API] ${action} request: ${ticker || query}`);
 
-    // For now, return mock data. In production, this would integrate with real financial APIs
+    const config = getFinancialConfig();
+    const useRealData = config.hasApiKey && config.provider !== "mock";
+
     switch (action) {
       case "stock-price":
         if (!ticker) {
@@ -38,20 +87,33 @@ export async function POST(request: NextRequest) {
           );
         }
         
-        const stockData = {
-          ticker: ticker.toUpperCase(),
-          price: (Math.random() * 1000 + 50).toFixed(2),
-          change: ((Math.random() - 0.5) * 20).toFixed(2),
-          changePercent: ((Math.random() - 0.5) * 10).toFixed(2),
-          volume: Math.floor(Math.random() * 10000000),
-          marketCap: `${(Math.random() * 500 + 10).toFixed(1)}B`,
-          pe_ratio: (Math.random() * 40 + 10).toFixed(1),
-          high_52w: (Math.random() * 1200 + 60).toFixed(2),
-          low_52w: (Math.random() * 800 + 30).toFixed(2),
-          dividend_yield: (Math.random() * 5).toFixed(2),
-          beta: (Math.random() * 2 + 0.5).toFixed(2),
-          lastUpdated: new Date().toISOString(),
-        };
+        let stockData;
+        
+        // Try to fetch real data if API key is available
+        if (useRealData && config.alphaVantageApiKey) {
+          stockData = await fetchRealStockData(ticker, config.alphaVantageApiKey);
+        }
+        
+        // Fallback to mock data if real data failed or not configured
+        if (!stockData) {
+          stockData = {
+            ticker: ticker.toUpperCase(),
+            price: (Math.random() * 1000 + 50).toFixed(2),
+            change: ((Math.random() - 0.5) * 20).toFixed(2),
+            changePercent: ((Math.random() - 0.5) * 10).toFixed(2),
+            volume: Math.floor(Math.random() * 10000000),
+            marketCap: `${(Math.random() * 500 + 10).toFixed(1)}B`,
+            pe_ratio: (Math.random() * 40 + 10).toFixed(1),
+            high_52w: (Math.random() * 1200 + 60).toFixed(2),
+            low_52w: (Math.random() * 800 + 30).toFixed(2),
+            dividend_yield: (Math.random() * 5).toFixed(2),
+            beta: (Math.random() * 2 + 0.5).toFixed(2),
+            lastUpdated: new Date().toISOString(),
+            source: "mock"
+          };
+        } else {
+          stockData.source = "alpha_vantage";
+        }
         
         return NextResponse.json({ success: true, data: stockData });
 

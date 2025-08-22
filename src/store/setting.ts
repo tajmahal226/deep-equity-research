@@ -81,6 +81,11 @@ export interface SettingStore {
   parallelSearch: number;
   searchMaxResult: number;
   crawler: string;
+  financialProvider: string;
+  alphaVantageApiKey: string;
+  alphaVantageApiProxy: string;
+  yahooFinanceApiKey: string;
+  yahooFinanceApiProxy: string;
   language: string;
   theme: string;
   debug: "enable" | "disable";
@@ -175,6 +180,11 @@ export const defaultValues: SettingStore = {
   parallelSearch: 1,
   searchMaxResult: 5,
   crawler: "jina",
+  financialProvider: "mock",
+  alphaVantageApiKey: "",
+  alphaVantageApiProxy: "",
+  yahooFinanceApiKey: "",
+  yahooFinanceApiProxy: "",
   language: "",
   theme: "system",
   debug: "disable",
