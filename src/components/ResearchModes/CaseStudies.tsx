@@ -27,7 +27,10 @@ import {
   Trash2,
   Copy,
   Eye,
-  Star
+  Star,
+  Briefcase,
+  Activity,
+  X
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,7 +60,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { useCaseStudiesStore, CaseStudy, Milestone } from "@/store/caseStudies";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useCaseStudiesStore, CaseStudy } from "@/store/caseStudies";
 import { toast } from "sonner";
 
 export default function CaseStudies() {
