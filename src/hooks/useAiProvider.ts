@@ -121,7 +121,6 @@ function useModelProvider() {
       case "anthropic":
         const { anthropicApiKey } = useSettingStore.getState();
         return anthropicApiKey.length > 0;
-        return true;
       default:
         throw new Error("Unsupported Provider: " + provider);
     }
