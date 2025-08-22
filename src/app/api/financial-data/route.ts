@@ -17,22 +17,62 @@ const FinancialDataRequestSchema = z.object({
   period: z.enum(["annual", "quarterly"]).optional(),
   statements: z.array(z.enum(["income", "balance", "cash_flow"])).optional(),
   limit: z.number().optional(),
+  // Client-side API keys for user configuration
+  alphaVantageApiKey: z.string().optional(),
+  yahooFinanceApiKey: z.string().optional(),
+  financialDatasetsApiKey: z.string().optional(),
+  financialProvider: z.string().optional(),
 });
 
 // Helper function to get financial provider configuration
-function getFinancialConfig() {
-  // In a real implementation, this would check user settings from the request
-  // For now, we check environment variables and default to mock
-  const provider = process.env.FINANCIAL_PROVIDER || "mock";
-  const alphaVantageKey = process.env.ALPHA_VANTAGE_API_KEY || "";
-  const yahooKey = process.env.YAHOO_FINANCE_API_KEY || "";
+function getFinancialConfig(clientConfig?: any) {
+  // Use client-provided configuration if available, otherwise fallback to environment variables
+  const provider = clientConfig?.financialProvider || process.env.FINANCIAL_PROVIDER || "mock";
+  const alphaVantageKey = clientConfig?.alphaVantageApiKey || process.env.ALPHA_VANTAGE_API_KEY || "";
+  const yahooKey = clientConfig?.yahooFinanceApiKey || process.env.YAHOO_FINANCE_API_KEY || "";
+  const financialDatasetsKey = clientConfig?.financialDatasetsApiKey || process.env.FINANCIAL_DATASETS_API_KEY || "";
   
   return {
     provider,
     alphaVantageApiKey: alphaVantageKey,
     yahooFinanceApiKey: yahooKey,
-    hasApiKey: alphaVantageKey.length > 0 || yahooKey.length > 0
+    financialDatasetsApiKey: financialDatasetsKey,
+    hasApiKey: alphaVantageKey.length > 0 || yahooKey.length > 0 || financialDatasetsKey.length > 0
   };
+}
+
+// Helper function to fetch stock data from Financial Datasets
+async function fetchFinancialDatasetsStock(ticker: string, apiKey: string) {
+  try {
+    const response = await fetch(
+      `https://api.financialdatasets.ai/v1/companies/tickers/${ticker.toUpperCase()}?apikey=${apiKey}`
+    );
+    const data = await response.json();
+    
+    if (data.success && data.data) {
+      const company = data.data;
+      return {
+        ticker: ticker.toUpperCase(),
+        price: company.price?.toFixed(2) || "0.00",
+        change: company.change?.toFixed(2) || "0.00",
+        changePercent: company.changePercent?.toFixed(2) || "0.00",
+        volume: company.volume || 0,
+        high: company.high?.toFixed(2) || "0.00",
+        low: company.low?.toFixed(2) || "0.00",
+        open: company.open?.toFixed(2) || "0.00",
+        previousClose: company.previousClose?.toFixed(2) || "0.00",
+        marketCap: company.marketCap || "N/A",
+        pe_ratio: company.peRatio?.toFixed(1) || "N/A",
+        lastUpdated: new Date().toISOString(),
+        source: "financial_datasets"
+      };
+    }
+    
+    throw new Error("Invalid API response");
+  } catch (error) {
+    logger.log(`[Financial API] Error fetching Financial Datasets data for ${ticker}: ${error}`);
+    return null;
+  }
 }
 
 // Helper function to fetch real stock data from Alpha Vantage
@@ -67,6 +107,51 @@ async function fetchRealStockData(ticker: string, apiKey: string) {
   }
 }
 
+// Helper function to fetch stock data from Yahoo Finance (using yfinance-like API)
+async function fetchYahooFinanceStock(ticker: string, apiKey?: string) {
+  try {
+    // Note: Yahoo Finance doesn't require API key for basic quotes but might for higher limits
+    // Using a free endpoint - in production, you might want to use a paid service like RapidAPI
+    const response = await fetch(
+      `https://query1.finance.yahoo.com/v8/finance/chart/${ticker.toUpperCase()}?interval=1d&range=1d`
+    );
+    const data = await response.json();
+    
+    if (data.chart && data.chart.result && data.chart.result[0]) {
+      const result = data.chart.result[0];
+      const meta = result.meta;
+      const quote = result.indicators?.quote?.[0];
+      
+      if (meta && quote) {
+        const currentPrice = meta.regularMarketPrice || quote.close?.[quote.close.length - 1] || 0;
+        const previousClose = meta.previousClose || 0;
+        const change = currentPrice - previousClose;
+        const changePercent = previousClose > 0 ? (change / previousClose) * 100 : 0;
+        
+        return {
+          ticker: ticker.toUpperCase(),
+          price: currentPrice.toFixed(2),
+          change: change.toFixed(2),
+          changePercent: changePercent.toFixed(2),
+          volume: meta.regularMarketVolume || quote.volume?.[quote.volume.length - 1] || 0,
+          high: meta.regularMarketDayHigh || Math.max(...(quote.high || [currentPrice])),
+          low: meta.regularMarketDayLow || Math.min(...(quote.low || [currentPrice])),
+          open: quote.open?.[0] || currentPrice,
+          previousClose: previousClose.toFixed(2),
+          marketCap: meta.marketCap || "N/A",
+          lastUpdated: new Date().toISOString(),
+          source: "yahoo_finance"
+        };
+      }
+    }
+    
+    throw new Error("Invalid API response");
+  } catch (error) {
+    logger.log(`[Financial API] Error fetching Yahoo Finance data for ${ticker}: ${error}`);
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -76,7 +161,7 @@ export async function POST(request: NextRequest) {
 
     logger.log(`[Financial Data API] ${action} request: ${ticker || query}`);
 
-    const config = getFinancialConfig();
+    const config = getFinancialConfig(validatedData);
     const useRealData = config.hasApiKey && config.provider !== "mock";
 
     switch (action) {
@@ -90,12 +175,25 @@ export async function POST(request: NextRequest) {
         
         let stockData;
         
-        // Try to fetch real data if API key is available
-        if (useRealData && config.alphaVantageApiKey) {
-          stockData = await fetchRealStockData(ticker, config.alphaVantageApiKey);
+        // Try to fetch real data from available providers
+        if (useRealData) {
+          // Try Financial Datasets first (most comprehensive)
+          if (config.financialDatasetsApiKey && !stockData) {
+            stockData = await fetchFinancialDatasetsStock(ticker, config.financialDatasetsApiKey);
+          }
+          
+          // Try Alpha Vantage if Financial Datasets failed
+          if (config.alphaVantageApiKey && !stockData) {
+            stockData = await fetchRealStockData(ticker, config.alphaVantageApiKey);
+          }
+          
+          // Try Yahoo Finance as fallback (free but rate limited)
+          if (!stockData) {
+            stockData = await fetchYahooFinanceStock(ticker, config.yahooFinanceApiKey);
+          }
         }
         
-        // Fallback to mock data if real data failed or not configured
+        // Fallback to mock data if all real providers failed or not configured
         if (!stockData) {
           stockData = {
             ticker: ticker.toUpperCase(),

@@ -161,6 +161,8 @@ const formSchema = z.object({
   alphaVantageApiProxy: z.string().optional(),
   yahooFinanceApiKey: z.string().optional(),
   yahooFinanceApiProxy: z.string().optional(),
+  financialDatasetsApiKey: z.string().optional(),
+  financialDatasetsApiProxy: z.string().optional(),
   exaNeuralSearchApiKey: z.string().optional(),
   exaNeuralSearchApiProxy: z.string().optional(),
   language: z.string().optional(),
@@ -3201,8 +3203,9 @@ function Setting({ open, onClose }: SettingProps) {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="mock">Mock Data (Free)</SelectItem>
+                              <SelectItem value="financial-datasets">Financial Datasets (Recommended)</SelectItem>
                               <SelectItem value="alpha-vantage">Alpha Vantage</SelectItem>
-                              <SelectItem value="yahoo-finance">Yahoo Finance</SelectItem>
+                              <SelectItem value="yahoo-finance">Yahoo Finance (Free)</SelectItem>
                             </SelectContent>
                           </Select>
                         </FormControl>
@@ -3255,6 +3258,34 @@ function Setting({ open, onClose }: SettingProps) {
                               {...field}
                             />
                           </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className={cn("space-y-4 mt-4", {
+                    hidden: financialProvider !== "financial-datasets",
+                  })}>
+                    <FormField
+                      control={form.control}
+                      name="financialDatasetsApiKey"
+                      render={({ field }) => (
+                        <FormItem className="from-item">
+                          <FormLabel className="from-label">
+                            <HelpTip tip="Get your API key from https://financialdatasets.ai/. Provides comprehensive financial data including real-time prices, financials, and company profiles.">
+                              Financial Datasets API Key
+                            </HelpTip>
+                          </FormLabel>
+                          <FormControl>
+                            <Password
+                              placeholder="Enter Financial Datasets API Key"
+                              className="form-field"
+                              {...field}
+                            />
+                          </FormControl>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Professional-grade financial data API with comprehensive coverage and real-time updates.
+                          </p>
                         </FormItem>
                       )}
                     />
