@@ -56,6 +56,7 @@ async function fetchRealStockData(ticker: string, apiKey: string) {
         open: parseFloat(quote["02. open"]).toFixed(2),
         previousClose: parseFloat(quote["08. previous close"]).toFixed(2),
         lastUpdated: quote["07. latest trading day"],
+        source: "alpha_vantage"
       };
     }
     
@@ -111,8 +112,6 @@ export async function POST(request: NextRequest) {
             lastUpdated: new Date().toISOString(),
             source: "mock"
           };
-        } else {
-          stockData.source = "alpha_vantage";
         }
         
         return NextResponse.json({ success: true, data: stockData });
