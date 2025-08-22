@@ -11,27 +11,21 @@ import {
   FolderOpen, 
   Upload, 
   Search, 
-  Archive,
   FileText,
   File,
   Image,
   Play,
-  Download,
   Eye,
   Edit2,
   Trash2,
-  Tag,
-  Filter,
   Grid3X3,
   List,
   Plus,
-  X,
   AlertCircle,
   CheckCircle,
   Clock,
   HardDrive,
-  Folder,
-  SortAsc
+  Folder
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,9 +33,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -82,10 +75,8 @@ export default function DocStorage() {
     addDocument,
     removeDocument,
     updateDocument,
-    addCategory,
     getDocumentsByCategory,
     searchDocuments,
-    clearAllDocuments,
   } = useDocumentsStore();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -133,7 +124,7 @@ export default function DocStorage() {
 
   // Filter and sort documents
   const filteredDocuments = () => {
-    let filtered = searchQuery
+    const filtered = searchQuery
       ? searchDocuments(searchQuery)
       : selectedCategory === "all"
       ? documents

@@ -12,7 +12,6 @@ import {
   FileText, 
   Plus, 
   Search, 
-  Filter,
   Calendar,
   TrendingUp,
   TrendingDown,
@@ -28,18 +27,7 @@ import {
   Trash2,
   Copy,
   Eye,
-  Download,
-  Share2,
-  Tag,
-  Star,
-  BarChart3,
-  PieChart,
-  Activity,
-  Briefcase,
-  MapPin,
-  ExternalLink,
-  Paperclip,
-  X
+  Star
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,8 +35,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -78,25 +64,20 @@ export default function CaseStudies() {
   const { t } = useTranslation();
   const {
     caseStudies,
-    templates,
     categories,
-    tags: availableTags,
     addCaseStudy,
     updateCaseStudy,
     removeCaseStudy,
     duplicateCaseStudy,
-    addMilestone,
     searchCaseStudies,
     getCaseStudiesByCategory,
     getCaseStudiesByStatus,
     getPerformanceMetrics,
-    getCaseStudyById,
   } = useCaseStudiesStore();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [editingCaseStudy, setEditingCaseStudy] = useState<CaseStudy | null>(null);
@@ -128,16 +109,9 @@ export default function CaseStudies() {
   });
 
   const [tagInput, setTagInput] = useState("");
-  const [milestoneForm, setMilestoneForm] = useState({
-    title: "",
-    description: "",
-    date: new Date().toISOString().split('T')[0],
-    type: "business" as Milestone["type"],
-    impact: "positive" as Milestone["impact"],
-  });
 
   // Performance metrics
-  const performanceMetrics = useMemo(() => getPerformanceMetrics(), [caseStudies]);
+  const performanceMetrics = useMemo(() => getPerformanceMetrics(), [getPerformanceMetrics]);
 
   // Filter case studies
   const filteredCaseStudies = useMemo(() => {

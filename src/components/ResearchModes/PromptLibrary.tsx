@@ -10,11 +10,9 @@ import { useTranslation } from "react-i18next";
 import { 
   Library, 
   FileText, 
-  Share2, 
   BarChart, 
   Search, 
   Plus, 
-  Filter,
   Copy,
   Edit2,
   Trash2,
@@ -23,8 +21,7 @@ import {
   TrendingUp,
   Clock,
   Star,
-  Download,
-  Upload
+  Download
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +30,6 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
