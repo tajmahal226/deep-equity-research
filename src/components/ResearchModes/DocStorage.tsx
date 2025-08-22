@@ -103,7 +103,7 @@ export default function DocStorage() {
   // File type detection
   const getFileIcon = (type: string) => {
     if (type.includes('pdf')) return <FileText className="w-4 h-4 text-red-500" />;
-    if (type.includes('image')) return <Image className="w-4 h-4 text-green-500" aria-hidden="true" />;
+    if (type.includes('image')) return <Image className="w-4 h-4 text-green-500" aria-hidden="true" alt="" />;
     if (type.includes('video')) return <Play className="w-4 h-4 text-blue-500" />;
     if (type.includes('presentation') || type.includes('powerpoint')) 
       return <FileText className="w-4 h-4 text-orange-500" />;

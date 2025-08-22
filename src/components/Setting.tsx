@@ -3265,7 +3265,7 @@ function Setting({ open, onClose }: SettingProps) {
                 <div className="border-t pt-6">
                   <h3 className="text-lg font-medium mb-4">Enhanced Search - Exa Neural Search</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Enable high-quality, authoritative content search powered by Exa's neural search engine. Perfect for finding research papers, financial documents, and expert analysis.
+                    Enable high-quality, authoritative content search powered by Exa&apos;s neural search engine. Perfect for finding research papers, financial documents, and expert analysis.
                   </p>
                   <FormField
                     control={form.control}

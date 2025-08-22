@@ -743,9 +743,39 @@ export function initMcpServer() {
           company: ['investor.example.com', 'company-reports.example.com']
         };
 
-        const results = mockExaResults.slice(0, numResults).map((result, index) => ({
+        // Apply search filters (mock implementation for demonstration)
+        let filteredResults = mockExaResults;
+        
+        // Filter by date range if provided
+        if (startPublishedDate || endPublishedDate) {
+          filteredResults = filteredResults.filter(result => {
+            const resultDate = new Date(result.publishedDate);
+            const start = startPublishedDate ? new Date(startPublishedDate) : new Date('1900-01-01');
+            const end = endPublishedDate ? new Date(endPublishedDate) : new Date();
+            return resultDate >= start && resultDate <= end;
+          });
+        }
+
+        // Apply domain filtering if specified
+        if (includeDomains && includeDomains.length > 0) {
+          filteredResults = filteredResults.filter(result => 
+            includeDomains.some(domain => result.url.includes(domain))
+          );
+        }
+        
+        if (excludeDomains && excludeDomains.length > 0) {
+          filteredResults = filteredResults.filter(result => 
+            !excludeDomains.some(domain => result.url.includes(domain))
+          );
+        }
+
+        // Use category-specific domains for enhanced relevance
+        const relevantDomains = categoryDomains[category as keyof typeof categoryDomains] || [];
+        
+        const results = filteredResults.slice(0, numResults).map((result, index) => ({
           ...result,
           id: `exa-${index + 1}`,
+          relevantDomains,
           category,
           searchQuery: query,
         }));
