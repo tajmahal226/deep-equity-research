@@ -3325,7 +3325,7 @@ function Setting({ open, onClose }: SettingProps) {
                       (
                       <a
                         className="hover:underline hover:underline-offset-4 hover:text-blue-500"
-                        href="https://github.com/tdrags"
+                        href="https://github.com/tajmahal226"
                         target="_blank"
                       >
                         {t("setting.checkForUpdate")}

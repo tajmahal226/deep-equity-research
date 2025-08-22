@@ -8,8 +8,8 @@ import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const HEAD_SCRIPTS = process.env.HEAD_SCRIPTS as string;
-const APP_NAME = "TD Deep Research";
-const APP_DEFAULT_TITLE = "TD Deep Research";
+const APP_NAME = "TJ Deep Research";
+const APP_DEFAULT_TITLE = "TJ Deep Research";
 const APP_TITLE_TEMPLATE = "%s - PWA App";
 const APP_DESCRIPTION =
   "Deep Research for growth equity investment.";

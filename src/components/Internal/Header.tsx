@@ -18,7 +18,7 @@ function Header() {
           <small className="ml-2 font-normal text-base">v{VERSION}</small>
         </h1>
         <div className="flex">
-          <a href="https://github.com/tdrags" target="_blank">
+          <a href="https://github.com/tajmahal226" target="_blank">
             <Button
               className="h-8 w-8"
               title={t("openSource")}

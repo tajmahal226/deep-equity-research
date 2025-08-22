@@ -58,9 +58,9 @@ function Home() {
         </ResearchTabs>
       </main>
       <footer className="my-4 text-center text-sm text-gray-600 print:hidden">
-        <a href="https://github.com/tdrags" target="_blank">
+        <a href="https://github.com/tajmahal226" target="_blank">
           {t("copyright", {
-            name: "tdrags",
+            name: "tajmahal226",
           })}
         </a>
       </footer>
