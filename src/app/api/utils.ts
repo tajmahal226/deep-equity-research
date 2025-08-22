@@ -15,6 +15,13 @@ const DEEPSEEK_API_BASE_URL =
 const XAI_API_BASE_URL = process.env.XAI_API_BASE_URL || "https://api.x.ai";
 const MISTRAL_API_BASE_URL =
   process.env.MISTRAL_API_BASE_URL || "https://api.mistral.ai";
+const COHERE_API_BASE_URL =
+  process.env.COHERE_API_BASE_URL || "https://api.cohere.ai";
+const TOGETHER_API_BASE_URL =
+  process.env.TOGETHER_API_BASE_URL || "https://api.together.xyz";
+const GROQ_API_BASE_URL = process.env.GROQ_API_BASE_URL || "https://api.groq.com";
+const PERPLEXITY_API_BASE_URL =
+  process.env.PERPLEXITY_API_BASE_URL || "https://api.perplexity.ai";
 const AZURE_API_BASE_URL = `https://${process.env.AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments`;
 const OPENAI_COMPATIBLE_API_BASE_URL =
   process.env.OPENAI_COMPATIBLE_API_BASE_URL || "";
@@ -42,6 +49,10 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
 const XAI_API_KEY = process.env.XAI_API_KEY || "";
 const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY || "";
+const COHERE_API_KEY = process.env.COHERE_API_KEY || "";
+const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY || "";
+const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
+const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY || "";
 const AZURE_API_KEY = process.env.AZURE_API_KEY || "";
 const OPENAI_COMPATIBLE_API_KEY = process.env.OPENAI_COMPATIBLE_API_KEY || "";
 // Search provider API key
@@ -64,6 +75,14 @@ export function getAIProviderBaseURL(provider: string) {
       return completePath(XAI_API_BASE_URL, "/v1");
     case "mistral":
       return completePath(MISTRAL_API_BASE_URL, "/v1");
+    case "cohere":
+      return completePath(COHERE_API_BASE_URL, "/v1");
+    case "together":
+      return completePath(TOGETHER_API_BASE_URL, "/v1");
+    case "groq":
+      return completePath(GROQ_API_BASE_URL, "/openai/v1");
+    case "perplexity":
+      return completePath(PERPLEXITY_API_BASE_URL, "/");
     case "azure":
       return AZURE_API_BASE_URL;
     case "openrouter":
@@ -93,6 +112,14 @@ export function getAIProviderApiKey(provider: string) {
       return XAI_API_KEY;
     case "mistral":
       return MISTRAL_API_KEY;
+    case "cohere":
+      return COHERE_API_KEY;
+    case "together":
+      return TOGETHER_API_KEY;
+    case "groq":
+      return GROQ_API_KEY;
+    case "perplexity":
+      return PERPLEXITY_API_KEY;
     case "azure":
       return AZURE_API_KEY;
     case "openrouter":
