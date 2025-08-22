@@ -5,9 +5,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/<org>/deep-equity-research.git"
+    "url": "https://github.com/tdrags/deep-equity-research.git"
   },
-  "bugs": "https://github.com/<org>/deep-equity-research/issues",
+  "bugs": "https://github.com/tdrags/deep-equity-research/issues",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
