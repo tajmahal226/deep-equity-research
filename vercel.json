@@ -2,6 +2,8 @@
   "installCommand": "pnpm install",
   "buildCommand": "pnpm build",
   "functions": {
-    "nodeVersion": "18.18.0"
+    "api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
   }
 }
