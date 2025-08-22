@@ -47,9 +47,6 @@ const SEARXNG_API_BASE_URL =
 export default async function Config(phase: string) {
   const nextConfig: NextConfig = {
     /* config options here */
-    experimental: {
-      reactCompiler: process.env.REACT_COMPILER === "true",
-    },
     env: {
       NEXT_PUBLIC_VERSION: pkg.version,
     },
