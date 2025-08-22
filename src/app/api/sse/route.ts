@@ -33,6 +33,9 @@ export async function POST(req: NextRequest) {
     maxResult,
     enableCitationImage = true,
     enableReferences = true,
+    // Client-side API keys
+    aiApiKey,
+    searchApiKey,
   } = await req.json();
 
   const encoder = new TextEncoder();
@@ -52,14 +55,14 @@ export async function POST(req: NextRequest) {
         language,
         AIProvider: {
           baseURL: getAIProviderBaseURL(provider),
-          apiKey: multiApiKeyPolling(getAIProviderApiKey(provider)),
+          apiKey: multiApiKeyPolling(aiApiKey || getAIProviderApiKey(provider)),
           provider,
           thinkingModel,
           taskModel,
         },
         searchProvider: {
           baseURL: getSearchProviderBaseURL(searchProvider),
-          apiKey: multiApiKeyPolling(getSearchProviderApiKey(searchProvider)),
+          apiKey: multiApiKeyPolling(searchApiKey || getSearchProviderApiKey(searchProvider)),
           provider: searchProvider,
           maxResult,
         },

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSettingStore } from "@/store/setting";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Search, Loader2, BarChart, PieChart, LineChart, Download, FileText, Signature } from "lucide-react";
@@ -23,6 +24,7 @@ const MagicDown = dynamic(() => import("@/components/MagicDown"));
 
 export default function MarketResearch() {
   const { t } = useTranslation();
+  const settingStore = useSettingStore();
   const [marketTopic, setMarketTopic] = useState("");
   const [researchType, setResearchType] = useState("industry");
   const [timeframe, setTimeframe] = useState("current");
@@ -63,15 +65,34 @@ export default function MarketResearch() {
     setProgressMessage("");
 
     try {
+      // Get current AI provider and model settings from user configuration
+      const currentProvider = settingStore.provider;
+      const thinkingModel = settingStore[`${currentProvider}ThinkingModel` as keyof typeof settingStore] as string;
+      const taskModel = settingStore[`${currentProvider}NetworkingModel` as keyof typeof settingStore] as string;
+
+      // Create market research query with context
+      const marketQuery = `${marketTopic}${specificQuestions ? `\n\nSpecific focus areas: ${specificQuestions}` : ''}`;
+
+      // Get API keys from user settings
+      const aiApiKey = settingStore[`${currentProvider}ApiKey` as keyof typeof settingStore] as string;
+      const searchApiKey = settingStore[`${settingStore.mode}ApiKey` as keyof typeof settingStore] as string;
+
       const requestBody = {
-        topic: marketTopic,
-        type: researchType,
-        timeframe,
-        questions: specificQuestions,
+        query: marketQuery,
+        provider: currentProvider,
+        thinkingModel: thinkingModel,
+        taskModel: taskModel,
+        searchProvider: settingStore.mode,
         language: "en-US",
+        maxResult: 10,
+        enableCitationImage: true,
+        enableReferences: true,
+        // Pass user's API keys
+        aiApiKey: aiApiKey,
+        searchApiKey: searchApiKey,
       };
 
-      const response = await fetch("/api/market-research", {
+      const response = await fetch("/api/sse", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
