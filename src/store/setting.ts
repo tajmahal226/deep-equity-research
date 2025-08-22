@@ -86,6 +86,8 @@ export interface SettingStore {
   alphaVantageApiProxy: string;
   yahooFinanceApiKey: string;
   yahooFinanceApiProxy: string;
+  exaNeuralSearchApiKey: string;
+  exaNeuralSearchApiProxy: string;
   language: string;
   theme: string;
   debug: "enable" | "disable";
@@ -185,6 +187,8 @@ export const defaultValues: SettingStore = {
   alphaVantageApiProxy: "",
   yahooFinanceApiKey: "",
   yahooFinanceApiProxy: "",
+  exaNeuralSearchApiKey: "",
+  exaNeuralSearchApiProxy: "",
   language: "",
   theme: "system",
   debug: "disable",

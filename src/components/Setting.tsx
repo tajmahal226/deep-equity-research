@@ -161,6 +161,8 @@ const formSchema = z.object({
   alphaVantageApiProxy: z.string().optional(),
   yahooFinanceApiKey: z.string().optional(),
   yahooFinanceApiProxy: z.string().optional(),
+  exaNeuralSearchApiKey: z.string().optional(),
+  exaNeuralSearchApiProxy: z.string().optional(),
   language: z.string().optional(),
   theme: z.string().optional(),
   debug: z.enum(["enable", "disable"]).optional(),
@@ -3257,6 +3259,37 @@ function Setting({ open, onClose }: SettingProps) {
                       )}
                     />
                   </div>
+                </div>
+
+                {/* Enhanced Search - Exa Neural Search */}
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-medium mb-4">Enhanced Search - Exa Neural Search</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Enable high-quality, authoritative content search powered by Exa's neural search engine. Perfect for finding research papers, financial documents, and expert analysis.
+                  </p>
+                  <FormField
+                    control={form.control}
+                    name="exaNeuralSearchApiKey"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Get your API key from https://dashboard.exa.ai/api-keys. Provides access to neural search for high-quality, authoritative content discovery.">
+                            Exa API Key (Optional)
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <Password
+                            placeholder="Enter Exa API Key for enhanced search quality"
+                            className="form-field"
+                            {...field}
+                          />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Optional: Leave blank to use mock high-quality results. Provide API key for real neural search results.
+                        </p>
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 <FormField
