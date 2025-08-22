@@ -6,6 +6,10 @@ export const ANTHROPIC_BASE_URL = "https://api.anthropic.com";
 export const DEEPSEEK_BASE_URL = "https://api.deepseek.com";
 export const XAI_BASE_URL = "https://api.x.ai";
 export const MISTRAL_BASE_URL = "https://api.mistral.ai";
+export const COHERE_BASE_URL = "https://api.cohere.ai";
+export const TOGETHER_BASE_URL = "https://api.together.xyz";
+export const GROQ_BASE_URL = "https://api.groq.com";
+export const PERPLEXITY_BASE_URL = "https://api.perplexity.ai";
 export const POLLINATIONS_BASE_URL = "https://text.pollinations.ai/openai";
 export const OLLAMA_BASE_URL = "http://localhost:11434";
 // Search engine API Base URL

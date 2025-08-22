@@ -30,6 +30,22 @@ export interface SettingStore {
   mistralApiProxy: string;
   mistralThinkingModel: string;
   mistralNetworkingModel: string;
+  cohereApiKey: string;
+  cohereApiProxy: string;
+  cohereThinkingModel: string;
+  cohereNetworkingModel: string;
+  togetherApiKey: string;
+  togetherApiProxy: string;
+  togetherThinkingModel: string;
+  togetherNetworkingModel: string;
+  groqApiKey: string;
+  groqApiProxy: string;
+  groqThinkingModel: string;
+  groqNetworkingModel: string;
+  perplexityApiKey: string;
+  perplexityApiProxy: string;
+  perplexityThinkingModel: string;
+  perplexityNetworkingModel: string;
   azureApiKey: string;
   azureResourceName: string;
   azureApiVersion: string;
@@ -110,6 +126,22 @@ export const defaultValues: SettingStore = {
   mistralApiProxy: "",
   mistralThinkingModel: "mistral-large-latest",
   mistralNetworkingModel: "mistral-medium-latest",
+  cohereApiKey: "",
+  cohereApiProxy: "",
+  cohereThinkingModel: "command-r-plus",
+  cohereNetworkingModel: "command-r",
+  togetherApiKey: "",
+  togetherApiProxy: "",
+  togetherThinkingModel: "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+  togetherNetworkingModel: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+  groqApiKey: "",
+  groqApiProxy: "",
+  groqThinkingModel: "llama-3.1-70b-versatile",
+  groqNetworkingModel: "llama-3.1-8b-instant",
+  perplexityApiKey: "",
+  perplexityApiProxy: "",
+  perplexityThinkingModel: "llama-3.1-sonar-large-128k-online",
+  perplexityNetworkingModel: "llama-3.1-sonar-small-128k-online",
   azureApiKey: "",
   azureResourceName: "",
   azureApiVersion: "",
