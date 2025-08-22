@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { logger } from "@/utils/logger";
+import { useSettingStore } from "@/store/setting";
 
 // Import MagicDown for rendering markdown
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
@@ -79,6 +80,7 @@ interface BulkProgress {
 
 export default function BulkCompanyResearch() {
   const { t } = useTranslation();
+  const settingStore = useSettingStore();
   
   // State management
   const [companyNames, setCompanyNames] = useState<string>(""); // Raw input from user
@@ -145,10 +147,24 @@ export default function BulkCompanyResearch() {
     setProgress(null);
     
     try {
+      // Get current AI provider and model settings from user configuration
+      const currentProvider = settingStore.provider;
+      const thinkingModel = settingStore[`${currentProvider}ThinkingModel` as keyof typeof settingStore] as string;
+      const taskModel = settingStore[`${currentProvider}NetworkingModel` as keyof typeof settingStore] as string;
+
       // Prepare the request body
       const requestBody = {
         companies: parsedCompanies,
         language: "en-US", // You can get this from i18n if needed
+        
+        // Pass user's configured AI models
+        thinkingProviderId: currentProvider,
+        thinkingModelId: thinkingModel,
+        taskProviderId: currentProvider, 
+        taskModelId: taskModel,
+        
+        // Pass search provider if configured
+        searchProviderId: settingStore.mode,
       };
       
       // Make the API call

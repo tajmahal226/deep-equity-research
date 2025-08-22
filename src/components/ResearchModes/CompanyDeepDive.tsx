@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { downloadFile } from "@/utils/file";
 import { logger } from "@/utils/logger";
+import { useSettingStore } from "@/store/setting";
 
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
 
@@ -25,6 +26,7 @@ type SearchDepth = "fast" | "medium" | "deep";
 
 export default function CompanyDeepDive() {
   const { t } = useTranslation();
+  const settingStore = useSettingStore();
   const [companyName, setCompanyName] = useState("");
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [industry, setIndustry] = useState("");
@@ -104,7 +106,12 @@ export default function CompanyDeepDive() {
     setSearchResults(null); // Clear previous results
     
     try {
-      // Prepare the request body with all company information
+      // Get current AI provider and model settings from user configuration
+      const currentProvider = settingStore.provider;
+      const thinkingModel = settingStore[`${currentProvider}ThinkingModel` as keyof typeof settingStore] as string;
+      const taskModel = settingStore[`${currentProvider}NetworkingModel` as keyof typeof settingStore] as string;
+
+      // Prepare the request body with all company information and user's AI settings
       const requestBody = {
         companyName,
         companyWebsite,
@@ -115,6 +122,15 @@ export default function CompanyDeepDive() {
         additionalContext,
         searchDepth,
         language: "en-US", // You can get this from i18n if needed
+        
+        // Pass user's configured AI models
+        thinkingProviderId: currentProvider,
+        thinkingModelId: thinkingModel,
+        taskProviderId: currentProvider, 
+        taskModelId: taskModel,
+        
+        // Pass search provider if configured
+        searchProviderId: settingStore.mode,
       };
       
       // Make the API call to our company research endpoint
