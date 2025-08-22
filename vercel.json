@@ -2,6 +2,6 @@
   "installCommand": "pnpm install",
   "buildCommand": "pnpm build",
   "functions": {
-    "nodeVersion": "18.x"
+    "nodeVersion": "18.18.0"
   }
 }
