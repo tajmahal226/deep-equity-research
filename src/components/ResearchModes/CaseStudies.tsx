@@ -119,19 +119,22 @@ export default function CaseStudies() {
 
   // Filter case studies
   const filteredCaseStudies = useMemo(() => {
-    let filtered = caseStudies;
-
-    if (searchQuery) {
-      filtered = searchCaseStudies(searchQuery);
-    } else {
+    const getFilteredResults = () => {
+      if (searchQuery) {
+        return searchCaseStudies(searchQuery);
+      }
+      
+      let filtered = caseStudies;
       if (selectedCategory !== "all") {
         filtered = getCaseStudiesByCategory(selectedCategory);
       }
       if (selectedStatus !== "all") {
         filtered = getCaseStudiesByStatus(selectedStatus as CaseStudy["status"]);
       }
-    }
+      return filtered;
+    };
 
+    const filtered = getFilteredResults();
     return filtered.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   }, [caseStudies, searchQuery, selectedCategory, selectedStatus, searchCaseStudies, getCaseStudiesByCategory, getCaseStudiesByStatus]);
 
