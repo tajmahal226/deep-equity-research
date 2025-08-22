@@ -100,7 +100,7 @@ export default function PromptLibrary() {
 
   // Filter and sort prompts
   const filteredPrompts = () => {
-    let filtered = searchQuery
+    const filtered = searchQuery
       ? searchPrompts(searchQuery)
       : selectedCategory === "all"
       ? prompts
