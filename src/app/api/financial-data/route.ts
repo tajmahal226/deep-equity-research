@@ -108,10 +108,11 @@ async function fetchRealStockData(ticker: string, apiKey: string) {
 }
 
 // Helper function to fetch stock data from Yahoo Finance (using yfinance-like API)
-async function fetchYahooFinanceStock(ticker: string, apiKey?: string) {
+async function fetchYahooFinanceStock(ticker: string, _apiKey?: string) {
   try {
     // Note: Yahoo Finance doesn't require API key for basic quotes but might for higher limits
     // Using a free endpoint - in production, you might want to use a paid service like RapidAPI
+    // apiKey parameter is kept for future paid API integration but currently unused
     const response = await fetch(
       `https://query1.finance.yahoo.com/v8/finance/chart/${ticker.toUpperCase()}?interval=1d&range=1d`
     );
