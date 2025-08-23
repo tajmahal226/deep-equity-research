@@ -22,7 +22,8 @@ const TOGETHER_API_BASE_URL =
 const GROQ_API_BASE_URL = process.env.GROQ_API_BASE_URL || "https://api.groq.com";
 const PERPLEXITY_API_BASE_URL =
   process.env.PERPLEXITY_API_BASE_URL || "https://api.perplexity.ai";
-const AZURE_API_BASE_URL = `https://${process.env.AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments`;
+const AZURE_RESOURCE_NAME = process.env.AZURE_RESOURCE_NAME;
+const AZURE_API_BASE_URL = AZURE_RESOURCE_NAME ? `https://${AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments` : "";
 const OPENAI_COMPATIBLE_API_BASE_URL =
   process.env.OPENAI_COMPATIBLE_API_BASE_URL || "";
 const POLLINATIONS_API_BASE_URL =

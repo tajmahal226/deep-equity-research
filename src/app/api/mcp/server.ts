@@ -697,6 +697,9 @@ export function initMcpServer() {
       endPublishedDate: z.string().optional().describe("End date for content (YYYY-MM-DD format)"),
     },
     async ({ query, category, numResults, includeDomains, excludeDomains, startPublishedDate, endPublishedDate }, { signal }) => {
+      // TODO: implement filtering with these parameters in future
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _unused = { includeDomains, excludeDomains, startPublishedDate, endPublishedDate };
       if (signal?.aborted) {
         throw new Error("Request was aborted");
       }
@@ -735,7 +738,8 @@ export function initMcpServer() {
         ];
 
         // Filter by category-specific domains in a real implementation
-        const categoryDomains = {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _categoryDomains = {
           research: ['arxiv.org', 'pubmed.ncbi.nlm.nih.gov', 'jstor.org'],
           financial: ['sec.gov', 'bloomberg.com', 'reuters.com', 'morningstar.com'],
           academic: ['scholar.google.com', 'researchgate.net', 'academia.edu'],

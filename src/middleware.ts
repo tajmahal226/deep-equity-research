@@ -47,6 +47,24 @@ const ERRORS = {
 
 export async function middleware(request: NextRequest) {
   if (NODE_ENV === "production") console.debug(request);
+  
+  // Read request body once to avoid multiple consumption issues
+  let requestBody = null;
+  let clonedRequest = request;
+  if (request.method.toUpperCase() !== "GET") {
+    try {
+      const body = await request.text();
+      requestBody = body ? JSON.parse(body) : {};
+      // Create a new request with the body intact for downstream processing
+      clonedRequest = new NextRequest(request.url, {
+        method: request.method,
+        headers: request.headers,
+        body: body || undefined,
+      });
+    } catch {
+      requestBody = {};
+    }
+  }
 
   const disabledAIProviders =
     DISABLED_AI_PROVIDER.length > 0 ? DISABLED_AI_PROVIDER.split(",") : [];
@@ -69,9 +87,9 @@ export async function middleware(request: NextRequest) {
       request.nextUrl.pathname.includes(`models/${disabledModel}:`)
     );
   };
-  const hasDisabledAIModel = async () => {
+  const hasDisabledAIModel = (body: any = {}) => {
     if (request.method.toUpperCase() === "GET") return false;
-    const { model = "" } = await request.json();
+    const { model = "" } = body;
     const { availableModelList, disabledModelList } = getCustomModelList(
       MODEL_LIST.length > 0 ? MODEL_LIST.split(",") : []
     );
@@ -125,7 +143,7 @@ export async function middleware(request: NextRequest) {
   }
   if (request.nextUrl.pathname.startsWith("/api/ai/openrouter")) {
     const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = await hasDisabledAIModel();
+    const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
         authorization.substring(7),
@@ -165,7 +183,7 @@ export async function middleware(request: NextRequest) {
   }
   if (request.nextUrl.pathname.startsWith("/api/ai/openaicompatible")) {
     const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = await hasDisabledAIModel();
+    const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
         authorization.substring(7),
@@ -205,7 +223,7 @@ export async function middleware(request: NextRequest) {
   }
   if (request.nextUrl.pathname.startsWith("/api/ai/openai")) {
     const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = await hasDisabledAIModel();
+    const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
         authorization.substring(7),
@@ -245,7 +263,7 @@ export async function middleware(request: NextRequest) {
   }
   if (request.nextUrl.pathname.startsWith("/api/ai/anthropic")) {
     const authorization = request.headers.get("x-api-key") || "";
-    const isDisabledModel = await hasDisabledAIModel();
+    const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(authorization, accessPassword, Date.now()) ||
       disabledAIProviders.includes("anthropic") ||
@@ -285,7 +303,7 @@ export async function middleware(request: NextRequest) {
   }
   if (request.nextUrl.pathname.startsWith("/api/ai/deepseek")) {
     const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = await hasDisabledAIModel();
+    const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
         authorization.substring(7),
@@ -325,7 +343,7 @@ export async function middleware(request: NextRequest) {
   }
   if (request.nextUrl.pathname.startsWith("/api/ai/xai")) {
     const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = await hasDisabledAIModel();
+    const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
         authorization.substring(7),
@@ -365,7 +383,7 @@ export async function middleware(request: NextRequest) {
   }
   if (request.nextUrl.pathname.startsWith("/api/ai/mistral")) {
     const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = await hasDisabledAIModel();
+    const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
         authorization.substring(7),
@@ -405,7 +423,7 @@ export async function middleware(request: NextRequest) {
   }
   if (request.nextUrl.pathname.startsWith("/api/ai/azure")) {
     const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = await hasDisabledAIModel();
+    const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
         authorization.substring(7),
@@ -446,7 +464,7 @@ export async function middleware(request: NextRequest) {
   // The pollinations model only verifies access to the backend API
   if (request.nextUrl.pathname.startsWith("/api/ai/pollinations")) {
     const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = await hasDisabledAIModel();
+    const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
         authorization.substring(7),
@@ -476,7 +494,7 @@ export async function middleware(request: NextRequest) {
   // The ollama model only verifies access to the backend API
   if (request.nextUrl.pathname.startsWith("/api/ai/ollama")) {
     const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = await hasDisabledAIModel();
+    const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
         authorization.substring(7),
@@ -765,5 +783,7 @@ export async function middleware(request: NextRequest) {
       });
     }
   }
-  return NextResponse.next();
+  return NextResponse.next({
+    request: clonedRequest,
+  });
 }
