@@ -738,7 +738,6 @@ export function initMcpServer() {
         ];
 
         // Filter by category-specific domains in a real implementation
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _categoryDomains = {
           research: ['arxiv.org', 'pubmed.ncbi.nlm.nih.gov', 'jstor.org'],
           financial: ['sec.gov', 'bloomberg.com', 'reuters.com', 'morningstar.com'],
@@ -774,7 +773,7 @@ export function initMcpServer() {
         }
 
         // Use category-specific domains for enhanced relevance
-        const relevantDomains = categoryDomains[category as keyof typeof categoryDomains] || [];
+        const relevantDomains = _categoryDomains[category as keyof typeof _categoryDomains] || [];
         
         const results = filteredResults.slice(0, numResults).map((result, index) => ({
           ...result,
