@@ -34,6 +34,18 @@ async function handler(req: NextRequest) {
       const model = body.model;
       const currentEndpoint = path.join("/");
       
+      // Log model detection for debugging
+      console.log(`OpenAI API: Model=${model}, Endpoint=${currentEndpoint}, IsCompletions=${isCompletionsModel(model)}`);
+      
+      // Handle undefined or missing model names
+      if (!model || model === "undefined" || model === "") {
+        console.error("OpenAI API: Model name is undefined or empty", { body, path });
+        return NextResponse.json(
+          { code: 400, message: "Model name is required" },
+          { status: 400 }
+        );
+      }
+      
       // Check if we need to route o3 models to completions endpoint
       if (isCompletionsModel(model) && currentEndpoint.includes("chat/completions")) {
         // Route to completions endpoint instead

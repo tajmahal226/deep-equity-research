@@ -100,12 +100,17 @@ export function filterOpenAIModelList(modelList: string[]) {
 
 // Check if a model uses the completions endpoint instead of chat/completions
 export function isCompletionsModel(model: string) {
+  if (!model || model === "undefined") {
+    return false;
+  }
+  
   return (
     model.includes("o3-pro") ||
     model.includes("o3-mini") ||
+    model.includes("o3") ||
     model.startsWith("text-") ||
     model.startsWith("code-") ||
-    model.includes("instruct") && !model.includes("gpt")
+    (model.includes("instruct") && !model.includes("gpt"))
   );
 }
 
