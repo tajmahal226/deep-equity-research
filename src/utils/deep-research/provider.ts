@@ -14,35 +14,65 @@ export function filterModelSettings(provider: string, model: string, settings: a
   const filteredSettings = { ...settings };
   
   switch (provider) {
+    case "openai":
+      // OpenAI API parameters based on official documentation
+      // For responses API (o3, GPT-5): temperature must be 1 or omitted
+      if (model.startsWith("o3") || model.startsWith("gpt-5") || model.includes("o3-")) {
+        // Responses API only supports temperature = 1
+        if (filteredSettings.temperature !== undefined && filteredSettings.temperature !== 1) {
+          filteredSettings.temperature = 1;
+        }
+      }
+      // Regular OpenAI models support temperature 0-2
+      break;
+      
     case "google":
-      // Google models may not support all OpenAI parameters
-      // Remove unsupported parameters if needed
+      // Google Gemini models support temperature but different parameter name
+      // AI SDK should handle this, but some models may not support it
       break;
+      
     case "anthropic":
-      // Anthropic supports most standard parameters
-      break;
-    case "deepseek":
-      // Some DeepSeek models may have parameter restrictions
-      if (model.includes("reasoner")) {
-        // Reasoning models might have different parameter support
+      // Anthropic Claude supports temperature 0-1
+      if (filteredSettings.temperature !== undefined && filteredSettings.temperature > 1) {
+        filteredSettings.temperature = 1;
       }
       break;
-    case "xai":
-      // xAI Grok models parameter support
+      
+    case "deepseek":
+      // DeepSeek models support temperature
+      // Reasoning models may have specific requirements
       break;
+      
+    case "xai":
+      // xAI Grok models support temperature
+      break;
+      
     case "azure":
       // Azure OpenAI uses same parameters as OpenAI
+      if (model.startsWith("o3") || model.startsWith("gpt-5") || model.includes("o3-")) {
+        if (filteredSettings.temperature !== undefined && filteredSettings.temperature !== 1) {
+          filteredSettings.temperature = 1;
+        }
+      }
       break;
+      
     case "mistral":
-      // Mistral parameter support
+      // Mistral models support temperature 0-1
+      if (filteredSettings.temperature !== undefined && filteredSettings.temperature > 1) {
+        filteredSettings.temperature = 1;
+      }
       break;
+      
     case "openrouter":
-      // OpenRouter proxies to various models, parameters depend on underlying model
+      // OpenRouter proxies to various models - use conservative settings
       break;
+      
     case "ollama":
-      // Local Ollama models may have different parameter support
+      // Local Ollama models generally support temperature
       break;
+      
     default:
+      // For unknown providers, be conservative with parameters
       break;
   }
   

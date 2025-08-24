@@ -36,7 +36,7 @@ import {
   getSearchProviderApiKey 
 } from "@/app/api/utils";
 import { streamText, generateText } from "ai";
-import { createAIProvider } from "@/utils/deep-research/provider";
+import { createAIProvider, filterModelSettings } from "@/utils/deep-research/provider";
 import { createSearchProvider } from "@/utils/deep-research/search";
 import { logger } from "@/utils/logger";
 import { ThinkTagStreamProcessor } from "@/utils/text";
@@ -271,6 +271,34 @@ export class CompanyDeepResearch {
       this.config.onError?.(new Error(`Initialization failed: ${error}`));
       throw error;
     }
+  }
+  
+  /**
+   * Get safe parameters for the thinking model
+   */
+  private getThinkingModelSettings(baseSettings: any) {
+    if (!this.config.thinkingModelConfig?.providerId || !this.config.thinkingModelConfig?.modelId) {
+      return baseSettings; // Return unfiltered if config is missing
+    }
+    return filterModelSettings(
+      this.config.thinkingModelConfig.providerId,
+      this.config.thinkingModelConfig.modelId,
+      baseSettings
+    );
+  }
+
+  /**
+   * Get safe parameters for the task model
+   */
+  private getTaskModelSettings(baseSettings: any) {
+    if (!this.config.taskModelConfig?.providerId || !this.config.taskModelConfig?.modelId) {
+      return baseSettings; // Return unfiltered if config is missing
+    }
+    return filterModelSettings(
+      this.config.taskModelConfig.providerId,
+      this.config.taskModelConfig.modelId,
+      baseSettings
+    );
   }
   
   /**
@@ -546,8 +574,7 @@ Provide a brief rationale for which sections should be prioritized and any compa
       const { text: planRationale } = await generateText({
         model: this.taskModel,
         prompt: planPrompt,
-        temperature: 0.3,
-        maxTokens: 1000,
+        ...this.getTaskModelSettings({ temperature: 0.3, maxTokens: 1000 }),
       });
       
       // Log the plan rationale for debugging
@@ -776,8 +803,7 @@ Be specific and include data points, dates, and concrete details when available.
         const { text: learning } = await generateText({
           model: this.taskModel,
           prompt: learningPrompt,
-          temperature: 0.3, // Low temperature for factual synthesis
-          maxTokens: 1000,
+          ...this.getTaskModelSettings({ temperature: 0.3, maxTokens: 1000 }), // Low temperature for factual synthesis
         });
         
         // Step 3: Collect sources and format them
@@ -829,8 +855,7 @@ Be specific and include data points, dates, and concrete details when available.
       const { text } = await generateText({
         model: this.taskModel,
         prompt: prompt,
-        temperature: 0.7, // Some creativity but mostly factual
-        maxTokens: 4000, // Enough for a comprehensive quick analysis
+        ...this.getTaskModelSettings({ temperature: 0.7, maxTokens: 4000 }), // Some creativity but mostly factual
       });
       
       // Send the complete report
@@ -906,8 +931,7 @@ Keep the analysis concise but insightful, focusing on the most important investm
       const result = streamText({
         model: this.thinkingModel,
         prompt: mediumPrompt,
-        temperature: 0.5,
-        maxTokens: 5000, // Smaller than deep report
+        ...this.getThinkingModelSettings({ temperature: 0.5, maxTokens: 5000 }), // Smaller than deep report
       });
       
       // Stream the report
@@ -1017,8 +1041,7 @@ IMPORTANT: Create a thorough, professional investment analysis that would prepar
       const result = streamText({
         model: this.thinkingModel,
         prompt: reportPrompt,
-        temperature: 0.5, // Balanced for coherent but insightful analysis
-        maxTokens: 8000, // Allow for comprehensive report
+        ...this.getThinkingModelSettings({ temperature: 0.5, maxTokens: 8000 }), // Balanced for coherent but insightful analysis
       });
       
       const textStream = result.textStream;
