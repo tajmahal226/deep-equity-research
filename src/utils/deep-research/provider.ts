@@ -21,6 +21,7 @@ export async function createAIProvider({
       baseURL,
       apiKey,
     });
+    // Google's newer models may support thinking/reasoning modes
     return google(model, settings);
   } else if (provider === "openai") {
     const { createOpenAI } = await import("@ai-sdk/openai");
@@ -43,6 +44,7 @@ export async function createAIProvider({
       apiKey,
       headers,
     });
+    // Anthropic Claude models support reasoning but typically don't need .responses()
     return anthropic(model, settings);
   } else if (provider === "deepseek") {
     const { createDeepSeek } = await import("@ai-sdk/deepseek");
@@ -50,6 +52,7 @@ export async function createAIProvider({
       baseURL,
       apiKey,
     });
+    // DeepSeek reasoning models use standard interface
     return deepseek(model, settings);
   } else if (provider === "xai") {
     const { createXai } = await import("@ai-sdk/xai");

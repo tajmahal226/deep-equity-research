@@ -173,6 +173,15 @@ export class CompanyDeepResearch {
           if (thinkingProvider === "openai" && (thinkingModel.includes("o3") || thinkingModel.startsWith("gpt-5"))) {
             throw new Error(`No OpenAI API key found for ${thinkingModel}. Advanced OpenAI models (GPT-5, o3 series) require a valid API key. Please click the settings gear icon in the top-right corner to enter your OpenAI API key, or set the OPENAI_API_KEY environment variable.`);
           }
+          if (thinkingProvider === "anthropic") {
+            throw new Error(`No Anthropic API key found for Claude ${thinkingModel}. Please click the settings gear icon in the top-right corner to enter your Anthropic API key, or set the ANTHROPIC_API_KEY environment variable.`);
+          }
+          if (thinkingProvider === "deepseek" && thinkingModel.includes("reasoner")) {
+            throw new Error(`No DeepSeek API key found for reasoning model ${thinkingModel}. Please click the settings gear icon in the top-right corner to enter your DeepSeek API key, or set the DEEPSEEK_API_KEY environment variable.`);
+          }
+          if (thinkingProvider === "xai") {
+            throw new Error(`No xAI API key found for Grok ${thinkingModel}. Please click the settings gear icon in the top-right corner to enter your xAI API key, or set the XAI_API_KEY environment variable.`);
+          }
           throw new Error(`No API key found for ${thinkingProvider}. Please click the settings gear icon in the top-right corner to enter your ${thinkingProvider.toUpperCase()} API key.`);
         }
         
@@ -196,6 +205,15 @@ export class CompanyDeepResearch {
         if (!apiKey) {
           if (taskProvider === "openai" && (taskModel.includes("o3") || taskModel.startsWith("gpt-5"))) {
             throw new Error(`No OpenAI API key found for ${taskModel}. Advanced OpenAI models (GPT-5, o3 series) require a valid API key. Please click the settings gear icon in the top-right corner to enter your OpenAI API key, or set the OPENAI_API_KEY environment variable.`);
+          }
+          if (taskProvider === "anthropic") {
+            throw new Error(`No Anthropic API key found for Claude ${taskModel}. Please click the settings gear icon in the top-right corner to enter your Anthropic API key, or set the ANTHROPIC_API_KEY environment variable.`);
+          }
+          if (taskProvider === "deepseek") {
+            throw new Error(`No DeepSeek API key found for ${taskModel}. Please click the settings gear icon in the top-right corner to enter your DeepSeek API key, or set the DEEPSEEK_API_KEY environment variable.`);
+          }
+          if (taskProvider === "xai") {
+            throw new Error(`No xAI API key found for Grok ${taskModel}. Please click the settings gear icon in the top-right corner to enter your xAI API key, or set the XAI_API_KEY environment variable.`);
           }
           throw new Error(`No API key found for ${taskProvider}. Please click the settings gear icon in the top-right corner to enter your ${taskProvider.toUpperCase()} API key.`);
         }

@@ -27,6 +27,29 @@ import { createSSEStream, getSSEHeaders } from "@/utils/sse";
 import { nanoid } from "nanoid";
 import { logger } from "@/utils/logger";
 
+// Helper function to get default model configuration for any provider
+function getDefaultModelConfig(providerId?: string) {
+  switch (providerId) {
+    case "anthropic":
+      return { thinkingModel: "claude-3-5-sonnet-20241022", networkingModel: "claude-3-5-haiku-20241022" };
+    case "deepseek":
+      return { thinkingModel: "deepseek-reasoner", networkingModel: "deepseek-chat" };
+    case "mistral":
+      return { thinkingModel: "mistral-large-latest", networkingModel: "mistral-medium-latest" };
+    case "xai":
+      return { thinkingModel: "grok-2-1212", networkingModel: "grok-2-mini-1212" };
+    case "azure":
+      return { thinkingModel: "gpt-4o", networkingModel: "gpt-4o-mini" };
+    case "google":
+      return { thinkingModel: "gemini-2.0-flash-exp", networkingModel: "gemini-1.5-flash" };
+    case "openrouter":
+      return { thinkingModel: "anthropic/claude-3.5-sonnet", networkingModel: "anthropic/claude-3.5-haiku" };
+    case "openai":
+    default:
+      return { thinkingModel: "gpt-4o", networkingModel: "gpt-4o-mini" };
+  }
+}
+
 // Define the shape of our request body for TypeScript type safety
 interface CompanyResearchRequest {
   // Core company information
@@ -114,29 +137,32 @@ export async function POST(req: NextRequest) {
       searchDepth: body.searchDepth,
       language: body.language || "en-US",
       
-      // AI provider configuration
-      // Provide defaults for OpenAI if not specified by user
+      // AI provider configuration with smart defaults for all providers
       thinkingModelConfig: body.thinkingModelId && body.thinkingProviderId ? {
         modelId: body.thinkingModelId,
         providerId: body.thinkingProviderId,
         apiKey: body.thinkingApiKey,
-      } : {
-        // Default to OpenAI GPT-4o for thinking model
-        modelId: "gpt-4o",
-        providerId: "openai",
-        apiKey: undefined, // Will use server-side API key
-      },
+      } : (() => {
+        const defaults = getDefaultModelConfig(body.thinkingProviderId);
+        return {
+          modelId: defaults.thinkingModel,
+          providerId: body.thinkingProviderId || "openai",
+          apiKey: undefined, // Will use server-side API key
+        };
+      })(),
       
       taskModelConfig: body.taskModelId && body.taskProviderId ? {
         modelId: body.taskModelId,
         providerId: body.taskProviderId,
         apiKey: body.taskApiKey,
-      } : {
-        // Default to OpenAI GPT-4o for task model
-        modelId: "gpt-4o",
-        providerId: "openai", 
-        apiKey: undefined, // Will use server-side API key
-      },
+      } : (() => {
+        const defaults = getDefaultModelConfig(body.taskProviderId);
+        return {
+          modelId: defaults.networkingModel,
+          providerId: body.taskProviderId || "openai",
+          apiKey: undefined, // Will use server-side API key
+        };
+      })(),
       
       // Search provider configuration
       searchProviderId: body.searchProviderId,
