@@ -86,6 +86,8 @@ export function filterOpenAIModelList(modelList: string[]) {
     if (
       model.startsWith("gpt-4o") ||
       model.startsWith("gpt-4.1") ||
+      model.startsWith("gpt-5") ||
+      model.startsWith("o3") ||
       !model.includes("nano")
     ) {
       networkingModelList.push(model);
@@ -94,6 +96,35 @@ export function filterOpenAIModelList(modelList: string[]) {
     }
   });
   return [networkingModelList, nonNetworkingModelList];
+}
+
+// Check if a model uses the completions endpoint instead of chat/completions
+export function isCompletionsModel(model: string) {
+  return (
+    model.includes("o3-pro") ||
+    model.includes("o3-mini") ||
+    model.startsWith("text-") ||
+    model.startsWith("code-") ||
+    model.includes("instruct") && !model.includes("gpt")
+  );
+}
+
+// Check if a model has temperature restrictions
+export function hasTemperatureRestrictions(model: string) {
+  return (
+    model.startsWith("gpt-5") ||
+    model.includes("o3-") ||
+    model.includes("reasoning")
+  );
+}
+
+// Get allowed temperature for a model
+export function getAllowedTemperature(model: string, requestedTemp?: number) {
+  if (hasTemperatureRestrictions(model)) {
+    // GPT-5 and o3 models only support temperature = 1
+    return 1;
+  }
+  return requestedTemp;
 }
 
 export function filterPollinationsModelList(modelList: string[]) {

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { OPENAI_BASE_URL } from "@/constants/urls";
+import { isCompletionsModel, getAllowedTemperature } from "@/utils/model";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -27,7 +28,56 @@ async function handler(req: NextRequest) {
 
   try {
     let url = `${API_PROXY_BASE_URL}/${decodeURIComponent(path.join("/"))}`;
+    
+    // Handle endpoint routing based on model type
+    if (body && body.model) {
+      const model = body.model;
+      const currentEndpoint = path.join("/");
+      
+      // Check if we need to route o3 models to completions endpoint
+      if (isCompletionsModel(model) && currentEndpoint.includes("chat/completions")) {
+        // Route to completions endpoint instead
+        const newPath = path.map(segment => 
+          segment === "chat" ? "" : segment === "completions" ? "completions" : segment
+        ).filter(Boolean);
+        url = `${API_PROXY_BASE_URL}/${decodeURIComponent(newPath.join("/"))}`;
+        
+        // Transform chat format to completions format for o3 models
+        if (body.messages) {
+          // Convert messages to prompt format
+          let prompt = "";
+          body.messages.forEach((message: any) => {
+            if (message.role === "system") {
+              prompt += `System: ${message.content}\n\n`;
+            } else if (message.role === "user") {
+              prompt += `Human: ${message.content}\n\n`;
+            } else if (message.role === "assistant") {
+              prompt += `Assistant: ${message.content}\n\n`;
+            }
+          });
+          prompt += "Assistant:";
+          
+          body.prompt = prompt;
+          delete body.messages;
+        }
+      }
+      
+      // Handle temperature restrictions for GPT-5 and o3 models
+      if (body.temperature !== undefined) {
+        const allowedTemp = getAllowedTemperature(model, body.temperature);
+        if (allowedTemp !== body.temperature) {
+          body.temperature = allowedTemp;
+        }
+      }
+      
+      // Remove temperature if it's restricted and set to 0
+      if (body.temperature === 0 && (model.startsWith("gpt-5") || model.includes("o3-"))) {
+        delete body.temperature; // Let it use default
+      }
+    }
+    
     if (params) url += `?${params}`;
+    
     const payload: RequestInit = {
       method: req.method,
       headers: {
@@ -36,11 +86,12 @@ async function handler(req: NextRequest) {
       },
     };
     if (body) payload.body = JSON.stringify(body);
+    
     const response = await fetch(url, payload);
     return new NextResponse(response.body, response);
   } catch (error) {
     if (error instanceof Error) {
-      console.error(error);
+      console.error(`OpenAI API Error: ${error.message}`, { body, path });
       return NextResponse.json(
         { code: 500, message: error.message },
         { status: 500 }
