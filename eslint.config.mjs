@@ -14,6 +14,12 @@ const eslintConfig = [
   {
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+      "jsx-a11y/alt-text": [
+        "error",
+        {
+          elements: ["img", "object", "area", "input[type=\"image\"]"],
+        },
+      ],
     },
   },
 ];
