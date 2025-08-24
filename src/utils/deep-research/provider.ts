@@ -28,7 +28,12 @@ export async function createAIProvider({
       baseURL,
       apiKey,
     });
-    return model.startsWith("gpt-4o")
+    // Use .responses() method for newer OpenAI models that support reasoning/responses
+    return (model.startsWith("gpt-4o") || 
+            model.startsWith("gpt-5") || 
+            model.includes("o3-pro") || 
+            model.includes("o3-mini") ||
+            model.startsWith("o3"))
       ? openai.responses(model)
       : openai(model, settings);
   } else if (provider === "anthropic") {

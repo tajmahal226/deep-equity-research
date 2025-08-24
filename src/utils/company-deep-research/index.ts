@@ -149,7 +149,7 @@ export class CompanyDeepResearch {
     
     try {
       // Step 1: Determine AI provider and models
-      // Users must configure their API keys and models through the settings UI
+      // Users must configure their API keys and models through the settings UI, or we'll use defaults
       if (!this.config.thinkingModelConfig?.providerId || !this.config.thinkingModelConfig?.modelId) {
         throw new Error('Thinking model not configured. Please click the settings gear icon in the top-right corner to configure your AI provider, API key, and models.');
       }
@@ -170,6 +170,9 @@ export class CompanyDeepResearch {
         const apiKey = clientApiKey || serverApiKey;
         
         if (!apiKey) {
+          if (thinkingProvider === "openai" && (thinkingModel.includes("o3") || thinkingModel.startsWith("gpt-5"))) {
+            throw new Error(`No OpenAI API key found for ${thinkingModel}. Advanced OpenAI models (GPT-5, o3 series) require a valid API key. Please click the settings gear icon in the top-right corner to enter your OpenAI API key, or set the OPENAI_API_KEY environment variable.`);
+          }
           throw new Error(`No API key found for ${thinkingProvider}. Please click the settings gear icon in the top-right corner to enter your ${thinkingProvider.toUpperCase()} API key.`);
         }
         
@@ -191,6 +194,9 @@ export class CompanyDeepResearch {
         const apiKey = clientApiKey || serverApiKey;
         
         if (!apiKey) {
+          if (taskProvider === "openai" && (taskModel.includes("o3") || taskModel.startsWith("gpt-5"))) {
+            throw new Error(`No OpenAI API key found for ${taskModel}. Advanced OpenAI models (GPT-5, o3 series) require a valid API key. Please click the settings gear icon in the top-right corner to enter your OpenAI API key, or set the OPENAI_API_KEY environment variable.`);
+          }
           throw new Error(`No API key found for ${taskProvider}. Please click the settings gear icon in the top-right corner to enter your ${taskProvider.toUpperCase()} API key.`);
         }
         

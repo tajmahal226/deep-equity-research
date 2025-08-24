@@ -115,18 +115,28 @@ export async function POST(req: NextRequest) {
       language: body.language || "en-US",
       
       // AI provider configuration
-      // If not specified, the CompanyDeepResearch class will use defaults
+      // Provide defaults for OpenAI if not specified by user
       thinkingModelConfig: body.thinkingModelId && body.thinkingProviderId ? {
         modelId: body.thinkingModelId,
         providerId: body.thinkingProviderId,
         apiKey: body.thinkingApiKey,
-      } : undefined,
+      } : {
+        // Default to OpenAI GPT-4o for thinking model
+        modelId: "gpt-4o",
+        providerId: "openai",
+        apiKey: undefined, // Will use server-side API key
+      },
       
       taskModelConfig: body.taskModelId && body.taskProviderId ? {
         modelId: body.taskModelId,
         providerId: body.taskProviderId,
         apiKey: body.taskApiKey,
-      } : undefined,
+      } : {
+        // Default to OpenAI GPT-4o for task model
+        modelId: "gpt-4o",
+        providerId: "openai", 
+        apiKey: undefined, // Will use server-side API key
+      },
       
       // Search provider configuration
       searchProviderId: body.searchProviderId,
