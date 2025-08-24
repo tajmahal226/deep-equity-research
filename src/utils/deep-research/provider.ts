@@ -7,6 +7,48 @@ export interface AIProviderOptions {
   settings?: any;
 }
 
+// Helper function to filter unsupported parameters for each provider
+export function filterModelSettings(provider: string, model: string, settings: any) {
+  if (!settings) return settings;
+  
+  const filteredSettings = { ...settings };
+  
+  switch (provider) {
+    case "google":
+      // Google models may not support all OpenAI parameters
+      // Remove unsupported parameters if needed
+      break;
+    case "anthropic":
+      // Anthropic supports most standard parameters
+      break;
+    case "deepseek":
+      // Some DeepSeek models may have parameter restrictions
+      if (model.includes("reasoner")) {
+        // Reasoning models might have different parameter support
+      }
+      break;
+    case "xai":
+      // xAI Grok models parameter support
+      break;
+    case "azure":
+      // Azure OpenAI uses same parameters as OpenAI
+      break;
+    case "mistral":
+      // Mistral parameter support
+      break;
+    case "openrouter":
+      // OpenRouter proxies to various models, parameters depend on underlying model
+      break;
+    case "ollama":
+      // Local Ollama models may have different parameter support
+      break;
+    default:
+      break;
+  }
+  
+  return filteredSettings;
+}
+
 export async function createAIProvider({
   provider,
   apiKey,
@@ -22,7 +64,7 @@ export async function createAIProvider({
       apiKey,
     });
     // Google's newer models may support thinking/reasoning modes
-    return google(model, settings);
+    return google(model, filterModelSettings(provider, model, settings));
   } else if (provider === "openai") {
     const { createOpenAI } = await import("@ai-sdk/openai");
     const openai = createOpenAI({
@@ -36,7 +78,7 @@ export async function createAIProvider({
             model.includes("o3-mini") ||
             model.startsWith("o3"))
       ? openai.responses(model)
-      : openai(model, settings);
+      : openai(model, filterModelSettings(provider, model, settings));
   } else if (provider === "anthropic") {
     const { createAnthropic } = await import("@ai-sdk/anthropic");
     const anthropic = createAnthropic({
@@ -45,7 +87,7 @@ export async function createAIProvider({
       headers,
     });
     // Anthropic Claude models support reasoning but typically don't need .responses()
-    return anthropic(model, settings);
+    return anthropic(model, filterModelSettings(provider, model, settings));
   } else if (provider === "deepseek") {
     const { createDeepSeek } = await import("@ai-sdk/deepseek");
     const deepseek = createDeepSeek({
@@ -53,35 +95,35 @@ export async function createAIProvider({
       apiKey,
     });
     // DeepSeek reasoning models use standard interface
-    return deepseek(model, settings);
+    return deepseek(model, filterModelSettings(provider, model, settings));
   } else if (provider === "xai") {
     const { createXai } = await import("@ai-sdk/xai");
     const xai = createXai({
       baseURL,
       apiKey,
     });
-    return xai(model, settings);
+    return xai(model, filterModelSettings(provider, model, settings));
   } else if (provider === "mistral") {
     const { createMistral } = await import("@ai-sdk/mistral");
     const mistral = createMistral({
       baseURL,
       apiKey,
     });
-    return mistral(model, settings);
+    return mistral(model, filterModelSettings(provider, model, settings));
   } else if (provider === "azure") {
     const { createAzure } = await import("@ai-sdk/azure");
     const azure = createAzure({
       baseURL,
       apiKey,
     });
-    return azure(model, settings);
+    return azure(model, filterModelSettings(provider, model, settings));
   } else if (provider === "openrouter") {
     const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
     const openrouter = createOpenRouter({
       baseURL,
       apiKey,
     });
-    return openrouter(model, settings);
+    return openrouter(model, filterModelSettings(provider, model, settings));
   } else if (provider === "openaicompatible") {
     const { createOpenAICompatible } = await import(
       "@ai-sdk/openai-compatible"
@@ -91,7 +133,7 @@ export async function createAIProvider({
       baseURL,
       apiKey,
     });
-    return openaicompatible(model, settings);
+    return openaicompatible(model, filterModelSettings(provider, model, settings));
   } else if (provider === "pollinations") {
     const { createOpenAICompatible } = await import(
       "@ai-sdk/openai-compatible"
@@ -101,7 +143,7 @@ export async function createAIProvider({
       baseURL,
       apiKey,
     });
-    return pollinations(model, settings);
+    return pollinations(model, filterModelSettings(provider, model, settings));
   } else if (provider === "ollama") {
     const { createOllama } = await import("ollama-ai-provider");
     const local = global.location || {};
@@ -118,7 +160,7 @@ export async function createAIProvider({
         });
       },
     });
-    return ollama(model, settings);
+    return ollama(model, filterModelSettings(provider, model, settings));
   } else {
     throw new Error("Unsupported Provider: " + provider);
   }

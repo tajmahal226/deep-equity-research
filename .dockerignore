@@ -1,6 +1,46 @@
-.dockerignore
+# Dependencies
 node_modules
-README.md
+.pnpm-store
+
+# Next.js build output
 .next
-.git
 out
+
+# Environment files
+.env*
+!.env.example
+
+# Logs
+*.log
+logs
+
+# Testing
+.vitest
+test-results
+
+# Development files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# CI/CD
+.github
+
+# Documentation
+README.md
+LICENSE
+*.md

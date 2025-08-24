@@ -51,6 +51,7 @@ export default async function Config(phase: string) {
       NEXT_PUBLIC_VERSION: pkg.version,
     },
     transpilePackages: ["pdfjs-dist", "mermaid"],
+    output: 'standalone', // Enable standalone output for Docker
   };
 
   nextConfig.rewrites = async () => {
