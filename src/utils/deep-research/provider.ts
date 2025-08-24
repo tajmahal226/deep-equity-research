@@ -1,3 +1,5 @@
+import { logOpenAIRequest, logOpenAIError, validateOpenAIParameters } from '@/utils/openai-debug';
+
 export interface AIProviderOptions {
   provider: string;
   baseURL: string;
@@ -87,28 +89,57 @@ export async function createAIProvider({
   model,
   settings,
 }: AIProviderOptions) {
-  if (provider === "google") {
-    const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
-    const google = createGoogleGenerativeAI({
-      baseURL,
-      apiKey,
-    });
-    // Google's newer models may support thinking/reasoning modes
-    return google(model, filterModelSettings(provider, model, settings));
-  } else if (provider === "openai") {
-    const { createOpenAI } = await import("@ai-sdk/openai");
-    const openai = createOpenAI({
-      baseURL,
-      apiKey,
-    });
-    // Use .responses() method for newer OpenAI models that support reasoning/responses
-    return (model.startsWith("gpt-4o") || 
-            model.startsWith("gpt-5") || 
-            model.includes("o3-pro") || 
-            model.includes("o3-mini") ||
-            model.startsWith("o3"))
-      ? openai.responses(model)
-      : openai(model, filterModelSettings(provider, model, settings));
+  // Add debugging information for API requests
+  const debugInfo = {
+    provider,
+    model,
+    baseURL,
+    hasApiKey: !!apiKey,
+    timestamp: new Date().toISOString(),
+  };
+  
+  console.log('[AI Provider Debug]', debugInfo);
+  try {
+    if (provider === "google") {
+      const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
+      const google = createGoogleGenerativeAI({
+        baseURL,
+        apiKey,
+      });
+      const filteredSettings = filterModelSettings(provider, model, settings);
+      console.log('[Google Provider]', { model, filteredSettings });
+      return google(model, filteredSettings);
+    } else if (provider === "openai") {
+      const { createOpenAI } = await import("@ai-sdk/openai");
+      const openai = createOpenAI({
+        baseURL,
+        apiKey,
+      });
+      
+      const isResponsesModel = model.startsWith("gpt-4o") || 
+                               model.startsWith("gpt-5") || 
+                               model.includes("o3-pro") || 
+                               model.includes("o3-mini") ||
+                               model.startsWith("o3");
+      
+      const filteredSettings = filterModelSettings(provider, model, settings);
+      
+      // Validate parameters before making the request
+      const validation = validateOpenAIParameters(model, filteredSettings);
+      if (!validation.valid) {
+        console.warn('[OpenAI Parameter Warning]', validation.errors);
+      }
+      
+      logOpenAIRequest({
+        model,
+        provider,
+        parameters: filteredSettings,
+        timestamp: new Date().toISOString(),
+      });
+      
+      return isResponsesModel
+        ? openai.responses(model)
+        : openai(model, filteredSettings);
   } else if (provider === "anthropic") {
     const { createAnthropic } = await import("@ai-sdk/anthropic");
     const anthropic = createAnthropic({
@@ -191,7 +222,23 @@ export async function createAIProvider({
       },
     });
     return ollama(model, filterModelSettings(provider, model, settings));
-  } else {
-    throw new Error("Unsupported Provider: " + provider);
+    } else {
+      console.error('[AI Provider Error]', { provider, model, error: 'Unsupported provider' });
+      throw new Error(`Unsupported Provider: ${provider}. Supported providers: openai, anthropic, google, deepseek, xai, mistral, azure, openrouter, openaicompatible, pollinations, ollama`);
+    }
+  } catch (error) {
+    // Use OpenAI-specific error logging for OpenAI providers
+    if (provider === 'openai' || provider === 'azure') {
+      logOpenAIError(error, { provider, model, parameters: settings });
+    } else {
+      console.error('[AI Provider Creation Failed]', {
+        provider,
+        model,
+        baseURL,
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString(),
+      });
+    }
+    throw error;
   }
 }
