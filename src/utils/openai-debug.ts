@@ -92,11 +92,9 @@ export function validateOpenAIParameters(model: string, parameters: any): { vali
   
   // Check temperature parameter for different model types
   if (parameters.temperature !== undefined) {
-    // Responses API models (o3, GPT-5) require temperature = 1
+    // Responses API models (o3, GPT-5) do NOT support temperature parameter at all
     if (model.startsWith('o3') || model.startsWith('gpt-5') || model.includes('o3-')) {
-      if (parameters.temperature !== 1) {
-        errors.push(`Model ${model} requires temperature = 1 for responses API`);
-      }
+      errors.push(`Model ${model} does not support temperature parameter (responses API)`);
     } else {
       // Regular models support temperature 0-2
       if (parameters.temperature < 0 || parameters.temperature > 2) {

@@ -18,12 +18,10 @@ export function filterModelSettings(provider: string, model: string, settings: a
   switch (provider) {
     case "openai":
       // OpenAI API parameters based on official documentation
-      // For responses API (o3, GPT-5): temperature must be 1 or omitted
+      // For responses API (o3, GPT-5): temperature parameter is NOT supported at all
       if (model.startsWith("o3") || model.startsWith("gpt-5") || model.includes("o3-")) {
-        // Responses API only supports temperature = 1
-        if (filteredSettings.temperature !== undefined && filteredSettings.temperature !== 1) {
-          filteredSettings.temperature = 1;
-        }
+        // Responses API does NOT support temperature parameter - remove it completely
+        delete filteredSettings.temperature;
       }
       // Regular OpenAI models support temperature 0-2
       break;
@@ -52,9 +50,8 @@ export function filterModelSettings(provider: string, model: string, settings: a
     case "azure":
       // Azure OpenAI uses same parameters as OpenAI
       if (model.startsWith("o3") || model.startsWith("gpt-5") || model.includes("o3-")) {
-        if (filteredSettings.temperature !== undefined && filteredSettings.temperature !== 1) {
-          filteredSettings.temperature = 1;
-        }
+        // Azure responses API does NOT support temperature parameter - remove it completely
+        delete filteredSettings.temperature;
       }
       break;
       
