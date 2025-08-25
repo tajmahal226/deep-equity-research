@@ -190,8 +190,8 @@ export async function createAIProvider({
       });
       
       if (isResponsesModel) {
-        console.log(`[DEBUG] createAIProvider: Using openai.responses(${model}) - filteredSettings IGNORED!`);
-        return openai.responses(model);
+        console.log(`[DEBUG] createAIProvider: Using openai.responses(${model}) with filteredSettings:`, filteredSettings);
+        return openai.responses(model, filteredSettings);
       } else {
         console.log(`[DEBUG] createAIProvider: Using openai(${model}, filteredSettings)`);
         return openai(model, filteredSettings);
