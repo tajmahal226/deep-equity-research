@@ -277,28 +277,24 @@ export class CompanyDeepResearch {
    * Get safe parameters for the thinking model
    */
   private getThinkingModelSettings(baseSettings: any) {
-    if (!this.config.thinkingModelConfig?.providerId || !this.config.thinkingModelConfig?.modelId) {
-      return baseSettings; // Return unfiltered if config is missing
-    }
-    return filterModelSettings(
-      this.config.thinkingModelConfig.providerId,
-      this.config.thinkingModelConfig.modelId,
-      baseSettings
-    );
+    // Always filter settings using the actual model configuration
+    // Extract provider and model info from config, with fallbacks to ensure filtering always happens
+    const providerId = this.config.thinkingModelConfig?.providerId || 'openai';
+    const modelId = this.config.thinkingModelConfig?.modelId || 'gpt-4o';
+    
+    return filterModelSettings(providerId, modelId, baseSettings);
   }
 
   /**
    * Get safe parameters for the task model
    */
   private getTaskModelSettings(baseSettings: any) {
-    if (!this.config.taskModelConfig?.providerId || !this.config.taskModelConfig?.modelId) {
-      return baseSettings; // Return unfiltered if config is missing
-    }
-    return filterModelSettings(
-      this.config.taskModelConfig.providerId,
-      this.config.taskModelConfig.modelId,
-      baseSettings
-    );
+    // Always filter settings using the actual model configuration
+    // Extract provider and model info from config, with fallbacks to ensure filtering always happens
+    const providerId = this.config.taskModelConfig?.providerId || 'openai';
+    const modelId = this.config.taskModelConfig?.modelId || 'gpt-4o';
+    
+    return filterModelSettings(providerId, modelId, baseSettings);
   }
   
   /**
