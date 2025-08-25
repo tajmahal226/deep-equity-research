@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
     maxResult,
     enableCitationImage = true,
     enableReferences = true,
+    temperature = 0.7,
     // Client-side API keys
     aiApiKey,
     searchApiKey,
@@ -59,6 +60,7 @@ export async function POST(req: NextRequest) {
           provider,
           thinkingModel,
           taskModel,
+          temperature,
         },
         searchProvider: {
           baseURL: getSearchProviderBaseURL(searchProvider),

@@ -87,6 +87,7 @@ export default function MarketResearch() {
         maxResult: 10,
         enableCitationImage: true,
         enableReferences: true,
+        temperature: settingStore.temperature,
         // Pass user's API keys
         aiApiKey: aiApiKey,
         searchApiKey: searchApiKey,

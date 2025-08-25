@@ -98,6 +98,7 @@ export interface SettingStore {
   smoothTextStreamType: "character" | "word" | "line";
   onlyUseLocalResource: "enable" | "disable";
   openAIReasoningEffort: "low" | "medium" | "high";
+  temperature: number;
 }
 
 interface SettingFunction {
@@ -202,6 +203,7 @@ export const defaultValues: SettingStore = {
   smoothTextStreamType: "word",
   onlyUseLocalResource: "disable",
   openAIReasoningEffort: "medium",
+  temperature: 0.7,
 };
 
 export const useSettingStore = create(

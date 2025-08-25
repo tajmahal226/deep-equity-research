@@ -23,6 +23,7 @@ export interface DeepResearchOptions {
     provider: string;
     thinkingModel: string;
     taskModel: string;
+    temperature?: number;
   };
   searchProvider: {
     baseURL: string;
@@ -84,6 +85,7 @@ class DeepResearch {
     return await createAIProvider({
       provider: AIProvider.provider,
       model: AIProvider.thinkingModel,
+      settings: AIProvider.temperature !== undefined ? { temperature: AIProvider.temperature } : undefined,
       ...AIProviderBaseOptions,
     });
   }
@@ -91,14 +93,24 @@ class DeepResearch {
   async getTaskModel() {
     const { AIProvider } = this.options;
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
+    
+    // Build settings object
+    const settings: any = {};
+    
+    // Add temperature if specified
+    if (AIProvider.temperature !== undefined) {
+      settings.temperature = AIProvider.temperature;
+    }
+    
+    // Add Google-specific settings
+    if (AIProvider.provider === "google" && isNetworkingModel(AIProvider.taskModel)) {
+      settings.useSearchGrounding = true;
+    }
+    
     return await createAIProvider({
       provider: AIProvider.provider,
       model: AIProvider.taskModel,
-      settings:
-        AIProvider.provider === "google" &&
-        isNetworkingModel(AIProvider.taskModel)
-          ? { useSearchGrounding: true }
-          : undefined,
+      settings: Object.keys(settings).length > 0 ? settings : undefined,
       ...AIProviderBaseOptions,
     });
   }

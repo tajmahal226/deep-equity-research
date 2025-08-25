@@ -109,6 +109,7 @@ const formSchema = z.object({
   openAIThinkingModel: z.string().optional(),
   openAINetworkingModel: z.string().optional(),
   openAIReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
+  temperature: z.number().min(0).max(2).optional(),
   anthropicApiKey: z.string().optional(),
   anthropicApiProxy: z.string().optional(),
   anthropicThinkingModel: z.string().optional(),
@@ -1697,6 +1698,41 @@ function Setting({ open, onClose }: SettingProps) {
                                 Reasoning effort is only available for o1 and advanced GPT-5 models
                               </p>
                             )}
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="temperature"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
+                            Temperature
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <div className="space-y-2">
+                              <Slider
+                                value={[field.value || 0.7]}
+                                onValueChange={(value) => {
+                                  field.onChange(value[0]);
+                                  updateSetting("temperature", value[0]);
+                                }}
+                                max={2}
+                                min={0}
+                                step={0.1}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>More focused (0)</span>
+                                <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
+                                <span>More creative (2)</span>
+                              </div>
+                            </div>
                           </div>
                         </FormControl>
                       </FormItem>
