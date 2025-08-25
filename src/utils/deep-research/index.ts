@@ -2,6 +2,7 @@ import { streamText, generateText } from "ai";
 import { type GoogleGenerativeAIProviderMetadata } from "@ai-sdk/google";
 import { createAIProvider } from "./provider";
 import { createSearchProvider } from "./search";
+import { hasTemperatureRestrictions } from "@/utils/model";
 import {
   getSystemPrompt,
   writeReportPlanPrompt,
@@ -82,10 +83,19 @@ class DeepResearch {
   async getThinkingModel() {
     const { AIProvider } = this.options;
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
+    
+    // Don't pass temperature for reasoning models like GPT-5
+    let settings = undefined;
+    if (AIProvider.temperature !== undefined && !hasTemperatureRestrictions(AIProvider.thinkingModel)) {
+      settings = { temperature: AIProvider.temperature };
+    }
+    
+    console.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", hasRestrictions=${hasTemperatureRestrictions(AIProvider.thinkingModel)}, temperature=${AIProvider.temperature}, finalSettings=`, settings);
+    
     return await createAIProvider({
       provider: AIProvider.provider,
       model: AIProvider.thinkingModel,
-      settings: AIProvider.temperature !== undefined ? { temperature: AIProvider.temperature } : undefined,
+      settings,
       ...AIProviderBaseOptions,
     });
   }
@@ -97,8 +107,8 @@ class DeepResearch {
     // Build settings object
     const settings: any = {};
     
-    // Add temperature if specified
-    if (AIProvider.temperature !== undefined) {
+    // Add temperature only if not restricted (don't pass temperature for reasoning models like GPT-5)
+    if (AIProvider.temperature !== undefined && !hasTemperatureRestrictions(AIProvider.taskModel)) {
       settings.temperature = AIProvider.temperature;
     }
     
@@ -107,12 +117,45 @@ class DeepResearch {
       settings.useSearchGrounding = true;
     }
     
+    const finalSettings = Object.keys(settings).length > 0 ? settings : undefined;
+    console.log(`[DEBUG] DeepResearch.getTaskModel: model="${AIProvider.taskModel}", hasRestrictions=${hasTemperatureRestrictions(AIProvider.taskModel)}, temperature=${AIProvider.temperature}, finalSettings=`, finalSettings);
+    
     return await createAIProvider({
       provider: AIProvider.provider,
       model: AIProvider.taskModel,
-      settings: Object.keys(settings).length > 0 ? settings : undefined,
+      settings: finalSettings,
       ...AIProviderBaseOptions,
     });
+  }
+
+  /**
+   * Defensive function to clean parameters for thinking model calls
+   */
+  private cleanThinkingModelParams(params: any) {
+    const { AIProvider } = this.options;
+    const cleanParams = { ...params };
+    
+    if (hasTemperatureRestrictions(AIProvider.thinkingModel) && cleanParams.temperature !== undefined) {
+      console.log(`[DEBUG] DeepResearch: Removing temperature ${cleanParams.temperature} for restricted thinking model ${AIProvider.thinkingModel}`);
+      delete cleanParams.temperature;
+    }
+    
+    return cleanParams;
+  }
+
+  /**
+   * Defensive function to clean parameters for task model calls
+   */
+  private cleanTaskModelParams(params: any) {
+    const { AIProvider } = this.options;
+    const cleanParams = { ...params };
+    
+    if (hasTemperatureRestrictions(AIProvider.taskModel) && cleanParams.temperature !== undefined) {
+      console.log(`[DEBUG] DeepResearch: Removing temperature ${cleanParams.temperature} for restricted task model ${AIProvider.taskModel}`);
+      delete cleanParams.temperature;
+    }
+    
+    return cleanParams;
   }
 
   getResponseLanguagePrompt() {

@@ -142,34 +142,54 @@ export async function POST(req: NextRequest) {
       language: body.language || "en-US",
       
       // AI provider configuration with smart defaults for all providers
-      thinkingModelConfig: body.thinkingModelId && body.thinkingProviderId ? {
-        modelId: body.thinkingModelId,
-        providerId: body.thinkingProviderId,
-        apiKey: body.thinkingApiKey,
-        reasoningEffort: body.thinkingReasoningEffort,
-      } : (() => {
-        const defaults = getDefaultModelConfig(body.thinkingProviderId);
-        return {
-          modelId: defaults.thinkingModel,
-          providerId: body.thinkingProviderId || "openai",
-          apiKey: undefined, // Will use server-side API key
-          reasoningEffort: body.thinkingReasoningEffort,
-        };
+      thinkingModelConfig: (() => {
+        console.log(`[DEBUG] Company Research API: thinkingModelId=${body.thinkingModelId}, thinkingProviderId=${body.thinkingProviderId}`);
+        
+        if (body.thinkingModelId && body.thinkingProviderId) {
+          const config = {
+            modelId: body.thinkingModelId,
+            providerId: body.thinkingProviderId,
+            apiKey: body.thinkingApiKey,
+            reasoningEffort: body.thinkingReasoningEffort,
+          };
+          console.log(`[DEBUG] Company Research API: Using explicit thinking config:`, config);
+          return config;
+        } else {
+          const defaults = getDefaultModelConfig(body.thinkingProviderId);
+          const config = {
+            modelId: defaults.thinkingModel,
+            providerId: body.thinkingProviderId || "openai",
+            apiKey: undefined, // Will use server-side API key
+            reasoningEffort: body.thinkingReasoningEffort,
+          };
+          console.log(`[DEBUG] Company Research API: Using default thinking config:`, config);
+          return config;
+        }
       })(),
       
-      taskModelConfig: body.taskModelId && body.taskProviderId ? {
-        modelId: body.taskModelId,
-        providerId: body.taskProviderId,
-        apiKey: body.taskApiKey,
-        reasoningEffort: body.taskReasoningEffort,
-      } : (() => {
-        const defaults = getDefaultModelConfig(body.taskProviderId);
-        return {
-          modelId: defaults.networkingModel,
-          providerId: body.taskProviderId || "openai",
-          apiKey: undefined, // Will use server-side API key
-          reasoningEffort: body.taskReasoningEffort,
-        };
+      taskModelConfig: (() => {
+        console.log(`[DEBUG] Company Research API: taskModelId=${body.taskModelId}, taskProviderId=${body.taskProviderId}`);
+        
+        if (body.taskModelId && body.taskProviderId) {
+          const config = {
+            modelId: body.taskModelId,
+            providerId: body.taskProviderId,
+            apiKey: body.taskApiKey,
+            reasoningEffort: body.taskReasoningEffort,
+          };
+          console.log(`[DEBUG] Company Research API: Using explicit task config:`, config);
+          return config;
+        } else {
+          const defaults = getDefaultModelConfig(body.taskProviderId);
+          const config = {
+            modelId: defaults.networkingModel,
+            providerId: body.taskProviderId || "openai",
+            apiKey: undefined, // Will use server-side API key
+            reasoningEffort: body.taskReasoningEffort,
+          };
+          console.log(`[DEBUG] Company Research API: Using default task config:`, config);
+          return config;
+        }
       })(),
       
       // Search provider configuration
