@@ -7,6 +7,36 @@ export interface AIProviderOptions {
   headers?: Record<string, string>;
   model: string;
   settings?: any;
+  enableTools?: boolean;
+}
+
+// Helper function to check if a model requires tools
+export function modelRequiresTools(provider: string, model: string): boolean {
+  if (provider === "openai") {
+    // Deep research models that require tools according to OpenAI API
+    // This includes any model that OpenAI classifies as a "deep research" model
+    return model.includes("deep-research") || 
+           model.includes("research") ||
+           model.startsWith("gpt-4o-research") ||
+           model.includes("gpt-5-research") ||
+           // Some models may be automatically detected by OpenAI as requiring tools
+           // Add common patterns that might trigger this requirement
+           model.includes("o1") || // o1 models might require tools
+           model.includes("o3"); // o3 models might require tools
+  }
+  return false;
+}
+
+// Helper function to get required tools for a model
+export function getRequiredTools(provider: string, model: string) {
+  if (provider === "openai" && modelRequiresTools(provider, model)) {
+    return {
+      web_search_preview: {
+        searchContextSize: "medium"
+      }
+    };
+  }
+  return undefined;
 }
 
 // Helper function to filter unsupported parameters for each provider
@@ -133,7 +163,20 @@ export async function createAIProvider({
                                model.includes("o3-") ||
                                (model.startsWith("gpt-5") && !model.includes("chat"));
       
-      const filteredSettings = filterModelSettings(provider, model, settings);
+      let filteredSettings = filterModelSettings(provider, model, settings);
+      
+      // Add required tools for deep research models
+      if (modelRequiresTools(provider, model)) {
+        console.log(`[OpenAI Provider] Model ${model} requires tools - adding web_search_preview`);
+        filteredSettings = {
+          ...filteredSettings,
+          tools: {
+            web_search_preview: openai.tools.webSearchPreview({
+              searchContextSize: "medium"
+            })
+          }
+        };
+      }
       
       // Validate parameters before making the request
       const validation = validateOpenAIParameters(model, filteredSettings);
