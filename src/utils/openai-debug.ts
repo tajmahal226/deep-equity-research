@@ -85,6 +85,11 @@ export function logOpenAIError(error: any, context: Partial<OpenAIDebugInfo>) {
 export function validateOpenAIParameters(model: string, parameters: any): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   
+  // Handle case where parameters might be undefined
+  if (!parameters) {
+    return { valid: true, errors: [] };
+  }
+  
   // Check temperature parameter for different model types
   if (parameters.temperature !== undefined) {
     // Responses API models (o3, GPT-5) require temperature = 1
