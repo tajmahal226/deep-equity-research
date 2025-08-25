@@ -79,6 +79,7 @@ import {
 } from "@/utils/model";
 import { researchStore } from "@/utils/storage";
 import { cn } from "@/utils/style";
+import { hasTemperatureRestrictions } from "@/utils/model";
 import { omit, capitalize } from "radash";
 
 type SettingProps = {
@@ -308,25 +309,25 @@ function Setting({ open, onClose }: SettingProps) {
     // OpenAI models that support reasoning_effort parameter
     return modelName.startsWith("o1") || 
            modelName.includes("o1-") || 
-           (modelName.startsWith("gpt-5") && !modelName.includes("chat"));
+           hasTemperatureRestrictions(modelName);
   }, []);
 
   const supportsTemperature = useCallback((providerName: string, modelName: string) => {
     // Check if provider and model combination supports temperature parameter
     switch (providerName) {
       case "openai":
-        // OpenAI reasoning models (o1, o3) don't support temperature
+        // OpenAI reasoning models (o1, o3, gpt-5) don't support temperature
         return !(modelName.startsWith("o1") || 
                 modelName.startsWith("o3") || 
                 modelName.includes("o3-") ||
-                (modelName.startsWith("gpt-5") && !modelName.includes("chat")));
+                hasTemperatureRestrictions(modelName));
       
       case "azure":
         // Azure uses OpenAI models - same reasoning model detection
         return !(modelName.startsWith("o1") || 
                 modelName.startsWith("o3") || 
                 modelName.includes("o3-") ||
-                (modelName.startsWith("gpt-5") && !modelName.includes("chat")));
+                hasTemperatureRestrictions(modelName));
       
       case "anthropic":
       case "mistral":

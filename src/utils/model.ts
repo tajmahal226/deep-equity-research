@@ -116,10 +116,11 @@ export function isCompletionsModel(model: string) {
 
 // Check if a model has temperature restrictions
 export function hasTemperatureRestrictions(model: string) {
+  const normalizedModel = model.toLowerCase().replace(/\s+/g, '-');
   return (
-    model.startsWith("gpt-5") ||
-    model.includes("o3-") ||
-    model.includes("reasoning")
+    normalizedModel.startsWith("gpt-5") ||
+    normalizedModel.includes("o3-") ||
+    normalizedModel.includes("reasoning")
   );
 }
 

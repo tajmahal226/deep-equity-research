@@ -3,6 +3,8 @@
  * Based on: https://platform.openai.com/docs/api-reference/debugging-requests
  */
 
+import { hasTemperatureRestrictions } from './model';
+
 export interface OpenAIDebugInfo {
   model: string;
   provider: string;
@@ -92,11 +94,11 @@ export function validateOpenAIParameters(model: string, parameters: any): { vali
   
   // Check temperature parameter for different model types
   if (parameters.temperature !== undefined) {
-    // Only specific reasoning models don't support temperature parameter
+    // Check if model has temperature restrictions using centralized logic
     if (model.startsWith('o1') || 
         model.startsWith('o3') || 
         model.includes('o3-') ||
-        (model.startsWith('gpt-5') && !model.includes('chat'))) {
+        hasTemperatureRestrictions(model)) {
       errors.push(`Model ${model} only supports default temperature=1 (do not set temperature parameter)`);
     } else {
       // Regular models support temperature 0-2

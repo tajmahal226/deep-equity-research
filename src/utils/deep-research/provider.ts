@@ -1,4 +1,5 @@
 import { logOpenAIRequest, logOpenAIError, validateOpenAIParameters } from '@/utils/openai-debug';
+import { hasTemperatureRestrictions } from '@/utils/model';
 
 export interface AIProviderOptions {
   provider: string;
@@ -48,12 +49,9 @@ export function filterModelSettings(provider: string, model: string, settings: a
   switch (provider) {
     case "openai":
       // OpenAI API parameters based on official documentation
-      // Only specific reasoning models don't support temperature parameter
-      if (model.startsWith("o1") || 
-          model.startsWith("o3") || 
-          model.includes("o3-") ||
-          (model.startsWith("gpt-5") && !model.includes("chat"))) {
-        // Reasoning models (o1, o3, certain gpt-5) only support default temperature=1
+      // Use centralized logic to detect temperature restrictions
+      if (model.startsWith("o1") || hasTemperatureRestrictions(model)) {
+        // Reasoning models (o1, o3, gpt-5) only support default temperature=1
         // Any explicit temperature parameter will cause "Unsupported parameter" error
         delete filteredSettings.temperature;
         
@@ -91,10 +89,7 @@ export function filterModelSettings(provider: string, model: string, settings: a
       
     case "azure":
       // Azure OpenAI uses same parameters as OpenAI
-      if (model.startsWith("o1") || 
-          model.startsWith("o3") || 
-          model.includes("o3-") ||
-          (model.startsWith("gpt-5") && !model.includes("chat"))) {
+      if (model.startsWith("o1") || hasTemperatureRestrictions(model)) {
         // Azure reasoning models only support default temperature=1 - remove parameter entirely
         delete filteredSettings.temperature;
       }
@@ -158,10 +153,7 @@ export async function createAIProvider({
         apiKey,
       });
       
-      const isResponsesModel = model.startsWith("o1") ||
-                               model.startsWith("o3") ||
-                               model.includes("o3-") ||
-                               (model.startsWith("gpt-5") && !model.includes("chat"));
+      const isResponsesModel = model.startsWith("o1") || hasTemperatureRestrictions(model);
       
       let filteredSettings = filterModelSettings(provider, model, settings);
       

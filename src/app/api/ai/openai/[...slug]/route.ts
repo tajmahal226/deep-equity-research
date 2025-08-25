@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { OPENAI_BASE_URL } from "@/constants/urls";
-import { isCompletionsModel, getAllowedTemperature } from "@/utils/model";
+import { isCompletionsModel, getAllowedTemperature, hasTemperatureRestrictions } from "@/utils/model";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -34,8 +34,11 @@ async function handler(req: NextRequest) {
       const model = body.model;
       const currentEndpoint = path.join("/");
       
+      // Normalize model name for consistent checking
+      const normalizedModel = model.toLowerCase().replace(/\s+/g, '-');
+      
       // Log model detection for debugging
-      console.log(`OpenAI API: Model=${model}, Endpoint=${currentEndpoint}, IsCompletions=${isCompletionsModel(model)}`);
+      console.log(`OpenAI API: Model=${model}, Normalized=${normalizedModel}, Endpoint=${currentEndpoint}, IsCompletions=${isCompletionsModel(model)}, HasTempRestrictions=${hasTemperatureRestrictions(model)}`);
       
       // Handle undefined or missing model names
       if (!model || model === "undefined" || model === "") {
@@ -44,6 +47,11 @@ async function handler(req: NextRequest) {
           { code: 400, message: "Model name is required" },
           { status: 400 }
         );
+      }
+      
+      // Log initial temperature value
+      if (body.temperature !== undefined) {
+        console.log(`OpenAI API: Initial temperature=${body.temperature} for model=${model}`);
       }
       
       // Check if we need to route o3 models to completions endpoint
@@ -75,20 +83,30 @@ async function handler(req: NextRequest) {
       }
       
       // Handle temperature restrictions for GPT-5 and o3 models
-      if (body.temperature !== undefined) {
+      if (hasTemperatureRestrictions(model) || normalizedModel.includes("o3-")) {
+        // Models with temperature restrictions require default temperature, remove parameter entirely
+        delete body.temperature;
+        console.log(`OpenAI API: Removed temperature parameter for model ${model} (has restrictions: ${hasTemperatureRestrictions(model)})`);
+      } else if (body.temperature !== undefined) {
+        // For other models, apply temperature restrictions
         const allowedTemp = getAllowedTemperature(model, body.temperature);
         if (allowedTemp !== body.temperature) {
           body.temperature = allowedTemp;
+          console.log(`OpenAI API: Adjusted temperature from ${body.temperature} to ${allowedTemp} for model ${model}`);
         }
-      }
-      
-      // Remove temperature if it's restricted and set to 0
-      if (body.temperature === 0 && (model.startsWith("gpt-5") || model.includes("o3-"))) {
-        delete body.temperature; // Let it use default
       }
     }
     
     if (params) url += `?${params}`;
+    
+    // Log final request parameters for debugging
+    if (body && body.model) {
+      console.log(`OpenAI API: Final request for ${body.model}`, {
+        temperature: body.temperature,
+        hasTemperature: 'temperature' in body,
+        endpoint: url
+      });
+    }
     
     const payload: RequestInit = {
       method: req.method,
