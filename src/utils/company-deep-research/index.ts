@@ -28,7 +28,7 @@ import {
   guidelinesPrompt,
   INVESTMENT_RESEARCH_SECTIONS 
 } from "@/constants/companyDivePrompts";
-import { multiApiKeyPolling } from "@/utils/model";
+import { multiApiKeyPolling, hasTemperatureRestrictions } from "@/utils/model";
 import { 
   getAIProviderBaseURL, 
   getAIProviderApiKeyWithFallback,
@@ -274,6 +274,42 @@ export class CompanyDeepResearch {
       throw error;
     }
   }
+
+  /**
+   * Defensive function to ensure no temperature for reasoning models at AI SDK call level
+   */
+  private cleanThinkingModelParameters(params: any) {
+    const cleanParams = { ...params };
+    const modelName = this.config.thinkingModelConfig?.modelId || 'unknown';
+    
+    if (hasTemperatureRestrictions(modelName)) {
+      if (cleanParams.temperature !== undefined) {
+        console.log(`[DEBUG] cleanThinkingModelParameters: REMOVING temperature ${cleanParams.temperature} for reasoning model ${modelName}`);
+        delete cleanParams.temperature;
+      }
+    }
+    
+    console.log(`[DEBUG] cleanThinkingModelParameters: model=${modelName}, finalParams=`, cleanParams);
+    return cleanParams;
+  }
+
+  /**
+   * Defensive function to ensure no temperature for reasoning models at AI SDK call level
+   */
+  private cleanTaskModelParameters(params: any) {
+    const cleanParams = { ...params };
+    const modelName = this.config.taskModelConfig?.modelId || 'unknown';
+    
+    if (hasTemperatureRestrictions(modelName)) {
+      if (cleanParams.temperature !== undefined) {
+        console.log(`[DEBUG] cleanTaskModelParameters: REMOVING temperature ${cleanParams.temperature} for reasoning model ${modelName}`);
+        delete cleanParams.temperature;
+      }
+    }
+    
+    console.log(`[DEBUG] cleanTaskModelParameters: model=${modelName}, finalParams=`, cleanParams);
+    return cleanParams;
+  }
   
   /**
    * Get safe parameters for the thinking model
@@ -290,7 +326,9 @@ export class CompanyDeepResearch {
       settingsWithReasoning.reasoning_effort = this.config.thinkingModelConfig.reasoningEffort;
     }
     
-    return filterModelSettings(providerId, modelId, settingsWithReasoning);
+    const filteredSettings = filterModelSettings(providerId, modelId, settingsWithReasoning);
+    console.log(`[DEBUG] getThinkingModelSettings: provider="${providerId}", model="${modelId}", filtered=`, filteredSettings);
+    return filteredSettings;
   }
 
   /**
@@ -308,7 +346,9 @@ export class CompanyDeepResearch {
       settingsWithReasoning.reasoning_effort = this.config.taskModelConfig.reasoningEffort;
     }
     
-    return filterModelSettings(providerId, modelId, settingsWithReasoning);
+    const filteredSettings = filterModelSettings(providerId, modelId, settingsWithReasoning);
+    console.log(`[DEBUG] getTaskModelSettings: provider="${providerId}", model="${modelId}", filtered=`, filteredSettings);
+    return filteredSettings;
   }
   
   /**
@@ -581,10 +621,13 @@ ${Object.entries(INVESTMENT_RESEARCH_SECTIONS)
 
 Provide a brief rationale for which sections should be prioritized and any company-specific focus areas.`;
 
+      const taskSettings = this.getTaskModelSettings({ temperature: 0.3, maxTokens: 1000 });
+      const cleanedTaskSettings = this.cleanTaskModelParameters(taskSettings);
+      
       const { text: planRationale } = await generateText({
         model: this.taskModel,
         prompt: planPrompt,
-        ...this.getTaskModelSettings({ temperature: 0.3, maxTokens: 1000 }),
+        ...cleanedTaskSettings,
       });
       
       // Log the plan rationale for debugging
@@ -810,10 +853,13 @@ Please synthesize these search results into key learnings relevant to the resear
 Focus on factual information that would be valuable for an investment analyst.
 Be specific and include data points, dates, and concrete details when available.`;
 
+        const learningTaskSettings = this.getTaskModelSettings({ temperature: 0.3, maxTokens: 1000 });
+        const cleanedLearningSettings = this.cleanTaskModelParameters(learningTaskSettings);
+        
         const { text: learning } = await generateText({
           model: this.taskModel,
           prompt: learningPrompt,
-          ...this.getTaskModelSettings({ temperature: 0.3, maxTokens: 1000 }), // Low temperature for factual synthesis
+          ...cleanedLearningSettings, // Low temperature for factual synthesis
         });
         
         // Step 3: Collect sources and format them
@@ -862,10 +908,13 @@ Be specific and include data points, dates, and concrete details when available.
       });
       
       // Use generateText for fast, non-streaming response
+      const fastTaskSettings = this.getTaskModelSettings({ temperature: 0.7, maxTokens: 4000 });
+      const cleanedFastSettings = this.cleanTaskModelParameters(fastTaskSettings);
+      
       const { text } = await generateText({
         model: this.taskModel,
         prompt: prompt,
-        ...this.getTaskModelSettings({ temperature: 0.7, maxTokens: 4000 }), // Some creativity but mostly factual
+        ...cleanedFastSettings, // Some creativity but mostly factual
       });
       
       // Send the complete report
@@ -938,10 +987,13 @@ Keep the analysis concise but insightful, focusing on the most important investm
       });
       
       // Use streamText for medium report
+      const mediumThinkingSettings = this.getThinkingModelSettings({ temperature: 0.5, maxTokens: 5000 });
+      const cleanedMediumSettings = this.cleanThinkingModelParameters(mediumThinkingSettings);
+      
       const result = streamText({
         model: this.thinkingModel,
         prompt: mediumPrompt,
-        ...this.getThinkingModelSettings({ temperature: 0.5, maxTokens: 5000 }), // Smaller than deep report
+        ...cleanedMediumSettings, // Smaller than deep report
       });
       
       // Stream the report
@@ -1048,10 +1100,13 @@ IMPORTANT: Create a thorough, professional investment analysis that would prepar
       });
       
       // Use streamText for real-time updates
+      const thinkingSettings = this.getThinkingModelSettings({ temperature: 0.5, maxTokens: 8000 });
+      const cleanedSettings = this.cleanThinkingModelParameters(thinkingSettings);
+      
       const result = streamText({
         model: this.thinkingModel,
         prompt: reportPrompt,
-        ...this.getThinkingModelSettings({ temperature: 0.5, maxTokens: 8000 }), // Balanced for coherent but insightful analysis
+        ...cleanedSettings, // Defensive cleaning applied
       });
       
       const textStream = result.textStream;

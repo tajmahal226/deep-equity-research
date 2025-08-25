@@ -50,10 +50,15 @@ export function filterModelSettings(provider: string, model: string, settings: a
     case "openai":
       // OpenAI API parameters based on official documentation
       // Use centralized logic to detect temperature restrictions
+      console.log(`[DEBUG] filterModelSettings: model="${model}", hasRestrictions=${hasTemperatureRestrictions(model)}, originalTemp=${settings.temperature}`);
+      
       if (model.startsWith("o1") || hasTemperatureRestrictions(model)) {
         // Reasoning models (o1, o3, gpt-5) only support default temperature=1
         // Any explicit temperature parameter will cause "Unsupported parameter" error
-        delete filteredSettings.temperature;
+        if (filteredSettings.temperature !== undefined) {
+          console.log(`[DEBUG] filterModelSettings: REMOVING temperature for model "${model}"`);
+          delete filteredSettings.temperature;
+        }
         
         // These models support reasoning_effort parameter
         if (filteredSettings.reasoning_effort) {
@@ -156,6 +161,7 @@ export async function createAIProvider({
       const isResponsesModel = model.startsWith("o1") || hasTemperatureRestrictions(model);
       
       let filteredSettings = filterModelSettings(provider, model, settings);
+      console.log(`[DEBUG] createAIProvider OpenAI: model="${model}", filteredSettings=`, filteredSettings);
       
       // Add required tools for deep research models
       if (modelRequiresTools(provider, model)) {
@@ -183,9 +189,13 @@ export async function createAIProvider({
         timestamp: new Date().toISOString(),
       });
       
-      return isResponsesModel
-        ? openai.responses(model)
-        : openai(model, filteredSettings);
+      if (isResponsesModel) {
+        console.log(`[DEBUG] createAIProvider: Using openai.responses(${model}) - filteredSettings IGNORED!`);
+        return openai.responses(model);
+      } else {
+        console.log(`[DEBUG] createAIProvider: Using openai(${model}, filteredSettings)`);
+        return openai(model, filteredSettings);
+      }
   } else if (provider === "anthropic") {
     const { createAnthropic } = await import("@ai-sdk/anthropic");
     const anthropic = createAnthropic({
