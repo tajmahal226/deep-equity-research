@@ -108,6 +108,7 @@ const formSchema = z.object({
   openAIApiProxy: z.string().optional(),
   openAIThinkingModel: z.string().optional(),
   openAINetworkingModel: z.string().optional(),
+  openAIReasoningEffort: z.enum(["low", "medium", "high"]).optional(),
   anthropicApiKey: z.string().optional(),
   anthropicApiProxy: z.string().optional(),
   anthropicThinkingModel: z.string().optional(),
@@ -301,6 +302,13 @@ function Setting({ open, onClose }: SettingProps) {
     },
     [mode]
   );
+
+  const supportsReasoningEffort = useCallback((modelName: string) => {
+    // OpenAI models that support reasoning_effort parameter
+    return modelName.startsWith("o1") || 
+           modelName.includes("o1-") || 
+           (modelName.startsWith("gpt-5") && !modelName.includes("chat"));
+  }, []);
 
 
   function handleClose(open: boolean) {
@@ -1650,6 +1658,45 @@ function Setting({ open, onClose }: SettingProps) {
                                 </>
                               )}
                             </Button>
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="openAIReasoningEffort"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Adjust the reasoning effort for o1 and advanced GPT-5 models. Higher effort may provide better results but takes more time.">
+                            Reasoning Effort
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <Select
+                              value={field.value}
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                updateSetting("openAIReasoningEffort", value);
+                              }}
+                              disabled={!supportsReasoningEffort(form.watch("openAIThinkingModel") || "")}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select reasoning effort" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="low">Low - Faster response</SelectItem>
+                                <SelectItem value="medium">Medium - Balanced</SelectItem>
+                                <SelectItem value="high">High - Best quality</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {!supportsReasoningEffort(form.watch("openAIThinkingModel") || "") && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Reasoning effort is only available for o1 and advanced GPT-5 models
+                              </p>
+                            )}
                           </div>
                         </FormControl>
                       </FormItem>

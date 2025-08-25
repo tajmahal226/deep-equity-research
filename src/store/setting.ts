@@ -97,6 +97,7 @@ export interface SettingStore {
   citationImage: "enable" | "disable";
   smoothTextStreamType: "character" | "word" | "line";
   onlyUseLocalResource: "enable" | "disable";
+  openAIReasoningEffort: "low" | "medium" | "high";
 }
 
 interface SettingFunction {
@@ -200,6 +201,7 @@ export const defaultValues: SettingStore = {
   citationImage: "enable",
   smoothTextStreamType: "word",
   onlyUseLocalResource: "disable",
+  openAIReasoningEffort: "medium",
 };
 
 export const useSettingStore = create(

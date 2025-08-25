@@ -81,6 +81,10 @@ interface CompanyResearchRequest {
   thinkingApiKey?: string;
   taskApiKey?: string;
   
+  // Reasoning effort configuration
+  thinkingReasoningEffort?: "low" | "medium" | "high";
+  taskReasoningEffort?: "low" | "medium" | "high";
+  
   // Search provider settings
   searchProviderId?: string;
   searchApiKey?: string;
@@ -142,12 +146,14 @@ export async function POST(req: NextRequest) {
         modelId: body.thinkingModelId,
         providerId: body.thinkingProviderId,
         apiKey: body.thinkingApiKey,
+        reasoningEffort: body.thinkingReasoningEffort,
       } : (() => {
         const defaults = getDefaultModelConfig(body.thinkingProviderId);
         return {
           modelId: defaults.thinkingModel,
           providerId: body.thinkingProviderId || "openai",
           apiKey: undefined, // Will use server-side API key
+          reasoningEffort: body.thinkingReasoningEffort,
         };
       })(),
       
@@ -155,12 +161,14 @@ export async function POST(req: NextRequest) {
         modelId: body.taskModelId,
         providerId: body.taskProviderId,
         apiKey: body.taskApiKey,
+        reasoningEffort: body.taskReasoningEffort,
       } : (() => {
         const defaults = getDefaultModelConfig(body.taskProviderId);
         return {
           modelId: defaults.networkingModel,
           providerId: body.taskProviderId || "openai",
           apiKey: undefined, // Will use server-side API key
+          reasoningEffort: body.taskReasoningEffort,
         };
       })(),
       

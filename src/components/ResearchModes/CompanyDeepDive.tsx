@@ -134,9 +134,11 @@ export default function CompanyDeepDive() {
         taskProviderId: currentProvider, 
         taskModelId: taskModel,
         
-        // Pass user's API keys
+        // Pass user's API keys and reasoning effort
         thinkingApiKey: thinkingApiKey,
         taskApiKey: taskApiKey,
+        thinkingReasoningEffort: settingStore.openAIReasoningEffort,
+        taskReasoningEffort: settingStore.openAIReasoningEffort,
         
         // Pass search provider if configured
         searchProviderId: settingStore.mode,

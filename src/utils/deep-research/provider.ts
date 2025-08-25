@@ -26,6 +26,14 @@ export function filterModelSettings(provider: string, model: string, settings: a
         // Reasoning models (o1, o3, certain gpt-5) only support default temperature=1
         // Any explicit temperature parameter will cause "Unsupported parameter" error
         delete filteredSettings.temperature;
+        
+        // These models support reasoning_effort parameter
+        if (filteredSettings.reasoning_effort) {
+          // Keep reasoning_effort for supported models
+        }
+      } else {
+        // Regular OpenAI models don't support reasoning_effort
+        delete filteredSettings.reasoning_effort;
       }
       // Regular OpenAI models (GPT-4, GPT-4-turbo, gpt-5-chat-latest) support temperature 0-2
       break;

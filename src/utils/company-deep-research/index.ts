@@ -62,11 +62,13 @@ interface CompanyResearchConfig {
     modelId: string;
     providerId: string;
     apiKey?: string;
+    reasoningEffort?: "low" | "medium" | "high";
   };
   taskModelConfig?: {
     modelId: string;
     providerId: string;
     apiKey?: string;
+    reasoningEffort?: "low" | "medium" | "high";
   };
   
   // Search provider
@@ -282,7 +284,13 @@ export class CompanyDeepResearch {
     const providerId = this.config.thinkingModelConfig?.providerId || 'openai';
     const modelId = this.config.thinkingModelConfig?.modelId || 'gpt-4o';
     
-    return filterModelSettings(providerId, modelId, baseSettings);
+    // Add reasoning_effort if specified and model supports it
+    const settingsWithReasoning = { ...baseSettings };
+    if (this.config.thinkingModelConfig?.reasoningEffort) {
+      settingsWithReasoning.reasoning_effort = this.config.thinkingModelConfig.reasoningEffort;
+    }
+    
+    return filterModelSettings(providerId, modelId, settingsWithReasoning);
   }
 
   /**
@@ -294,7 +302,13 @@ export class CompanyDeepResearch {
     const providerId = this.config.taskModelConfig?.providerId || 'openai';
     const modelId = this.config.taskModelConfig?.modelId || 'gpt-4o';
     
-    return filterModelSettings(providerId, modelId, baseSettings);
+    // Add reasoning_effort if specified and model supports it
+    const settingsWithReasoning = { ...baseSettings };
+    if (this.config.taskModelConfig?.reasoningEffort) {
+      settingsWithReasoning.reasoning_effort = this.config.taskModelConfig.reasoningEffort;
+    }
+    
+    return filterModelSettings(providerId, modelId, settingsWithReasoning);
   }
   
   /**
