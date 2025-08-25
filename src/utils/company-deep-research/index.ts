@@ -31,7 +31,7 @@ import {
 import { multiApiKeyPolling } from "@/utils/model";
 import { 
   getAIProviderBaseURL, 
-  getAIProviderApiKey,
+  getAIProviderApiKeyWithFallback,
   getSearchProviderBaseURL,
   getSearchProviderApiKey 
 } from "@/app/api/utils";
@@ -166,7 +166,7 @@ export class CompanyDeepResearch {
       // Step 2: Initialize thinking model (for complex reasoning)
       try {
         const clientApiKey = this.config.thinkingModelConfig?.apiKey;
-        const serverApiKey = getAIProviderApiKey(thinkingProvider);
+        const serverApiKey = getAIProviderApiKeyWithFallback(thinkingProvider);
         const apiKey = clientApiKey || serverApiKey;
         
         if (!apiKey) {
@@ -199,7 +199,7 @@ export class CompanyDeepResearch {
       // Step 3: Initialize task model (for quick processing)
       try {
         const clientApiKey = this.config.taskModelConfig?.apiKey;
-        const serverApiKey = getAIProviderApiKey(taskProvider);
+        const serverApiKey = getAIProviderApiKeyWithFallback(taskProvider);
         const apiKey = clientApiKey || serverApiKey;
         
         if (!apiKey) {
