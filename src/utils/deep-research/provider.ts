@@ -18,12 +18,16 @@ export function filterModelSettings(provider: string, model: string, settings: a
   switch (provider) {
     case "openai":
       // OpenAI API parameters based on official documentation
-      // For responses API (o3, GPT-5): temperature parameter is NOT supported at all
-      if (model.startsWith("o3") || model.startsWith("gpt-5") || model.includes("o3-")) {
-        // Responses API does NOT support temperature parameter - remove it completely
+      // Only specific reasoning models don't support temperature parameter
+      if (model.startsWith("o1") || 
+          model.startsWith("o3") || 
+          model.includes("o3-") ||
+          (model.startsWith("gpt-5") && !model.includes("chat"))) {
+        // Reasoning models (o1, o3, certain gpt-5) only support default temperature=1
+        // Any explicit temperature parameter will cause "Unsupported parameter" error
         delete filteredSettings.temperature;
       }
-      // Regular OpenAI models support temperature 0-2
+      // Regular OpenAI models (GPT-4, GPT-4-turbo, gpt-5-chat-latest) support temperature 0-2
       break;
       
     case "google":
@@ -49,8 +53,11 @@ export function filterModelSettings(provider: string, model: string, settings: a
       
     case "azure":
       // Azure OpenAI uses same parameters as OpenAI
-      if (model.startsWith("o3") || model.startsWith("gpt-5") || model.includes("o3-")) {
-        // Azure responses API does NOT support temperature parameter - remove it completely
+      if (model.startsWith("o1") || 
+          model.startsWith("o3") || 
+          model.includes("o3-") ||
+          (model.startsWith("gpt-5") && !model.includes("chat"))) {
+        // Azure reasoning models only support default temperature=1 - remove parameter entirely
         delete filteredSettings.temperature;
       }
       break;
@@ -113,11 +120,10 @@ export async function createAIProvider({
         apiKey,
       });
       
-      const isResponsesModel = model.startsWith("gpt-4o") || 
-                               model.startsWith("gpt-5") || 
-                               model.includes("o3-pro") || 
-                               model.includes("o3-mini") ||
-                               model.startsWith("o3");
+      const isResponsesModel = model.startsWith("o1") ||
+                               model.startsWith("o3") ||
+                               model.includes("o3-") ||
+                               (model.startsWith("gpt-5") && !model.includes("chat"));
       
       const filteredSettings = filterModelSettings(provider, model, settings);
       
