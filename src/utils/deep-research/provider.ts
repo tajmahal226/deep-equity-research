@@ -192,10 +192,40 @@ export async function createAIProvider({
       if (isResponsesModel) {
         console.log(`[DEBUG] createAIProvider: Using openai.responses(${model})`, filteredSettings);
         // OpenAI responses models currently do not accept configuration
-        // parameters at creation time. Return the model without passing
-        // filteredSettings and rely on downstream calls to supply any
-        // supported options.
+        // parameters at creation time. We still need to ensure deep research
+        // models receive the required tools. Wrap the model to inject
+        // web_search_preview at call time if needed.
         const responsesModel = openai.responses(model);
+
+        if (modelRequiresTools(provider, model)) {
+          const requiredTool = openai.tools.webSearchPreview({
+            searchContextSize: "medium",
+          });
+
+          const baseGenerate = responsesModel.doGenerate.bind(responsesModel);
+          const baseStream = responsesModel.doStream.bind(responsesModel);
+
+          return {
+            ...responsesModel,
+            async doGenerate(options) {
+              const mode = options.mode;
+              if (mode?.type === "regular") {
+                const tools = [...(mode.tools || []), requiredTool];
+                return baseGenerate({ ...options, mode: { ...mode, tools } });
+              }
+              return baseGenerate(options);
+            },
+            async doStream(options) {
+              const mode = options.mode;
+              if (mode?.type === "regular") {
+                const tools = [...(mode.tools || []), requiredTool];
+                return baseStream({ ...options, mode: { ...mode, tools } });
+              }
+              return baseStream(options);
+            },
+          } as typeof responsesModel;
+        }
+
         return responsesModel;
       } else {
         console.log(`[DEBUG] createAIProvider: Using openai(${model}, filteredSettings)`);
