@@ -19,7 +19,7 @@ import {
 import { downloadFile } from "@/utils/file";
 import { logger } from "@/utils/logger";
 import { useSettingStore } from "@/store/setting";
-import { getProviderStateKey } from "@/utils/provider";
+import { getProviderStateKey, getProviderApiKey } from "@/utils/provider";
 
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
 
@@ -108,15 +108,20 @@ export default function CompanyDeepDive() {
     
     try {
       // Get current AI provider and model settings from user configuration
-      const currentProvider = settingStore.provider;
+      const currentProvider = settingStore.provider || "openai";
       const providerKey = getProviderStateKey(currentProvider);
-      const thinkingModel = settingStore[`${providerKey}ThinkingModel` as keyof typeof settingStore] as string;
-      const taskModel = settingStore[`${providerKey}NetworkingModel` as keyof typeof settingStore] as string;
+      const thinkingModel = settingStore[
+        `${providerKey}ThinkingModel` as keyof typeof settingStore
+      ] as string;
+      const taskModel = settingStore[
+        `${providerKey}NetworkingModel` as keyof typeof settingStore
+      ] as string;
 
       // Get API keys from user settings
-      const thinkingApiKey = settingStore[`${providerKey}ApiKey` as keyof typeof settingStore] as string;
-      const taskApiKey = settingStore[`${providerKey}ApiKey` as keyof typeof settingStore] as string; // Usually same provider
-      const searchApiKey = settingStore[`${settingStore.mode}ApiKey` as keyof typeof settingStore] as string;
+      const thinkingApiKey = getProviderApiKey(settingStore, currentProvider);
+      const taskApiKey = getProviderApiKey(settingStore, currentProvider); // Usually same provider
+      const searchProvider = settingStore.searchProvider || "model";
+      const searchApiKey = getProviderApiKey(settingStore, searchProvider);
 
       // Prepare the request body with all company information and user's AI settings
       const requestBody = {
@@ -133,7 +138,7 @@ export default function CompanyDeepDive() {
         // Pass user's configured AI models
         thinkingProviderId: currentProvider,
         thinkingModelId: thinkingModel,
-        taskProviderId: currentProvider, 
+        taskProviderId: currentProvider,
         taskModelId: taskModel,
         
         // Pass user's API keys and reasoning effort
@@ -143,7 +148,7 @@ export default function CompanyDeepDive() {
         taskReasoningEffort: settingStore.openAIReasoningEffort,
         
         // Pass search provider if configured
-        searchProviderId: settingStore.mode,
+        searchProviderId: searchProvider,
         searchApiKey: searchApiKey,
       };
       
