@@ -697,9 +697,6 @@ export function initMcpServer() {
       endPublishedDate: z.string().optional().describe("End date for content (YYYY-MM-DD format)"),
     },
     async ({ query, category, numResults, includeDomains, excludeDomains, startPublishedDate, endPublishedDate }, { signal }) => {
-      // TODO: implement filtering with these parameters in future
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _unused = { includeDomains, excludeDomains, startPublishedDate, endPublishedDate };
       if (signal?.aborted) {
         throw new Error("Request was aborted");
       }
@@ -748,7 +745,7 @@ export function initMcpServer() {
 
         // Apply search filters (mock implementation for demonstration)
         let filteredResults = mockExaResults;
-        
+
         // Filter by date range if provided
         if (startPublishedDate || endPublishedDate) {
           filteredResults = filteredResults.filter(result => {
@@ -761,20 +758,29 @@ export function initMcpServer() {
 
         // Apply domain filtering if specified
         if (includeDomains && includeDomains.length > 0) {
-          filteredResults = filteredResults.filter(result => 
+          filteredResults = filteredResults.filter(result =>
             includeDomains.some(domain => result.url.includes(domain))
           );
         }
-        
+
         if (excludeDomains && excludeDomains.length > 0) {
-          filteredResults = filteredResults.filter(result => 
+          filteredResults = filteredResults.filter(result =>
             !excludeDomains.some(domain => result.url.includes(domain))
           );
         }
 
         // Use category-specific domains for enhanced relevance
         const relevantDomains = _categoryDomains[category as keyof typeof _categoryDomains] || [];
-        
+
+        if (relevantDomains.length > 0) {
+          const categoryFiltered = filteredResults.filter(result =>
+            relevantDomains.some(domain => result.url.includes(domain))
+          );
+          if (categoryFiltered.length > 0) {
+            filteredResults = categoryFiltered;
+          }
+        }
+
         const results = filteredResults.slice(0, numResults).map((result, index) => ({
           ...result,
           id: `exa-${index + 1}`,
