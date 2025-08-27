@@ -190,8 +190,13 @@ export async function createAIProvider({
       });
       
       if (isResponsesModel) {
-        console.log(`[DEBUG] createAIProvider: Using openai.responses(${model}) with filteredSettings:`, filteredSettings);
-        return openai.responses(model, filteredSettings);
+        console.log(`[DEBUG] createAIProvider: Using openai.responses(${model})`, filteredSettings);
+        // OpenAI responses models currently do not accept configuration
+        // parameters at creation time. Return the model without passing
+        // filteredSettings and rely on downstream calls to supply any
+        // supported options.
+        const responsesModel = openai.responses(model);
+        return responsesModel;
       } else {
         console.log(`[DEBUG] createAIProvider: Using openai(${model}, filteredSettings)`);
         return openai(model, filteredSettings);
