@@ -42,25 +42,9 @@ const BOCHA_API_BASE_URL =
 const SEARXNG_API_BASE_URL =
   process.env.SEARXNG_API_BASE_URL || "http://0.0.0.0:8080";
 
-const GOOGLE_GENERATIVE_AI_API_KEY =
-  process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
-const XAI_API_KEY = process.env.XAI_API_KEY || "";
-const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY || "";
-const COHERE_API_KEY = process.env.COHERE_API_KEY || "";
-const TOGETHER_API_KEY = process.env.TOGETHER_API_KEY || "";
-const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
-const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY || "";
-const AZURE_API_KEY = process.env.AZURE_API_KEY || "";
-const OPENAI_COMPATIBLE_API_KEY = process.env.OPENAI_COMPATIBLE_API_KEY || "";
-// Search provider API key
-const TAVILY_API_KEY = process.env.TAVILY_API_KEY || "";
-const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY || "";
-const EXA_API_KEY = process.env.EXA_API_KEY || "";
-const BOCHA_API_KEY = process.env.BOCHA_API_KEY || "";
+// API keys are resolved dynamically from environment variables within
+// their respective lookup functions. This avoids stale values when tests or
+// runtime code modify `process.env` after module initialization.
 
 export function getAIProviderBaseURL(provider: string) {
   switch (provider) {
@@ -100,66 +84,47 @@ export function getAIProviderBaseURL(provider: string) {
 }
 
 export function getAIProviderApiKey(provider: string) {
-  let apiKey = "";
-  
-  switch (provider) {
-    case "google":
-      apiKey = GOOGLE_GENERATIVE_AI_API_KEY;
-      break;
-    case "openai":
-      apiKey = OPENAI_API_KEY;
-      break;
-    case "anthropic":
-      apiKey = ANTHROPIC_API_KEY;
-      break;
-    case "deepseek":
-      apiKey = DEEPSEEK_API_KEY;
-      break;
-    case "xai":
-      apiKey = XAI_API_KEY;
-      break;
-    case "mistral":
-      apiKey = MISTRAL_API_KEY;
-      break;
-    case "cohere":
-      apiKey = COHERE_API_KEY;
-      break;
-    case "together":
-      apiKey = TOGETHER_API_KEY;
-      break;
-    case "groq":
-      apiKey = GROQ_API_KEY;
-      break;
-    case "perplexity":
-      apiKey = PERPLEXITY_API_KEY;
-      break;
-    case "azure":
-      apiKey = AZURE_API_KEY;
-      break;
-    case "openrouter":
-      apiKey = OPENROUTER_API_KEY;
-      break;
-    case "openaicompatible":
-      apiKey = OPENAI_COMPATIBLE_API_KEY;
-      break;
-    case "pollinations":
-    case "ollama":
-      return ""; // These providers don't require API keys
-    default:
-      throw new Error("Unsupported Provider: " + provider);
+  const providersWithoutKeys = ["ollama", "pollinations"];
+  if (providersWithoutKeys.includes(provider)) return "";
+
+  const envVarNames: Record<string, string> = {
+    google: "GOOGLE_GENERATIVE_AI_API_KEY",
+    openai: "OPENAI_API_KEY",
+    anthropic: "ANTHROPIC_API_KEY",
+    deepseek: "DEEPSEEK_API_KEY",
+    xai: "XAI_API_KEY",
+    mistral: "MISTRAL_API_KEY",
+    cohere: "COHERE_API_KEY",
+    together: "TOGETHER_API_KEY",
+    groq: "GROQ_API_KEY",
+    perplexity: "PERPLEXITY_API_KEY",
+    azure: "AZURE_API_KEY",
+    openrouter: "OPENROUTER_API_KEY",
+    openaicompatible: "OPENAI_COMPATIBLE_API_KEY",
+  };
+  const envVarMap: Record<string, string | undefined> = Object.fromEntries(
+    Object.entries(envVarNames).map(([provider, env]) => [provider, process.env[env]])
+  );
+
+  if (!(provider in envVarMap)) {
+    throw new Error("Unsupported Provider: " + provider);
   }
-  
-  // Enhanced debugging for API key resolution
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[API Key Debug] Provider: ${provider}, Key available: ${!!apiKey}, Key length: ${apiKey?.length || 0}`);
+
+  const apiKey = envVarMap[provider] || "";
+
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      `[API Key Debug] Provider: ${provider}, Key available: ${!!apiKey}, Key length: ${apiKey?.length || 0}`
+    );
   }
-  
-  // Log warning if API key is missing for providers that need it
-  const providersWithoutKeys = ['ollama', 'pollinations'];
-  if (!apiKey && !providersWithoutKeys.includes(provider)) {
-    console.warn(`[API Key Warning] No API key found for provider: ${provider}. Set ${provider.toUpperCase()}_API_KEY environment variable.`);
+
+  if (!apiKey) {
+    const envVarName = envVarNames[provider];
+    console.warn(
+      `[API Key Warning] No API key found for provider: ${provider}. Set ${envVarName} environment variable.`
+    );
   }
-  
+
   return apiKey;
 }
 
@@ -203,19 +168,18 @@ export function getSearchProviderBaseURL(provider: string) {
 }
 
 export function getSearchProviderApiKey(provider: string) {
-  switch (provider) {
-    case "tavily":
-      return TAVILY_API_KEY;
-    case "firecrawl":
-      return FIRECRAWL_API_KEY;
-    case "exa":
-      return EXA_API_KEY;
-    case "bocha":
-      return BOCHA_API_KEY;
-    case "searxng":
-    case "model":
-      return "";
-    default:
-      throw new Error("Unsupported Provider: " + provider);
+  const envVarMap: Record<string, string | undefined> = {
+    tavily: process.env.TAVILY_API_KEY,
+    firecrawl: process.env.FIRECRAWL_API_KEY,
+    exa: process.env.EXA_API_KEY,
+    bocha: process.env.BOCHA_API_KEY,
+  };
+
+  if (provider === "searxng" || provider === "model") return "";
+
+  if (!(provider in envVarMap)) {
+    throw new Error("Unsupported Provider: " + provider);
   }
+
+  return envVarMap[provider] || "";
 }
