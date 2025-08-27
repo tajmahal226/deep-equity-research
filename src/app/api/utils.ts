@@ -168,12 +168,16 @@ export function getSearchProviderBaseURL(provider: string) {
 }
 
 export function getSearchProviderApiKey(provider: string) {
-  const envVarMap: Record<string, string | undefined> = {
-    tavily: process.env.TAVILY_API_KEY,
-    firecrawl: process.env.FIRECRAWL_API_KEY,
-    exa: process.env.EXA_API_KEY,
-    bocha: process.env.BOCHA_API_KEY,
-  };
+  // Use the same envVarNames + Object.fromEntries pattern as AI providers for consistency
+  const envVarNames = [
+    ["tavily", "TAVILY_API_KEY"],
+    ["firecrawl", "FIRECRAWL_API_KEY"],
+    ["exa", "EXA_API_KEY"],
+    ["bocha", "BOCHA_API_KEY"],
+  ];
+  const envVarMap: Record<string, string | undefined> = Object.fromEntries(
+    envVarNames.map(([key, env]) => [key, process.env[env]])
+  );
 
   if (provider === "searxng" || provider === "model") return "";
 
