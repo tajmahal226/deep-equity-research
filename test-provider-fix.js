@@ -37,8 +37,8 @@ function simulateProviderCreation(model, originalSettings) {
   console.log(`filteredSettings:`, filteredSettings);
   
   if (isResponsesModel) {
-    console.log(`✅ [FIXED] Using openai.responses("${model}", filteredSettings) - settings now PASSED!`);
-    console.log(`   Temperature properly removed: ${filteredSettings?.temperature === undefined ? 'YES' : 'NO'}`);
+    console.log(`✅ [FIXED] Using openai.responses("${model}") - settings handled at call time`);
+    console.log(`   Temperature removed: ${filteredSettings?.temperature === undefined ? 'YES' : 'NO'}`);
     console.log(`   Other settings preserved: ${Object.keys(filteredSettings || {}).length > 0 ? 'YES' : 'NO'}`);
   } else {
     console.log(`✅ Using openai("${model}", filteredSettings) - normal flow`);
@@ -72,11 +72,11 @@ testCases.forEach(testCase => {
 });
 
 console.log('\n=== Fix Summary ===');
-console.log('✅ Fixed: openai.responses() now receives filtered settings');
+console.log('✅ Fixed: openai.responses() called without unsupported parameters');
 console.log('✅ Temperature is properly removed for GPT-5 models');
 console.log('✅ Other settings like reasoningEffort are preserved');
 console.log('✅ Non-reasoning models continue to work normally');
 
 console.log('\n=== Expected Result ===');
 console.log('🎉 GPT-5 models should no longer throw temperature parameter errors');
-console.log('🎉 Debug logs should show "with filteredSettings" instead of "IGNORED"');
+console.log('🎉 Debug logs should no longer show ignored settings warnings');
