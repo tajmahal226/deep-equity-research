@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createSSEStream } from "../../src/utils/sse";
 
 const decoder = new TextDecoder();
@@ -45,7 +45,13 @@ describe("createSSEStream", () => {
     expect(final.done).toBe(true);
 
     // further events should not be delivered
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     sendEvent("after", { test: true });
+    expect(warnSpy).toHaveBeenCalledWith(
+      'Cannot send event "after" - stream is closed'
+    );
+    warnSpy.mockRestore();
+
     const after = await reader.read();
     expect(after.done).toBe(true);
   });
