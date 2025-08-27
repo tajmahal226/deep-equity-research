@@ -193,40 +193,44 @@ export async function createAIProvider({
         console.log(`[DEBUG] createAIProvider: Using openai.responses(${model})`, filteredSettings);
         // OpenAI responses models currently do not accept configuration
         // parameters at creation time. We still need to ensure deep research
-        // models receive the required tools. Wrap the model to inject
-        // web_search_preview at call time if needed.
+        // models receive the required tools. Additionally, these models do not
+        // support temperature parameters, so we must remove them before each
+        // call.
+
         const responsesModel = openai.responses(model);
 
-          if (modelRequiresTools(provider, model)) {
-            const requiredTool = openai.tools.webSearchPreview({
-              searchContextSize: "medium",
-            }) as any;
+        const baseGenerate = responsesModel.doGenerate.bind(responsesModel);
+        const baseStream = responsesModel.doStream.bind(responsesModel);
 
-            const baseGenerate = responsesModel.doGenerate.bind(responsesModel);
-            const baseStream = responsesModel.doStream.bind(responsesModel);
+        const requiredTool = modelRequiresTools(provider, model)
+          ? (openai.tools.webSearchPreview({ searchContextSize: "medium" }) as any)
+          : undefined;
 
-          return {
-            ...responsesModel,
-            async doGenerate(options) {
-              const mode = options.mode;
-                if (mode?.type === "regular") {
-                  const tools = [...(mode.tools || []), requiredTool] as any;
-                  return baseGenerate({ ...options, mode: { ...mode, tools } });
-                }
-                return baseGenerate(options);
-            },
-            async doStream(options) {
-              const mode = options.mode;
-                if (mode?.type === "regular") {
-                  const tools = [...(mode.tools || []), requiredTool] as any;
-                  return baseStream({ ...options, mode: { ...mode, tools } });
-                }
-                return baseStream(options);
-            },
-          } as typeof responsesModel;
+        function sanitizeOptions(options: any) {
+          const cleanOptions = { ...options };
+          if ("temperature" in cleanOptions) {
+            console.log(`[DEBUG] createAIProvider: REMOVING temperature for responses model "${model}"`);
+            delete cleanOptions.temperature;
+          }
+          if (requiredTool) {
+            const mode = cleanOptions.mode;
+            if (mode?.type === "regular") {
+              const tools = [...(mode.tools || []), requiredTool] as any;
+              cleanOptions.mode = { ...mode, tools };
+            }
+          }
+          return cleanOptions;
         }
 
-        return responsesModel;
+        return {
+          ...responsesModel,
+          async doGenerate(options) {
+            return baseGenerate(sanitizeOptions(options));
+          },
+          async doStream(options) {
+            return baseStream(sanitizeOptions(options));
+          },
+        } as typeof responsesModel;
       } else {
         console.log(`[DEBUG] createAIProvider: Using openai(${model}, filteredSettings)`);
         return openai(model, filteredSettings);
