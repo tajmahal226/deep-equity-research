@@ -197,31 +197,31 @@ export async function createAIProvider({
         // web_search_preview at call time if needed.
         const responsesModel = openai.responses(model);
 
-        if (modelRequiresTools(provider, model)) {
-          const requiredTool = openai.tools.webSearchPreview({
-            searchContextSize: "medium",
-          });
+          if (modelRequiresTools(provider, model)) {
+            const requiredTool = openai.tools.webSearchPreview({
+              searchContextSize: "medium",
+            }) as any;
 
-          const baseGenerate = responsesModel.doGenerate.bind(responsesModel);
-          const baseStream = responsesModel.doStream.bind(responsesModel);
+            const baseGenerate = responsesModel.doGenerate.bind(responsesModel);
+            const baseStream = responsesModel.doStream.bind(responsesModel);
 
           return {
             ...responsesModel,
             async doGenerate(options) {
               const mode = options.mode;
-              if (mode?.type === "regular") {
-                const tools = [...(mode.tools || []), requiredTool];
-                return baseGenerate({ ...options, mode: { ...mode, tools } });
-              }
-              return baseGenerate(options);
+                if (mode?.type === "regular") {
+                  const tools = [...(mode.tools || []), requiredTool] as any;
+                  return baseGenerate({ ...options, mode: { ...mode, tools } });
+                }
+                return baseGenerate(options);
             },
             async doStream(options) {
               const mode = options.mode;
-              if (mode?.type === "regular") {
-                const tools = [...(mode.tools || []), requiredTool];
-                return baseStream({ ...options, mode: { ...mode, tools } });
-              }
-              return baseStream(options);
+                if (mode?.type === "regular") {
+                  const tools = [...(mode.tools || []), requiredTool] as any;
+                  return baseStream({ ...options, mode: { ...mode, tools } });
+                }
+                return baseStream(options);
             },
           } as typeof responsesModel;
         }

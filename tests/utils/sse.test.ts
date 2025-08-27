@@ -44,8 +44,9 @@ describe("createSSEStream", () => {
     const final = await reader.read();
     expect(final.done).toBe(true);
 
-    // further events should not be delivered
-    sendEvent("after", { test: true });
+    // further events should not be delivered and sendEvent should indicate failure
+    const sent = sendEvent("after", { test: true });
+    expect(sent).toBe(false);
     const after = await reader.read();
     expect(after.done).toBe(true);
   });

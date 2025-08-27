@@ -81,27 +81,30 @@ export function createSSEStream() {
    * 
    * @param eventName - The type of event (e.g., "progress", "message", "error")
    * @param data - The data to send (will be JSON stringified)
+   * @returns Whether the event was successfully queued for delivery
    */
-  function sendEvent(eventName: string, data: any) {
+  function sendEvent(eventName: string, data: any): boolean {
     // Check if we can still send data
     if (!streamController || !isStreamActive) {
-      console.warn(`Cannot send event "${eventName}" - stream is closed`);
-      return;
+      // Silently ignore attempts to write after the stream has closed
+      return false;
     }
 
     try {
       // Format the SSE event according to the specification
       // Each field is on its own line, fields are separated by colons
       const formattedEvent = `event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`;
-      
+
       // Convert the string to bytes and send it through the stream
       streamController.enqueue(encoder.encode(formattedEvent));
-      
+
       // Log for debugging (remove in production for performance)
       logger.log(`SSE event sent: ${eventName}`, data);
+      return true;
     } catch (error) {
       console.error(`Error sending SSE event "${eventName}":`, error);
       // Don't throw here - we don't want one failed event to break the stream
+      return false;
     }
   }
 
