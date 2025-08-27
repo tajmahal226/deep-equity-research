@@ -51,6 +51,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { logger } from "@/utils/logger";
 import { useSettingStore } from "@/store/setting";
+import { getProviderStateKey } from "@/utils/provider";
 
 // Import MagicDown for rendering markdown
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
@@ -149,12 +150,13 @@ export default function BulkCompanyResearch() {
     try {
       // Get current AI provider and model settings from user configuration
       const currentProvider = settingStore.provider;
-      const thinkingModel = settingStore[`${currentProvider}ThinkingModel` as keyof typeof settingStore] as string;
-      const taskModel = settingStore[`${currentProvider}NetworkingModel` as keyof typeof settingStore] as string;
-      
+      const providerKey = getProviderStateKey(currentProvider);
+      const thinkingModel = settingStore[`${providerKey}ThinkingModel` as keyof typeof settingStore] as string;
+      const taskModel = settingStore[`${providerKey}NetworkingModel` as keyof typeof settingStore] as string;
+
       // Get API keys from user settings
-      const thinkingApiKey = settingStore[`${currentProvider}ApiKey` as keyof typeof settingStore] as string;
-      const taskApiKey = settingStore[`${currentProvider}ApiKey` as keyof typeof settingStore] as string; // Usually same provider
+      const thinkingApiKey = settingStore[`${providerKey}ApiKey` as keyof typeof settingStore] as string;
+      const taskApiKey = settingStore[`${providerKey}ApiKey` as keyof typeof settingStore] as string; // Usually same provider
       const searchApiKey = settingStore[`${settingStore.mode}ApiKey` as keyof typeof settingStore] as string;
 
       // Prepare the request body
