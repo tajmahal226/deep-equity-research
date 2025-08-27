@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingStore } from "@/store/setting";
-import { getProviderStateKey, getProviderApiKey } from "@/utils/provider";
+import { getProviderStateKey } from "@/utils/provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Search, Loader2, BarChart, PieChart, LineChart, Download, FileText, Signature } from "lucide-react";
@@ -67,29 +67,24 @@ export default function MarketResearch() {
 
     try {
       // Get current AI provider and model settings from user configuration
-      const currentProvider = settingStore.provider || "openai";
+      const currentProvider = settingStore.provider;
       const providerKey = getProviderStateKey(currentProvider);
-      const thinkingModel = settingStore[
-        `${providerKey}ThinkingModel` as keyof typeof settingStore
-      ] as string;
-      const taskModel = settingStore[
-        `${providerKey}NetworkingModel` as keyof typeof settingStore
-      ] as string;
+      const thinkingModel = settingStore[`${providerKey}ThinkingModel` as keyof typeof settingStore] as string;
+      const taskModel = settingStore[`${providerKey}NetworkingModel` as keyof typeof settingStore] as string;
 
       // Create market research query with context
       const marketQuery = `${marketTopic}${specificQuestions ? `\n\nSpecific focus areas: ${specificQuestions}` : ''}`;
 
       // Get API keys from user settings
-      const aiApiKey = getProviderApiKey(settingStore, currentProvider);
-      const searchProvider = settingStore.searchProvider || "model";
-      const searchApiKey = getProviderApiKey(settingStore, searchProvider);
+      const aiApiKey = settingStore[`${providerKey}ApiKey` as keyof typeof settingStore] as string;
+      const searchApiKey = settingStore[`${settingStore.mode}ApiKey` as keyof typeof settingStore] as string;
 
       const requestBody = {
         query: marketQuery,
         provider: currentProvider,
         thinkingModel: thinkingModel,
         taskModel: taskModel,
-        searchProvider: searchProvider,
+        searchProvider: settingStore.mode,
         language: "en-US",
         maxResult: 10,
         enableCitationImage: true,
