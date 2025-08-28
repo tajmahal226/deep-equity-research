@@ -1,8 +1,22 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { CompanyDeepResearch } from "../../src/utils/company-deep-research";
+
+// Preserve original environment variables so tests can manipulate API keys
+const originalEnv = process.env;
+
+beforeEach(() => {
+  process.env = { ...originalEnv };
+});
+
+afterEach(() => {
+  process.env = originalEnv;
+});
 
 describe("Company Research Initialization Integration Test", () => {
   it("handles missing API keys gracefully", async () => {
+    // Ensure no provider API keys are set
+    delete process.env.OPENAI_API_KEY;
+
     // Create a research config without API keys (simulating production scenario)
     const config = {
       companyName: "Test Company",
@@ -47,19 +61,24 @@ describe("Company Research Initialization Integration Test", () => {
     const testCases = [
       {
         provider: "anthropic",
+        envVar: "ANTHROPIC_API_KEY",
         expectedMessage: /Anthropic API key.*Claude/i
       },
       {
-        provider: "deepseek", 
+        provider: "deepseek",
+        envVar: "DEEPSEEK_API_KEY",
         expectedMessage: /DeepSeek API key/i
       },
       {
         provider: "xai",
+        envVar: "XAI_API_KEY",
         expectedMessage: /xAI API key.*Grok/i
       }
     ];
 
     for (const testCase of testCases) {
+      // Remove any existing API key for this provider
+      delete (process.env as any)[testCase.envVar];
       const config = {
         companyName: "Test Company",
         searchDepth: "fast" as const,
