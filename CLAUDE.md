@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with the Deep Research project - a sophisticated AI-powered research assistant designed for growth equity investment analysis.
+This file provides guidance to Claude Code (claude.ai/code) when working with the Deep Research project - a sophisticated AI-powered research assistant designed for public equity investment analysis.
 
 ## Project Overview
 

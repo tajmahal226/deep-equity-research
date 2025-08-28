@@ -12,7 +12,7 @@ const APP_NAME = "TJ Deep Research";
 const APP_DEFAULT_TITLE = "TJ Deep Research";
 const APP_TITLE_TEMPLATE = "%s - PWA App";
 const APP_DESCRIPTION =
-  "Deep Research for growth equity investment.";
+  "Deep Research for public equity investment.";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,

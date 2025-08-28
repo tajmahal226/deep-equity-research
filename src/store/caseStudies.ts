@@ -134,7 +134,7 @@ interface CaseStudiesState {
 }
 
 const defaultCategories = [
-  "Growth Equity",
+  "Public Equity",
   "Venture Capital", 
   "Private Equity",
   "Seed Investment",

@@ -44,11 +44,11 @@ const defaultCompanyPrompt: PreFilledPrompt = {
   id: "default-company-research",
   title: "Comprehensive Company Research Template",
   category: "Company Research",
-  tags: ["template", "growth-equity", "comprehensive", "due-diligence"],
-  description: "Complete template for growth equity company research covering all key areas",
+  tags: ["template", "public-equity", "comprehensive", "due-diligence"],
+  description: "Complete template for public equity company research covering all key areas",
   usageCount: 0,
   isTemplate: true,
-  content: `The user is a growth equity analyst looking to learn about [company] [company-url].  The following is a template for the research report and areas the user wants to learn about.
+  content: `The user is a public equity analyst looking to learn about [company] [company-url].  The following is a template for the research report and areas the user wants to learn about.
 Section 1: Company Overview
 Brief overview
 Overview of the company's products, core technologies, and offerings.
