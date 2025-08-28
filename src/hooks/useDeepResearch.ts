@@ -256,7 +256,7 @@ function useDeepResearch() {
       return undefined;
     };
     await Promise.all(
-      queries.map((item) => {
+      queries.map((item) =>
         plimit(async () => {
           let content = "";
           let reasoning = "";
@@ -440,9 +440,10 @@ function useDeepResearch() {
             });
             return "";
           }
-        });
-      })
+        })
+      )
     );
+    plimit.clearQueue();
   }
 
   async function reviewSearchResult() {
