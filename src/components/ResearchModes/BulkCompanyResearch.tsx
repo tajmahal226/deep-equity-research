@@ -254,64 +254,68 @@ export default function BulkCompanyResearch() {
                 
                 // Handle different event types
                 switch (eventType) {
-                    case "status":
-                      // Initial status with all companies
-                      setResults(data.companies);
-                      break;
-                      
-                    case "company-start":
-                      // A company started processing
-                      setResults(prev => prev.map(r => 
-                        r.companyName === data.companyName 
-                          ? { ...r, status: "processing" }
-                          : r
-                      ));
-                      break;
-                      
-                    case "company-complete":
-                      // A company completed successfully
-                      setResults(prev => prev.map(r => 
-                        r.companyName === data.companyName 
-                          ? { 
-                              ...r, 
-                              status: "completed",
-                              result: data.result,
-                              completedAt: new Date().toISOString()
-                            }
-                          : r
-                      ));
-                      break;
-                      
-                    case "company-error":
-                      // A company had an error
-                      setResults(prev => prev.map(r => 
-                        r.companyName === data.companyName 
-                          ? { 
-                              ...r, 
-                              status: "error",
-                              error: data.error,
-                              completedAt: new Date().toISOString()
-                            }
-                          : r
-                      ));
-                      break;
-                      
-                    case "progress":
-                      // Overall progress update
-                      setProgress(data);
-                      break;
-                      
-                    case "complete":
-                      // All companies processed
-                      logger.log("Bulk research complete:", data);
-                      setIsSearching(false);
-                      break;
-                      
-                    case "error":
-                      // General error
-                      console.error("Bulk research error:", data);
-                      throw new Error(data.message || "Research failed");
-                  }
+                  case "status":
+                    // Initial status with all companies
+                    setResults(data.companies);
+                    break;
+
+                  case "company-start":
+                    // A company started processing
+                    setResults(prev => prev.map(r =>
+                      r.companyName === data.companyName
+                        ? { ...r, status: "processing" }
+                        : r
+                    ));
+                    break;
+
+                  case "company-complete":
+                    // A company completed successfully
+                    setResults(prev => prev.map(r =>
+                      r.companyName === data.companyName
+                        ? {
+                            ...r,
+                            status: "completed",
+                            result: data.result,
+                            completedAt: new Date().toISOString()
+                          }
+                        : r
+                    ));
+                    break;
+
+                  case "company-error":
+                    // A company had an error
+                    setResults(prev => prev.map(r =>
+                      r.companyName === data.companyName
+                        ? {
+                            ...r,
+                            status: "error",
+                            error: data.error,
+                            completedAt: new Date().toISOString()
+                          }
+                        : r
+                    ));
+                    break;
+
+                  case "progress":
+                    // Overall progress update
+                    setProgress(data);
+                    break;
+
+                  case "complete":
+                    // All companies processed
+                    logger.log("Bulk research complete:", data);
+                    setIsSearching(false);
+                    break;
+
+                  case "error":
+                    // General, non-company-specific error
+                    console.error("Bulk research error:", data);
+                    throw new Error(data.message || "Research failed");
+
+                  default:
+                    // Ignore any undocumented events to keep the client resilient
+                    logger.warn(`Unhandled SSE event: ${eventType}`, data);
+                }
                 } catch (e) {
                   console.error("Error parsing SSE data:", e);
                 }

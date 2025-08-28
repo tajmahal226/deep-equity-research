@@ -91,6 +91,11 @@ interface CompanyResult {
 }
 
 export async function POST(req: NextRequest) {
+  // These will hold the SSE helpers if we get far enough to initialize them
+  let stream: ReadableStream | null = null;
+  let sendEvent: ((event: string, data: any) => void) | null = null;
+  let closeStream: (() => void) | null = null;
+
   try {
     // Step 1: Check for ACCESS_PASSWORD if configured
     // This protects your API from unauthorized use
@@ -124,7 +129,7 @@ export async function POST(req: NextRequest) {
     logger.log(`[Bulk Research ${bulkResearchId}] Starting research for ${body.companies.length} companies`);
 
     // Step 4: Create the SSE stream for real-time updates
-    const { stream, sendEvent, closeStream } = createSSEStream();
+    ({ stream, sendEvent, closeStream } = createSSEStream());
 
     // Step 5: Initialize tracking for all companies
     // We'll update this object as we process each company
@@ -319,14 +324,28 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error("Bulk company research API error:", error);
+
+    if (sendEvent && stream && closeStream) {
+      // Emit a generic error event so the client can handle failures
+      sendEvent("error", {
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+      // Close the stream after sending the error
+      closeStream();
+      return new Response(stream, {
+        headers: getSSEHeaders(),
+      });
+    }
+
+    // If we couldn't even create the SSE stream, fall back to JSON error
     return new Response(
-      JSON.stringify({ 
-        error: "Internal server error", 
-        message: error instanceof Error ? error.message : "Unknown error" 
-      }), 
-      { 
+      JSON.stringify({
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      }),
+      {
         status: 500,
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       }
     );
   }
