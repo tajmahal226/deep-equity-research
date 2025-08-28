@@ -96,6 +96,13 @@ export async function POST(req: NextRequest) {
   let sendEvent: ((event: string, data: any) => void) | null = null;
   let closeStream: (() => void) | null = null;
 
+  // Helper to safely send SSE events only when the stream is initialized
+  const safeSendEvent = (event: string, data: any) => {
+    if (sendEvent) {
+      sendEvent(event, data);
+    }
+  };
+
   try {
     // Step 1: Check for ACCESS_PASSWORD if configured
     // This protects your API from unauthorized use
@@ -142,7 +149,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Send initial status to client
-    sendEvent("status", {
+    safeSendEvent("status", {
       bulkResearchId,
       totalCompanies: body.companies.length,
       companies: Object.values(companyResults)
@@ -159,7 +166,7 @@ export async function POST(req: NextRequest) {
         companyResults[companyName].startedAt = new Date().toISOString();
         
         // Send update that we're starting this company
-        sendEvent("company-start", {
+        safeSendEvent("company-start", {
           companyName,
           status: "processing"
         });
@@ -211,19 +218,19 @@ export async function POST(req: NextRequest) {
           
           // Callbacks for this specific company
           onProgress: (data) => {
-            sendEvent("company-progress", {
+            safeSendEvent("company-progress", {
               companyName,
               ...data
             });
           },
           onMessage: (data) => {
-            sendEvent("company-message", {
+            safeSendEvent("company-message", {
               companyName,
               ...data
             });
           },
           onError: (error) => {
-            sendEvent("company-error", {
+            safeSendEvent("company-error", {
               companyName,
               error: error.message
             });
@@ -243,7 +250,7 @@ export async function POST(req: NextRequest) {
         };
 
         // Send completion event for this company
-        sendEvent("company-complete", {
+        safeSendEvent("company-complete", {
           companyName,
           result
         });
@@ -262,7 +269,7 @@ export async function POST(req: NextRequest) {
         };
 
         // Send error event for this company
-        sendEvent("company-error", {
+        safeSendEvent("company-error", {
           companyName,
           error: error instanceof Error ? error.message : "Unknown error"
         });
@@ -290,7 +297,7 @@ export async function POST(req: NextRequest) {
       const completed = Object.values(companyResults).filter(r => r.status === "completed").length;
       const errors = Object.values(companyResults).filter(r => r.status === "error").length;
       
-      sendEvent("progress", {
+      safeSendEvent("progress", {
         completed,
         errors,
         total: body.companies.length,
@@ -299,7 +306,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Step 8: Send final results
-    sendEvent("complete", {
+    safeSendEvent("complete", {
       bulkResearchId,
       totalCompanies: body.companies.length,
       results: Object.values(companyResults),
