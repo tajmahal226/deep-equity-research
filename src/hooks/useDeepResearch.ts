@@ -295,10 +295,6 @@ function useDeepResearch() {
                 const results = await search(item.query);
                 sources = results.sources;
                 images = results.images;
-
-                if (sources.length === 0) {
-                  throw new Error("Invalid Search Results");
-                }
               } catch (err) {
                 console.error(err);
                 handleError(
@@ -308,23 +304,39 @@ function useDeepResearch() {
                 );
                 return plimit.clearQueue();
               }
-              const enableReferences =
-                sources.length > 0 && references === "enable";
-              searchResult = streamText({
-                model: await createModel(networkingModel),
-                system: getSystemPrompt(),
-                prompt: [
-                  processSearchResultPrompt(
-                    item.query,
-                    item.researchGoal,
-                    sources,
-                    enableReferences
-                  ),
-                  getResponseLanguagePrompt(),
-                ].join("\n\n"),
-                experimental_transform: smoothTextStream(smoothTextStreamType),
-                onError: handleError,
-              });
+              if (sources.length > 0) {
+                const enableReferences =
+                  sources.length > 0 && references === "enable";
+                searchResult = streamText({
+                  model: await createModel(networkingModel),
+                  system: getSystemPrompt(),
+                  prompt: [
+                    processSearchResultPrompt(
+                      item.query,
+                      item.researchGoal,
+                      sources,
+                      enableReferences
+                    ),
+                    getResponseLanguagePrompt(),
+                  ].join("\n\n"),
+                  experimental_transform: smoothTextStream(smoothTextStreamType),
+                  onError: handleError,
+                });
+              } else {
+                // Fall back to model-generated search when no external results are found
+                searchResult = streamText({
+                  model: await createModel(networkingModel),
+                  system: getSystemPrompt(),
+                  prompt: [
+                    processResultPrompt(item.query, item.researchGoal),
+                    getResponseLanguagePrompt(),
+                  ].join("\n\n"),
+                  tools: getTools(networkingModel),
+                  providerOptions: getProviderOptions(networkingModel),
+                  experimental_transform: smoothTextStream(smoothTextStreamType),
+                  onError: handleError,
+                });
+              }
             } else {
               searchResult = streamText({
                 model: await createModel(networkingModel),
