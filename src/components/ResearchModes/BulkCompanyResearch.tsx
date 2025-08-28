@@ -196,9 +196,21 @@ export default function BulkCompanyResearch() {
         },
         body: JSON.stringify(requestBody),
       });
-      
+
       if (!response.ok) {
-        throw new Error(`Research failed: ${response.statusText}`);
+        let errorMessage = "";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || JSON.stringify(errorData);
+        } catch {
+          try {
+            errorMessage = await response.text();
+          } catch {
+            // Ignore
+          }
+        }
+        console.error("Bulk research request failed:", errorMessage);
+        throw new Error(errorMessage || `Research failed: ${response.statusText}`);
       }
       
       // Set up Server-Sent Events to receive real-time updates
@@ -323,7 +335,7 @@ export default function BulkCompanyResearch() {
     } catch (error) {
       console.error("Bulk company research error:", error);
       setIsSearching(false);
-      alert(error instanceof Error ? error.message : "Research failed");
+      alert(error instanceof Error && error.message ? error.message : "Research failed");
     }
   };
 
