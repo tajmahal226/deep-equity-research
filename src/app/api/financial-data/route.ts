@@ -25,7 +25,7 @@ const FinancialDataRequestSchema = z.object({
 });
 
 // Helper function to get financial provider configuration
-function getFinancialConfig(clientConfig?: any) {
+export function getFinancialConfig(clientConfig?: any) {
   // Use client-provided configuration if available, otherwise fallback to environment variables
   const provider = clientConfig?.financialProvider || process.env.FINANCIAL_PROVIDER || "mock";
   const alphaVantageKey = clientConfig?.alphaVantageApiKey || process.env.ALPHA_VANTAGE_API_KEY || "";
