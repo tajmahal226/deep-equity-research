@@ -119,12 +119,11 @@ export default function CompanyDiscovery() {
         
         // Convert financial search results to CompanyResult format
         const enrichedCompanies = await Promise.all(
-          searchResponse.results.map(async (result) => {
+          searchResponse.results.map(async (result, index) => {
             // Get additional company profile data
             const profile = await getCompanyProfile(result.ticker);
-            
-            const company: CompanyResult = {
-              id: Math.random().toString(36),
+
+            const companyData: Omit<CompanyResult, "id" | "discoveredAt"> = {
               name: result.name,
               description: profile?.description || `${result.name} is a ${result.sector.toLowerCase()} company.`,
               industry: profile?.industry || result.sector,
@@ -139,24 +138,20 @@ export default function CompanyDiscovery() {
               priceChange: result.change,
               priceChangePercent: result.changePercent,
               tags: [result.sector, "Public Company", "Financial Data Available"],
-              matchScore: Math.floor(Math.random() * 30 + 70), // Mock relevance score
-              discoveredAt: new Date(),
+              matchScore: 100 - index,
               reasoning: `Found through financial database search. Market cap: ${result.marketCap}, Current price: $${result.price}`,
               sources: ["Financial API", "Company Profile Database"],
               competitors: [],
               foundedYear: profile?.founded,
             };
-            
-            return company;
+
+            addCompany(companyData);
+            const addedCompany = useCompanyDiscoveryStore.getState().companies[0];
+            return addedCompany;
           })
         );
 
         setSearchResults(enrichedCompanies);
-        
-        // Add to store
-        enrichedCompanies.forEach((company: CompanyResult) => {
-          addCompany(company);
-        });
 
         setSearchProgress(null);
         toast.success(`Search completed! Found ${enrichedCompanies.length} companies`);

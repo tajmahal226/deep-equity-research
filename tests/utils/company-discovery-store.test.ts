@@ -41,4 +41,29 @@ describe('Company discovery store search', () => {
     expect(results.length).toBe(1);
     expect(results[0].name).toBe('Tech Corp');
   });
+
+  it('orders companies consistently by match score', async () => {
+    const { useCompanyDiscoveryStore } = await import('../../src/store/companyDiscovery');
+    const store = useCompanyDiscoveryStore;
+    store.getState().clearCompanies();
+
+    ['Alpha', 'Beta', 'Gamma'].forEach((name, index) => {
+      store.getState().addCompany({
+        name,
+        description: `${name} description`,
+        industry: 'Test',
+        location: 'Test',
+        fundingStage: 'Seed',
+        tags: ['Test'],
+        sources: [],
+        matchScore: 100 - index,
+      });
+    });
+
+    const ordered = [...store.getState().companies].sort(
+      (a, b) => (b.matchScore || 0) - (a.matchScore || 0)
+    );
+
+    expect(ordered.map(c => c.name)).toEqual(['Alpha', 'Beta', 'Gamma']);
+  });
 });
