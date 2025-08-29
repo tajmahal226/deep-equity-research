@@ -68,4 +68,32 @@ describe('Company discovery store search', () => {
     expect(results.length).toBe(1);
     expect(results[0].name).toBe('Health Inc');
   });
+
+  it('orders companies deterministically by match score', async () => {
+    const { useCompanyDiscoveryStore } = await import('../../src/store/companyDiscovery');
+    const store = useCompanyDiscoveryStore.getState();
+
+    // Ensure clean state
+    store.clearCompanies();
+
+    const names = ['Alpha Corp', 'Beta LLC', 'Gamma Inc'];
+    names.forEach((name, index) => {
+      store.addCompany({
+        name,
+        description: `${name} description`,
+        industry: 'Tech',
+        location: 'SF',
+        fundingStage: 'Seed',
+        ticker: name.slice(0, 4).toUpperCase(),
+        tags: ['Tech'],
+        sources: [],
+        matchScore: 100 - index,
+      });
+    });
+
+    const ordered = [...useCompanyDiscoveryStore.getState().companies].sort(
+      (a, b) => (b.matchScore || 0) - (a.matchScore || 0)
+    );
+    expect(ordered.map(c => c.name)).toEqual(names);
+  });
 });
