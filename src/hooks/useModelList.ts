@@ -14,35 +14,12 @@ import {
 import { multiApiKeyPolling } from "@/utils/model";
 import { generateSignature } from "@/utils/signature";
 import { completePath } from "@/utils/url";
-
-// Known max token limits for providers that don't return them via API
-const OPENAI_MODEL_TOKEN_LIMITS: Record<string, number> = {
-  "gpt-4o": 128000,
-  "gpt-4o-mini": 128000,
-  "gpt-4.1": 128000,
-  "gpt-4.1-mini": 128000,
-  "gpt-5": 256000,
-  "gpt-5-chat-latest": 256000,
-  "o3-mini": 128000,
-  "o3-pro": 128000,
-};
-
-const ANTHROPIC_MODEL_TOKEN_LIMITS: Record<string, number> = {
-  "claude-3-opus-20240229": 200000,
-  "claude-3-sonnet-20240229": 200000,
-  "claude-3-haiku-20240307": 200000,
-  "claude-3-5-sonnet-20240620": 200000,
-  "claude-3-5-haiku-20241022": 200000,
-};
-
-const DEEPSEEK_MODEL_TOKEN_LIMITS: Record<string, number> = {
-  "deepseek-chat": 64000,
-  "deepseek-reasoner": 64000,
-};
-
-const XAI_MODEL_TOKEN_LIMITS: Record<string, number> = {
-  "grok-beta": 128000,
-};
+import {
+  OPENAI_MODEL_TOKEN_LIMITS,
+  ANTHROPIC_MODEL_TOKEN_LIMITS,
+  DEEPSEEK_MODEL_TOKEN_LIMITS,
+  XAI_MODEL_TOKEN_LIMITS,
+} from "@/constants/token-limits";
 
 interface GeminiModel {
   name: string;

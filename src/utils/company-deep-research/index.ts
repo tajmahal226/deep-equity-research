@@ -38,6 +38,7 @@ import {
 import { streamText, generateText } from "ai";
 import { createAIProvider, filterModelSettings } from "@/utils/deep-research/provider";
 import { createSearchProvider } from "@/utils/deep-research/search";
+import { getMaxTokens } from "@/constants/token-limits";
 import { logger } from "@/utils/logger";
 import { ThinkTagStreamProcessor } from "@/utils/text";
 // Removed unused import: pick from radash
@@ -278,14 +279,22 @@ export class CompanyDeepResearch {
   private cleanThinkingModelParameters(params: any) {
     const cleanParams = { ...params };
     const modelName = this.config.thinkingModelConfig?.modelId || 'unknown';
-    
+    const providerId = this.config.thinkingModelConfig?.providerId || 'openai';
+
     if (hasTemperatureRestrictions(modelName)) {
       if (cleanParams.temperature !== undefined) {
         console.log(`[DEBUG] cleanThinkingModelParameters: REMOVING temperature ${cleanParams.temperature} for reasoning model ${modelName}`);
         delete cleanParams.temperature;
       }
     }
-    
+
+    const limit = getMaxTokens(providerId, modelName);
+    if (limit !== undefined) {
+      if (cleanParams.maxTokens === undefined || cleanParams.maxTokens > limit) {
+        cleanParams.maxTokens = limit;
+      }
+    }
+
     console.log(`[DEBUG] cleanThinkingModelParameters: model=${modelName}, finalParams=`, cleanParams);
     return cleanParams;
   }
@@ -296,14 +305,22 @@ export class CompanyDeepResearch {
   private cleanTaskModelParameters(params: any) {
     const cleanParams = { ...params };
     const modelName = this.config.taskModelConfig?.modelId || 'unknown';
-    
+    const providerId = this.config.taskModelConfig?.providerId || 'openai';
+
     if (hasTemperatureRestrictions(modelName)) {
       if (cleanParams.temperature !== undefined) {
         console.log(`[DEBUG] cleanTaskModelParameters: REMOVING temperature ${cleanParams.temperature} for reasoning model ${modelName}`);
         delete cleanParams.temperature;
       }
     }
-    
+
+    const limit = getMaxTokens(providerId, modelName);
+    if (limit !== undefined) {
+      if (cleanParams.maxTokens === undefined || cleanParams.maxTokens > limit) {
+        cleanParams.maxTokens = limit;
+      }
+    }
+
     console.log(`[DEBUG] cleanTaskModelParameters: model=${modelName}, finalParams=`, cleanParams);
     return cleanParams;
   }
@@ -316,13 +333,18 @@ export class CompanyDeepResearch {
     // Extract provider and model info from config, with fallbacks to ensure filtering always happens
     const providerId = this.config.thinkingModelConfig?.providerId || 'openai';
     const modelId = this.config.thinkingModelConfig?.modelId || 'gpt-4o';
-    
+
     // Add reasoning_effort if specified and model supports it
     const settingsWithReasoning = { ...baseSettings };
     if (this.config.thinkingModelConfig?.reasoningEffort) {
       settingsWithReasoning.reasoning_effort = this.config.thinkingModelConfig.reasoningEffort;
     }
-    
+
+    const maxTokens = getMaxTokens(providerId, modelId);
+    if (maxTokens !== undefined) {
+      settingsWithReasoning.maxTokens = maxTokens;
+    }
+
     const filteredSettings = filterModelSettings(providerId, modelId, settingsWithReasoning);
     console.log(`[DEBUG] getThinkingModelSettings: provider="${providerId}", model="${modelId}", filtered=`, filteredSettings);
     return filteredSettings;
@@ -336,13 +358,18 @@ export class CompanyDeepResearch {
     // Extract provider and model info from config, with fallbacks to ensure filtering always happens
     const providerId = this.config.taskModelConfig?.providerId || 'openai';
     const modelId = this.config.taskModelConfig?.modelId || 'gpt-4o';
-    
+
     // Add reasoning_effort if specified and model supports it
     const settingsWithReasoning = { ...baseSettings };
     if (this.config.taskModelConfig?.reasoningEffort) {
       settingsWithReasoning.reasoning_effort = this.config.taskModelConfig.reasoningEffort;
     }
-    
+
+    const maxTokens = getMaxTokens(providerId, modelId);
+    if (maxTokens !== undefined) {
+      settingsWithReasoning.maxTokens = maxTokens;
+    }
+
     const filteredSettings = filterModelSettings(providerId, modelId, settingsWithReasoning);
     console.log(`[DEBUG] getTaskModelSettings: provider="${providerId}", model="${modelId}", filtered=`, filteredSettings);
     return filteredSettings;

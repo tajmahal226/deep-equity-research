@@ -1,5 +1,6 @@
 import { logOpenAIRequest, logOpenAIError, validateOpenAIParameters } from '@/utils/openai-debug';
 import { hasTemperatureRestrictions } from '@/utils/model';
+import { getMaxTokens } from '@/constants/token-limits';
 
 export interface AIProviderOptions {
   provider: string;
@@ -45,6 +46,12 @@ export function filterModelSettings(provider: string, model: string, settings: a
   if (!settings) return settings;
   
   const filteredSettings = { ...settings };
+  const maxTokens = getMaxTokens(provider, model);
+  if (maxTokens !== undefined) {
+    if (filteredSettings.maxTokens === undefined || filteredSettings.maxTokens > maxTokens) {
+      filteredSettings.maxTokens = maxTokens;
+    }
+  }
   
   switch (provider) {
     case "openai":
