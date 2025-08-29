@@ -15,14 +15,14 @@ describe('OpenAI model choices', () => {
   ];
 
   models.forEach((model) => {
-    it(`initializes ${model} for thinking and task models`, async () => {
+    it(`initializes ${model} as thinking model`, async () => {
       const dr = new DeepResearch({
         AIProvider: {
           provider: 'openai',
           baseURL: OPENAI_BASE_URL,
           apiKey: 'test-key',
           thinkingModel: model,
-          taskModel: model,
+          taskModel: 'gpt-4o',
           temperature: 0.7,
         },
         searchProvider: {
@@ -33,6 +33,24 @@ describe('OpenAI model choices', () => {
 
       const thinking = await dr.getThinkingModel();
       expect(thinking).toBeDefined();
+    });
+
+    it(`initializes ${model} as task model`, async () => {
+      const dr = new DeepResearch({
+        AIProvider: {
+          provider: 'openai',
+          baseURL: OPENAI_BASE_URL,
+          apiKey: 'test-key',
+          thinkingModel: 'gpt-4o',
+          taskModel: model,
+          temperature: 0.7,
+        },
+        searchProvider: {
+          provider: 'tavily',
+          baseURL: 'https://api.tavily.com',
+        },
+      });
+
       const task = await dr.getTaskModel();
       expect(task).toBeDefined();
     });
