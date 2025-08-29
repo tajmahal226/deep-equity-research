@@ -15,6 +15,35 @@ import { multiApiKeyPolling } from "@/utils/model";
 import { generateSignature } from "@/utils/signature";
 import { completePath } from "@/utils/url";
 
+// Known max token limits for providers that don't return them via API
+const OPENAI_MODEL_TOKEN_LIMITS: Record<string, number> = {
+  "gpt-4o": 128000,
+  "gpt-4o-mini": 128000,
+  "gpt-4.1": 128000,
+  "gpt-4.1-mini": 128000,
+  "gpt-5": 256000,
+  "gpt-5-chat-latest": 256000,
+  "o3-mini": 128000,
+  "o3-pro": 128000,
+};
+
+const ANTHROPIC_MODEL_TOKEN_LIMITS: Record<string, number> = {
+  "claude-3-opus-20240229": 200000,
+  "claude-3-sonnet-20240229": 200000,
+  "claude-3-haiku-20240307": 200000,
+  "claude-3-5-sonnet-20240620": 200000,
+  "claude-3-5-haiku-20241022": 200000,
+};
+
+const DEEPSEEK_MODEL_TOKEN_LIMITS: Record<string, number> = {
+  "deepseek-chat": 64000,
+  "deepseek-reasoner": 64000,
+};
+
+const XAI_MODEL_TOKEN_LIMITS: Record<string, number> = {
+  "grok-beta": 128000,
+};
+
 interface GeminiModel {
   name: string;
   description: string;
@@ -109,10 +138,12 @@ interface OllamaModel {
 
 function useModelList() {
   const [modelList, setModelList] = useState<string[]>([]);
+  const [modelTokenMap, setModelTokenMap] = useState<Record<string, number>>({});
   const { mode, provider } = useSettingStore.getState();
 
   useEffect(() => {
     setModelList([]);
+    setModelTokenMap({});
   }, [provider]);
 
   async function refresh(provider: string): Promise<string[]> {
@@ -136,13 +167,19 @@ function useModelList() {
         }
       );
       const { models = [] } = await response.json();
+      const tokenMap: Record<string, number> = {};
       const newModelList = (models as GeminiModel[])
         .filter(
           (item) =>
             item.name.startsWith("models/gemini") &&
             item.supportedGenerationMethods.includes("generateContent")
         )
-        .map((item) => item.name.replace("models/", ""));
+        .map((item) => {
+          const name = item.name.replace("models/", "");
+          tokenMap[name] = item.inputTokenLimit || item.outputTokenLimit;
+          return name;
+        });
+      setModelTokenMap(tokenMap);
       setModelList(newModelList);
       return newModelList;
     } else if (provider === "openrouter") {
@@ -164,7 +201,13 @@ function useModelList() {
         }
       );
       const { data = [] } = await response.json();
-      const newModelList = (data as OpenRouterModel[]).map((item) => item.id);
+      const tokenMap: Record<string, number> = {};
+      const newModelList = (data as OpenRouterModel[]).map((item) => {
+        tokenMap[item.id] =
+          item.top_provider?.context_length || item.context_length;
+        return item.id;
+      });
+      setModelTokenMap(tokenMap);
       setModelList(newModelList);
       return newModelList;
     } else if (provider === "openai") {
@@ -184,8 +227,15 @@ function useModelList() {
         }
       );
       const { data = [] } = await response.json();
+      const tokenMap: Record<string, number> = {};
       const newModelList = (data as OpenAIModel[])
-        .map((item) => item.id)
+        .map((item) => {
+          const id = item.id;
+          if (OPENAI_MODEL_TOKEN_LIMITS[id]) {
+            tokenMap[id] = OPENAI_MODEL_TOKEN_LIMITS[id];
+          }
+          return id;
+        })
         .filter(
           (id) =>
             !(
@@ -195,6 +245,7 @@ function useModelList() {
               id.startsWith("dall-e")
             )
         );
+      setModelTokenMap(tokenMap);
       setModelList(newModelList);
       return newModelList;
     } else if (provider === "anthropic") {
@@ -220,7 +271,14 @@ function useModelList() {
         }
       );
       const { data = [] } = await response.json();
-      const newModelList = (data as AnthropicModel[]).map((item) => item.id);
+      const tokenMap: Record<string, number> = {};
+      const newModelList = (data as AnthropicModel[]).map((item) => {
+        if (ANTHROPIC_MODEL_TOKEN_LIMITS[item.id]) {
+          tokenMap[item.id] = ANTHROPIC_MODEL_TOKEN_LIMITS[item.id];
+        }
+        return item.id;
+      });
+      setModelTokenMap(tokenMap);
       setModelList(newModelList);
       return newModelList;
     } else if (provider === "deepseek") {
@@ -242,7 +300,14 @@ function useModelList() {
         }
       );
       const { data = [] } = await response.json();
-      const newModelList = (data as OpenAIModel[]).map((item) => item.id);
+      const tokenMap: Record<string, number> = {};
+      const newModelList = (data as OpenAIModel[]).map((item) => {
+        if (DEEPSEEK_MODEL_TOKEN_LIMITS[item.id]) {
+          tokenMap[item.id] = DEEPSEEK_MODEL_TOKEN_LIMITS[item.id];
+        }
+        return item.id;
+      });
+      setModelTokenMap(tokenMap);
       setModelList(newModelList);
       return newModelList;
     } else if (provider === "xai") {
@@ -262,9 +327,16 @@ function useModelList() {
         }
       );
       const { data = [] } = await response.json();
+      const tokenMap: Record<string, number> = {};
       const newModelList = (data as OpenAIModel[])
-        .map((item) => item.id)
+        .map((item) => {
+          if (XAI_MODEL_TOKEN_LIMITS[item.id]) {
+            tokenMap[item.id] = XAI_MODEL_TOKEN_LIMITS[item.id];
+          }
+          return item.id;
+        })
         .filter((id) => !id.includes("image"));
+      setModelTokenMap(tokenMap);
       setModelList(newModelList);
       return newModelList;
     } else if (provider === "mistral") {
@@ -285,9 +357,14 @@ function useModelList() {
         }
       );
       const { data = [] } = await response.json();
+      const tokenMap: Record<string, number> = {};
       const newModelList = (data as MistralModel[])
         .filter((item) => item.capabilities.completion_chat)
-        .map((item) => item.id);
+        .map((item) => {
+          tokenMap[item.id] = item.max_context_length;
+          return item.id;
+        });
+      setModelTokenMap(tokenMap);
       setModelList(newModelList);
       return newModelList;
     } else if (provider === "openaicompatible") {
@@ -308,7 +385,9 @@ function useModelList() {
         }
       );
       const { data = [] } = await response.json();
+      const tokenMap: Record<string, number> = {};
       const newModelList = (data as OpenAIModel[]).map((item) => item.id);
+      setModelTokenMap(tokenMap);
       setModelList(newModelList);
       return newModelList;
     } else if (provider === "pollinations") {
@@ -325,9 +404,11 @@ function useModelList() {
         }
       );
       const { data = [] } = await response.json();
+      const tokenMap: Record<string, number> = {};
       const newModelList = (data as OpenAIModel[])
         .map((item) => item.id)
         .filter((name) => !name.includes("audio"));
+      setModelTokenMap(tokenMap);
       setModelList(newModelList);
       return newModelList;
     } else if (provider === "ollama") {
@@ -343,7 +424,9 @@ function useModelList() {
         }
       );
       const { models = [] } = await response.json();
+      const tokenMap: Record<string, number> = {};
       const newModelList = (models as OllamaModel[]).map((item) => item.name);
+      setModelTokenMap(tokenMap);
       setModelList(newModelList);
       return newModelList;
     } else {
@@ -352,6 +435,7 @@ function useModelList() {
   }
   return {
     modelList,
+    modelTokenMap,
     refresh,
   };
 }

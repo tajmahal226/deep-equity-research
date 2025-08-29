@@ -223,7 +223,7 @@ function HelpTip({ children, tip }: { children: ReactNode; tip: string }) {
 function Setting({ open, onClose }: SettingProps) {
   const { t } = useTranslation();
   const { mode, provider, searchProvider, financialProvider, update } = useSettingStore();
-  const { modelList, refresh } = useModel();
+  const { modelList, modelTokenMap, refresh } = useModel();
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const thinkingModelList = useMemo(() => {
@@ -292,6 +292,19 @@ function Setting({ open, onClose }: SettingProps) {
       return disabledModelList.some((disabledModel) => disabledModel === model);
     },
     [mode]
+  );
+
+  const renderModelItem = useCallback(
+    (name: string) =>
+      !isDisabledAIModel(name) ? (
+        <SelectItem key={name} value={name}>
+          {convertModelName(name)}
+          {modelTokenMap[name]
+            ? ` (${modelTokenMap[name].toLocaleString()} tokens)`
+            : ""}
+        </SelectItem>
+      ) : null,
+    [isDisabledAIModel, modelTokenMap]
   );
 
   const isDisabledSearchProvider = useCallback(
@@ -1220,26 +1233,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {thinkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {thinkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {thinkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {thinkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -1304,26 +1305,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {networkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {networkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {networkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {networkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -1431,26 +1420,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {thinkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {thinkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {thinkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {thinkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -1515,26 +1492,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {networkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {networkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {networkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {networkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -1642,26 +1607,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {thinkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {thinkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {thinkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {thinkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -1726,26 +1679,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {networkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {networkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {networkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {networkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -1887,13 +1828,7 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {modelList.map((name) => {
-                                  return !isDisabledAIModel(name) ? (
-                                    <SelectItem key={name} value={name}>
-                                      {convertModelName(name)}
-                                    </SelectItem>
-                                  ) : null;
-                                })}
+                                {modelList.map(renderModelItem)}
                               </SelectContent>
                             </Select>
                             <Button
@@ -1952,13 +1887,7 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {modelList.map((name) => {
-                                  return !isDisabledAIModel(name) ? (
-                                    <SelectItem key={name} value={name}>
-                                      {convertModelName(name)}
-                                    </SelectItem>
-                                  ) : null;
-                                })}
+                                {modelList.map(renderModelItem)}
                               </SelectContent>
                             </Select>
                             <Button
@@ -2065,26 +1994,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {thinkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {thinkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {thinkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {thinkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -2149,26 +2066,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {networkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {networkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {networkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {networkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -2271,13 +2176,7 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {modelList.map((name) => {
-                                  return !isDisabledAIModel(name) ? (
-                                    <SelectItem key={name} value={name}>
-                                      {convertModelName(name)}
-                                    </SelectItem>
-                                  ) : null;
-                                })}
+                                {modelList.map(renderModelItem)}
                               </SelectContent>
                             </Select>
                             <Button
@@ -2336,13 +2235,7 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {modelList.map((name) => {
-                                  return !isDisabledAIModel(name) ? (
-                                    <SelectItem key={name} value={name}>
-                                      {convertModelName(name)}
-                                    </SelectItem>
-                                  ) : null;
-                                })}
+                                {modelList.map(renderModelItem)}
                               </SelectContent>
                             </Select>
                             <Button
@@ -2449,26 +2342,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {thinkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {thinkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {thinkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {thinkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -2533,26 +2414,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {networkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {networkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {networkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {networkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -2754,13 +2623,7 @@ function Setting({ open, onClose }: SettingProps) {
                                   />
                                 </SelectTrigger>
                                 <SelectContent className="max-sm:max-h-72">
-                                  {modelList.map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {modelList.map(renderModelItem)}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -2819,13 +2682,7 @@ function Setting({ open, onClose }: SettingProps) {
                                   />
                                 </SelectTrigger>
                                 <SelectContent className="max-sm:max-h-72">
-                                  {modelList.map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {modelList.map(renderModelItem)}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -2924,26 +2781,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {thinkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {thinkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {thinkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {thinkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -3008,26 +2853,14 @@ function Setting({ open, onClose }: SettingProps) {
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {networkingModelList[0].map((name) => {
-                                      return !isDisabledAIModel(name) ? (
-                                        <SelectItem key={name} value={name}>
-                                          {convertModelName(name)}
-                                        </SelectItem>
-                                      ) : null;
-                                    })}
+                                    {networkingModelList[0].map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
                                 <SelectGroup>
                                   <SelectLabel>
                                     {t("setting.basicModels")}
                                   </SelectLabel>
-                                  {networkingModelList[1].map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {networkingModelList[1].map(renderModelItem)}
                                 </SelectGroup>
                               </SelectContent>
                             </Select>
@@ -3138,13 +2971,7 @@ function Setting({ open, onClose }: SettingProps) {
                                   />
                                 </SelectTrigger>
                                 <SelectContent className="max-sm:max-h-72">
-                                  {modelList.map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {modelList.map(renderModelItem)}
                                 </SelectContent>
                               </Select>
                             </div>
@@ -3203,13 +3030,7 @@ function Setting({ open, onClose }: SettingProps) {
                                   />
                                 </SelectTrigger>
                                 <SelectContent className="max-sm:max-h-72">
-                                  {modelList.map((name) => {
-                                    return !isDisabledAIModel(name) ? (
-                                      <SelectItem key={name} value={name}>
-                                        {convertModelName(name)}
-                                      </SelectItem>
-                                    ) : null;
-                                  })}
+                                  {modelList.map(renderModelItem)}
                                 </SelectContent>
                               </Select>
                             </div>
