@@ -51,6 +51,7 @@ import { useCompanyDiscoveryStore, CompanyResult } from "@/store/companyDiscover
 import { defaultIndustries, defaultLocations, defaultFundingStages } from "@/store/companyDiscovery";
 import { useFinancialData } from "@/hooks/useFinancialData";
 import { toast } from "sonner";
+import { filterCompanies } from "@/utils/company-filters";
 
 interface SearchProgress {
   step: string;
@@ -112,7 +113,17 @@ export default function CompanyDiscovery() {
       // Use the financial data API for company search
       setSearchProgress({ step: "Searching companies", status: "Finding companies matching your criteria..." });
       
-      const searchResponse = await searchFinancialCompanies(searchQuery, 20);
+      const searchResponse = await searchFinancialCompanies(
+        searchQuery,
+        20,
+        {
+          industries: selectedIndustries,
+          locations: selectedLocations,
+          fundingStages: selectedFundingStages,
+          keywords,
+          excludeKeywords,
+        } as any
+      );
       
       if (searchResponse && searchResponse.results) {
         setSearchProgress({ step: "Processing results", status: "Enriching company data..." });
@@ -151,15 +162,22 @@ export default function CompanyDiscovery() {
           })
         );
 
-        setSearchResults(enrichedCompanies);
-        
-        // Add to store
-        enrichedCompanies.forEach((company: CompanyResult) => {
-          addCompany(company);
+        const filteredCompanies = filterCompanies(enrichedCompanies, {
+          industries: selectedIndustries,
+          locations: selectedLocations,
+          fundingStages: selectedFundingStages,
+          keywords,
+          excludeKeywords,
         });
 
+        setSearchResults(filteredCompanies);
+
+        // Add to store
+        filteredCompanies.forEach((company: CompanyResult) => {
+          addCompany(company);
+        });
         setSearchProgress(null);
-        toast.success(`Search completed! Found ${enrichedCompanies.length} companies`);
+        toast.success(`Search completed! Found ${filteredCompanies.length} companies`);
       } else {
         throw new Error("No results found");
       }
@@ -174,8 +192,15 @@ export default function CompanyDiscovery() {
 
   // Filter and sort companies
   const filteredAndSortedCompanies = () => {
-    const filtered = searchResults.length > 0 ? searchResults : companies;
-    
+    const base = searchResults.length > 0 ? searchResults : companies;
+    const filtered = filterCompanies(base, {
+      industries: selectedIndustries,
+      locations: selectedLocations,
+      fundingStages: selectedFundingStages,
+      keywords,
+      excludeKeywords,
+    });
+
     return filtered.sort((a, b) => {
       switch (sortBy) {
         case "funding":
