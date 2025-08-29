@@ -45,4 +45,16 @@ describe('Financial data API', () => {
     expect(json.success).toBe(true);
     expect(json.data.ticker).toBe('AAPL');
   });
+
+  it('returns consistent mock data when deterministic mode enabled', async () => {
+    const body = { action: 'stock-price', ticker: 'AAPL', financialProvider: 'mock', deterministic: true };
+    const req1 = new Request('http://localhost/api/financial-data', { method: 'POST', body: JSON.stringify(body) });
+    const req2 = new Request('http://localhost/api/financial-data', { method: 'POST', body: JSON.stringify(body) });
+    const res1 = await financialDataPost(req1 as any);
+    const res2 = await financialDataPost(req2 as any);
+    const json1 = await res1.json();
+    const json2 = await res2.json();
+    expect(json1.data.price).toBe(json2.data.price);
+    expect(json1.data.volume).toBe(json2.data.volume);
+  });
 });

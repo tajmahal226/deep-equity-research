@@ -112,6 +112,8 @@ export interface FinancialDataOptions {
   financialDatasetsApiKey?: string;
   /** Explicit financial data provider to use */
   financialProvider?: string;
+  /** Use deterministic values for mock provider */
+  deterministic?: boolean;
 }
 
 interface UseFinancialDataState {

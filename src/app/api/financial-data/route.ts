@@ -22,6 +22,8 @@ const FinancialDataRequestSchema = z.object({
   yahooFinanceApiKey: z.string().optional(),
   financialDatasetsApiKey: z.string().optional(),
   financialProvider: z.string().optional(),
+  // When true, mock data will use a deterministic random generator
+  deterministic: z.boolean().optional(),
 });
 
 // Helper function to get financial provider configuration
@@ -31,13 +33,29 @@ function getFinancialConfig(clientConfig?: any) {
   const alphaVantageKey = clientConfig?.alphaVantageApiKey || process.env.ALPHA_VANTAGE_API_KEY || "";
   const yahooKey = clientConfig?.yahooFinanceApiKey || process.env.YAHOO_FINANCE_API_KEY || "";
   const financialDatasetsKey = clientConfig?.financialDatasetsApiKey || process.env.FINANCIAL_DATASETS_API_KEY || "";
-  
+  const deterministic =
+    typeof clientConfig?.deterministic === "boolean"
+      ? clientConfig.deterministic
+      : process.env.FINANCIAL_MOCK_DETERMINISTIC === "true";
+
   return {
     provider,
     alphaVantageApiKey: alphaVantageKey,
     yahooFinanceApiKey: yahooKey,
     financialDatasetsApiKey: financialDatasetsKey,
-    hasApiKey: alphaVantageKey.length > 0 || yahooKey.length > 0 || financialDatasetsKey.length > 0
+    hasApiKey: alphaVantageKey.length > 0 || yahooKey.length > 0 || financialDatasetsKey.length > 0,
+    deterministicMockData: deterministic,
+  };
+}
+
+// Create either a seeded random number generator or use Math.random
+function createRNG(deterministic: boolean, seed = 42) {
+  if (!deterministic) return Math.random;
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
   };
 }
 
@@ -165,6 +183,7 @@ export async function POST(request: NextRequest) {
     logger.log(`[Financial Data API] ${action} request: ${ticker || query}`);
 
     const config = getFinancialConfig(validatedData);
+    const random = createRNG(config.deterministicMockData);
     const useRealData = config.hasApiKey && config.provider !== "mock";
 
     switch (action) {
@@ -200,16 +219,16 @@ export async function POST(request: NextRequest) {
         if (!stockData) {
           stockData = {
             ticker: ticker.toUpperCase(),
-            price: (Math.random() * 1000 + 50).toFixed(2),
-            change: ((Math.random() - 0.5) * 20).toFixed(2),
-            changePercent: ((Math.random() - 0.5) * 10).toFixed(2),
-            volume: Math.floor(Math.random() * 10000000),
-            marketCap: `${(Math.random() * 500 + 10).toFixed(1)}B`,
-            pe_ratio: (Math.random() * 40 + 10).toFixed(1),
-            high_52w: (Math.random() * 1200 + 60).toFixed(2),
-            low_52w: (Math.random() * 800 + 30).toFixed(2),
-            dividend_yield: (Math.random() * 5).toFixed(2),
-            beta: (Math.random() * 2 + 0.5).toFixed(2),
+            price: (random() * 1000 + 50).toFixed(2),
+            change: ((random() - 0.5) * 20).toFixed(2),
+            changePercent: ((random() - 0.5) * 10).toFixed(2),
+            volume: Math.floor(random() * 10000000),
+            marketCap: `${(random() * 500 + 10).toFixed(1)}B`,
+            pe_ratio: (random() * 40 + 10).toFixed(1),
+            high_52w: (random() * 1200 + 60).toFixed(2),
+            low_52w: (random() * 800 + 30).toFixed(2),
+            dividend_yield: (random() * 5).toFixed(2),
+            beta: (random() * 2 + 0.5).toFixed(2),
             lastUpdated: new Date().toISOString(),
             source: "mock"
           };
@@ -237,45 +256,45 @@ export async function POST(request: NextRequest) {
 
         if (requestedStatements.includes("income")) {
           financialData.statements.income = {
-            revenue: Math.floor(Math.random() * 100000 + 10000),
-            revenueGrowth: ((Math.random() - 0.5) * 20).toFixed(1),
-            costOfRevenue: Math.floor(Math.random() * 60000 + 6000),
-            grossProfit: Math.floor(Math.random() * 40000 + 4000),
-            grossProfitMargin: (Math.random() * 50 + 20).toFixed(1),
-            operatingExpenses: Math.floor(Math.random() * 30000 + 3000),
-            operatingIncome: Math.floor(Math.random() * 20000 + 2000),
-            operatingMargin: (Math.random() * 30 + 10).toFixed(1),
-            netIncome: Math.floor(Math.random() * 15000 + 1000),
-            netMargin: (Math.random() * 20 + 5).toFixed(1),
-            eps: (Math.random() * 20 + 1).toFixed(2),
-            epsGrowth: ((Math.random() - 0.5) * 30).toFixed(1),
+            revenue: Math.floor(random() * 100000 + 10000),
+            revenueGrowth: ((random() - 0.5) * 20).toFixed(1),
+            costOfRevenue: Math.floor(random() * 60000 + 6000),
+            grossProfit: Math.floor(random() * 40000 + 4000),
+            grossProfitMargin: (random() * 50 + 20).toFixed(1),
+            operatingExpenses: Math.floor(random() * 30000 + 3000),
+            operatingIncome: Math.floor(random() * 20000 + 2000),
+            operatingMargin: (random() * 30 + 10).toFixed(1),
+            netIncome: Math.floor(random() * 15000 + 1000),
+            netMargin: (random() * 20 + 5).toFixed(1),
+            eps: (random() * 20 + 1).toFixed(2),
+            epsGrowth: ((random() - 0.5) * 30).toFixed(1),
           };
         }
 
         if (requestedStatements.includes("balance")) {
           financialData.statements.balance = {
-            totalAssets: Math.floor(Math.random() * 200000 + 20000),
-            currentAssets: Math.floor(Math.random() * 80000 + 8000),
-            cashAndEquivalents: Math.floor(Math.random() * 50000 + 5000),
-            totalLiabilities: Math.floor(Math.random() * 100000 + 10000),
-            currentLiabilities: Math.floor(Math.random() * 40000 + 4000),
-            totalDebt: Math.floor(Math.random() * 30000 + 3000),
-            shareholdersEquity: Math.floor(Math.random() * 100000 + 10000),
-            bookValuePerShare: (Math.random() * 100 + 10).toFixed(2),
-            debtToEquity: (Math.random() * 2).toFixed(2),
-            currentRatio: (Math.random() * 3 + 0.5).toFixed(2),
+            totalAssets: Math.floor(random() * 200000 + 20000),
+            currentAssets: Math.floor(random() * 80000 + 8000),
+            cashAndEquivalents: Math.floor(random() * 50000 + 5000),
+            totalLiabilities: Math.floor(random() * 100000 + 10000),
+            currentLiabilities: Math.floor(random() * 40000 + 4000),
+            totalDebt: Math.floor(random() * 30000 + 3000),
+            shareholdersEquity: Math.floor(random() * 100000 + 10000),
+            bookValuePerShare: (random() * 100 + 10).toFixed(2),
+            debtToEquity: (random() * 2).toFixed(2),
+            currentRatio: (random() * 3 + 0.5).toFixed(2),
           };
         }
 
         if (requestedStatements.includes("cash_flow")) {
           financialData.statements.cash_flow = {
-            operatingCashFlow: Math.floor(Math.random() * 20000 + 2000),
-            investingCashFlow: -Math.floor(Math.random() * 10000 + 1000),
-            financingCashFlow: -Math.floor(Math.random() * 5000 + 500),
-            freeCashFlow: Math.floor(Math.random() * 15000 + 1500),
-            capex: Math.floor(Math.random() * 8000 + 800),
-            cashFlowPerShare: (Math.random() * 15 + 1).toFixed(2),
-            fcfYield: (Math.random() * 10 + 1).toFixed(1),
+            operatingCashFlow: Math.floor(random() * 20000 + 2000),
+            investingCashFlow: -Math.floor(random() * 10000 + 1000),
+            financingCashFlow: -Math.floor(random() * 5000 + 500),
+            freeCashFlow: Math.floor(random() * 15000 + 1500),
+            capex: Math.floor(random() * 8000 + 800),
+            cashFlowPerShare: (random() * 15 + 1).toFixed(2),
+            fcfYield: (random() * 10 + 1).toFixed(1),
           };
         }
         
@@ -349,9 +368,9 @@ export async function POST(request: NextRequest) {
           sector: "Various",
           industry: "Diversified",
           description: `${ticker.toUpperCase()} is a publicly traded company.`,
-          employees: Math.floor(Math.random() * 100000 + 1000),
+          employees: Math.floor(random() * 100000 + 1000),
           headquarters: "United States",
-          founded: 1950 + Math.floor(Math.random() * 70),
+          founded: 1950 + Math.floor(random() * 70),
           ceo: "Chief Executive Officer",
           website: `https://www.${ticker.toLowerCase()}.com`,
           exchange: "NYSE",
@@ -395,8 +414,8 @@ export async function POST(request: NextRequest) {
         const searchLimit = limit || 10;
         const results = filteredResults.slice(0, searchLimit).map(company => ({
           ...company,
-          change: ((Math.random() - 0.5) * 20).toFixed(2),
-          changePercent: ((Math.random() - 0.5) * 10).toFixed(2),
+          change: ((random() - 0.5) * 20).toFixed(2),
+          changePercent: ((random() - 0.5) * 10).toFixed(2),
         }));
 
         return NextResponse.json({ 
