@@ -208,6 +208,9 @@ export const useCompanyDiscoveryStore = create<CompanyDiscoveryState>()(
           c.name.toLowerCase().includes(lowercaseQuery) ||
           c.description.toLowerCase().includes(lowercaseQuery) ||
           c.industry.toLowerCase().includes(lowercaseQuery) ||
+          c.location.toLowerCase().includes(lowercaseQuery) ||
+          c.fundingStage.toLowerCase().includes(lowercaseQuery) ||
+          (c.ticker && c.ticker.toLowerCase().includes(lowercaseQuery)) ||
           c.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery)) ||
           (c.subIndustry && c.subIndustry.toLowerCase().includes(lowercaseQuery))
         );
@@ -219,5 +222,4 @@ export const useCompanyDiscoveryStore = create<CompanyDiscoveryState>()(
     }
   )
 );
-
 export { defaultIndustries, defaultLocations, defaultFundingStages };
