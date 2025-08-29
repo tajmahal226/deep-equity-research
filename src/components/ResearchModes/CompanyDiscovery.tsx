@@ -145,8 +145,7 @@ export default function CompanyDiscovery() {
               foundedYear: profile?.founded,
             };
 
-            addCompany(companyData);
-            const addedCompany = useCompanyDiscoveryStore.getState().companies[0];
+            const addedCompany = addCompany(companyData);
             return addedCompany;
           })
         );
