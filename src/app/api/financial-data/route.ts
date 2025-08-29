@@ -48,14 +48,19 @@ function getFinancialConfig(clientConfig?: any) {
   };
 }
 
+// Constants for the Park-Miller "minimal standard" linear congruential generator (LCG)
+const LCG_MODULUS = 2147483647;      // 2^31 - 1, a large prime modulus
+const LCG_MULTIPLIER = 16807;        // 7^5, the standard multiplier
+const LCG_MODULUS_MINUS_ONE = 2147483646; // LCG_MODULUS - 1, used for normalization and seed adjustment
+
 // Create either a seeded random number generator or use Math.random
 function createRNG(deterministic: boolean, seed = 42) {
   if (!deterministic) return Math.random;
-  let s = seed % 2147483647;
-  if (s <= 0) s += 2147483646;
+  let s = seed % LCG_MODULUS;
+  if (s <= 0) s += LCG_MODULUS_MINUS_ONE;
   return () => {
-    s = (s * 16807) % 2147483647;
-    return (s - 1) / 2147483646;
+    s = (s * LCG_MULTIPLIER) % LCG_MODULUS;
+    return (s - 1) / LCG_MODULUS_MINUS_ONE;
   };
 }
 
