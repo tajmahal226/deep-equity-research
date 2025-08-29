@@ -2,6 +2,7 @@ import { streamText, generateText } from "ai";
 import { type GoogleGenerativeAIProviderMetadata } from "@ai-sdk/google";
 import { createAIProvider } from "./provider";
 import { createSearchProvider } from "./search";
+import { getMaxTokens } from "@/constants/token-limits";
 import { hasTemperatureRestrictions } from "@/utils/model";
 import {
   getSystemPrompt,
@@ -85,9 +86,13 @@ class DeepResearch {
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
     
     // Don't pass temperature for reasoning models like GPT-5
-    let settings = undefined;
+    let settings: any = undefined;
     if (AIProvider.temperature !== undefined && !hasTemperatureRestrictions(AIProvider.thinkingModel)) {
       settings = { temperature: AIProvider.temperature };
+    }
+    const maxTokens = getMaxTokens(AIProvider.provider, AIProvider.thinkingModel);
+    if (maxTokens !== undefined) {
+      settings = { ...(settings || {}), maxTokens };
     }
     
     console.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", hasRestrictions=${hasTemperatureRestrictions(AIProvider.thinkingModel)}, temperature=${AIProvider.temperature}, finalSettings=`, settings);
@@ -116,6 +121,10 @@ class DeepResearch {
     if (AIProvider.provider === "google" && isNetworkingModel(AIProvider.taskModel)) {
       settings.useSearchGrounding = true;
     }
+    const maxTokens = getMaxTokens(AIProvider.provider, AIProvider.taskModel);
+    if (maxTokens !== undefined) {
+      settings.maxTokens = maxTokens;
+    }
     
     const finalSettings = Object.keys(settings).length > 0 ? settings : undefined;
     console.log(`[DEBUG] DeepResearch.getTaskModel: model="${AIProvider.taskModel}", hasRestrictions=${hasTemperatureRestrictions(AIProvider.taskModel)}, temperature=${AIProvider.temperature}, finalSettings=`, finalSettings);
@@ -139,6 +148,12 @@ class DeepResearch {
       console.log(`[DEBUG] DeepResearch: Removing temperature ${cleanParams.temperature} for restricted thinking model ${AIProvider.thinkingModel}`);
       delete cleanParams.temperature;
     }
+    const limit = getMaxTokens(AIProvider.provider, AIProvider.thinkingModel);
+    if (limit !== undefined) {
+      if (cleanParams.maxTokens === undefined || cleanParams.maxTokens > limit) {
+        cleanParams.maxTokens = limit;
+      }
+    }
     
     return cleanParams;
   }
@@ -153,6 +168,12 @@ class DeepResearch {
     if (hasTemperatureRestrictions(AIProvider.taskModel) && cleanParams.temperature !== undefined) {
       console.log(`[DEBUG] DeepResearch: Removing temperature ${cleanParams.temperature} for restricted task model ${AIProvider.taskModel}`);
       delete cleanParams.temperature;
+    }
+    const limit = getMaxTokens(AIProvider.provider, AIProvider.taskModel);
+    if (limit !== undefined) {
+      if (cleanParams.maxTokens === undefined || cleanParams.maxTokens > limit) {
+        cleanParams.maxTokens = limit;
+      }
     }
     
     return cleanParams;
