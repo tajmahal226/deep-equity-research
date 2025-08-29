@@ -1,5 +1,3 @@
-import { CompanyResult } from "@/store/companyDiscovery";
-
 export interface CompanyFilterOptions {
   industries?: string[];
   locations?: string[];
@@ -8,8 +6,21 @@ export interface CompanyFilterOptions {
   excludeKeywords?: string[];
 }
 
-export function filterCompanies(
-  companies: CompanyResult[],
+// Define minimal company shape required for filtering so that the utility can
+// operate on objects that haven't been fully enriched with an `id` or
+// `discoveredAt` yet. This allows us to filter both complete `CompanyResult`
+// objects as well as partial results generated during company enrichment.
+interface FilterableCompany {
+  name: string;
+  description: string;
+  industry?: string;
+  location?: string;
+  fundingStage?: string;
+  tags?: string[];
+}
+
+export function filterCompanies<T extends FilterableCompany>(
+  companies: T[],
   {
     industries = [],
     locations = [],
@@ -17,7 +28,7 @@ export function filterCompanies(
     keywords = [],
     excludeKeywords = [],
   }: CompanyFilterOptions
-): CompanyResult[] {
+): T[] {
   return companies.filter((company) => {
     const matchIndustry =
       industries.length === 0 || (company.industry && industries.includes(company.industry));

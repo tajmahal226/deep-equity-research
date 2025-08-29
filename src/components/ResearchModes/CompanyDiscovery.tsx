@@ -52,6 +52,7 @@ import { defaultIndustries, defaultLocations, defaultFundingStages } from "@/sto
 import { useFinancialData } from "@/hooks/useFinancialData";
 import { toast } from "sonner";
 import { filterCompanies } from "@/utils/company-filters";
+import { nanoid } from "nanoid";
 
 interface SearchProgress {
   step: string;
@@ -160,7 +161,14 @@ export default function CompanyDiscovery() {
           })
         );
 
-        const filteredCompanies = filterCompanies(enrichedCompanies, {
+        // Add identifiers before filtering so results can be tracked and displayed
+        const enrichedWithIds: CompanyResult[] = enrichedCompanies.map((company) => ({
+          ...company,
+          id: nanoid(),
+          discoveredAt: new Date(),
+        }));
+
+        const filteredCompanies = filterCompanies(enrichedWithIds, {
           industries: selectedIndustries,
           locations: selectedLocations,
           fundingStages: selectedFundingStages,
@@ -171,7 +179,7 @@ export default function CompanyDiscovery() {
         setSearchResults(filteredCompanies);
 
         // Add to store
-        filteredCompanies.forEach((company: CompanyResult) => {
+        filteredCompanies.forEach((company) => {
           addCompany(company);
         });
         setSearchProgress(null);
