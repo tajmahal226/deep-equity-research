@@ -42,6 +42,27 @@ import { logger } from "@/utils/logger";
 import { ThinkTagStreamProcessor } from "@/utils/text";
 // Removed unused import: pick from radash
 
+// Helper to ensure API keys are present for a given provider/model pair
+function validateApiKey(provider: string, model: string, apiKey?: string): string {
+  if (apiKey) return apiKey;
+
+  if (provider === "openai" && (model.includes("o3") || model.startsWith("gpt-5"))) {
+    throw new Error(`No OpenAI API key found for ${model}. Advanced OpenAI models (GPT-5, o3 series) require a valid API key. Please click the settings gear icon in the top-right corner to enter your OpenAI API key, or set the OPENAI_API_KEY environment variable.`);
+  }
+  if (provider === "anthropic") {
+    throw new Error(`No Anthropic API key found for Claude ${model}. Please click the settings gear icon in the top-right corner to enter your Anthropic API key, or set the ANTHROPIC_API_KEY environment variable.`);
+  }
+  if (provider === "deepseek") {
+    const modelLabel = model.includes("reasoner") ? `reasoning model ${model}` : model;
+    throw new Error(`No DeepSeek API key found for ${modelLabel}. Please click the settings gear icon in the top-right corner to enter your DeepSeek API key, or set the DEEPSEEK_API_KEY environment variable.`);
+  }
+  if (provider === "xai") {
+    throw new Error(`No xAI API key found for Grok ${model}. Please click the settings gear icon in the top-right corner to enter your xAI API key, or set the XAI_API_KEY environment variable.`);
+  }
+
+  throw new Error(`No API key found for ${provider}. Please click the settings gear icon in the top-right corner to enter your ${provider.toUpperCase()} API key.`);
+}
+
 // Import types we'll need
 interface CompanyResearchConfig {
   // Company information
@@ -169,24 +190,12 @@ export class CompanyDeepResearch {
       try {
         const clientApiKey = this.config.thinkingModelConfig?.apiKey;
         const serverApiKey = getAIProviderApiKeyWithFallback(thinkingProvider);
-        const apiKey = clientApiKey || serverApiKey;
-        
-        if (!apiKey) {
-          if (thinkingProvider === "openai" && (thinkingModel.includes("o3") || thinkingModel.startsWith("gpt-5"))) {
-            throw new Error(`No OpenAI API key found for ${thinkingModel}. Advanced OpenAI models (GPT-5, o3 series) require a valid API key. Please click the settings gear icon in the top-right corner to enter your OpenAI API key, or set the OPENAI_API_KEY environment variable.`);
-          }
-          if (thinkingProvider === "anthropic") {
-            throw new Error(`No Anthropic API key found for Claude ${thinkingModel}. Please click the settings gear icon in the top-right corner to enter your Anthropic API key, or set the ANTHROPIC_API_KEY environment variable.`);
-          }
-          if (thinkingProvider === "deepseek" && thinkingModel.includes("reasoner")) {
-            throw new Error(`No DeepSeek API key found for reasoning model ${thinkingModel}. Please click the settings gear icon in the top-right corner to enter your DeepSeek API key, or set the DEEPSEEK_API_KEY environment variable.`);
-          }
-          if (thinkingProvider === "xai") {
-            throw new Error(`No xAI API key found for Grok ${thinkingModel}. Please click the settings gear icon in the top-right corner to enter your xAI API key, or set the XAI_API_KEY environment variable.`);
-          }
-          throw new Error(`No API key found for ${thinkingProvider}. Please click the settings gear icon in the top-right corner to enter your ${thinkingProvider.toUpperCase()} API key.`);
-        }
-        
+        const apiKey = validateApiKey(
+          thinkingProvider,
+          thinkingModel,
+          clientApiKey || serverApiKey
+        );
+
         this.thinkingModel = await createAIProvider({
           provider: thinkingProvider,
           model: thinkingModel,
@@ -202,24 +211,12 @@ export class CompanyDeepResearch {
       try {
         const clientApiKey = this.config.taskModelConfig?.apiKey;
         const serverApiKey = getAIProviderApiKeyWithFallback(taskProvider);
-        const apiKey = clientApiKey || serverApiKey;
-        
-        if (!apiKey) {
-          if (taskProvider === "openai" && (taskModel.includes("o3") || taskModel.startsWith("gpt-5"))) {
-            throw new Error(`No OpenAI API key found for ${taskModel}. Advanced OpenAI models (GPT-5, o3 series) require a valid API key. Please click the settings gear icon in the top-right corner to enter your OpenAI API key, or set the OPENAI_API_KEY environment variable.`);
-          }
-          if (taskProvider === "anthropic") {
-            throw new Error(`No Anthropic API key found for Claude ${taskModel}. Please click the settings gear icon in the top-right corner to enter your Anthropic API key, or set the ANTHROPIC_API_KEY environment variable.`);
-          }
-          if (taskProvider === "deepseek") {
-            throw new Error(`No DeepSeek API key found for ${taskModel}. Please click the settings gear icon in the top-right corner to enter your DeepSeek API key, or set the DEEPSEEK_API_KEY environment variable.`);
-          }
-          if (taskProvider === "xai") {
-            throw new Error(`No xAI API key found for Grok ${taskModel}. Please click the settings gear icon in the top-right corner to enter your xAI API key, or set the XAI_API_KEY environment variable.`);
-          }
-          throw new Error(`No API key found for ${taskProvider}. Please click the settings gear icon in the top-right corner to enter your ${taskProvider.toUpperCase()} API key.`);
-        }
-        
+        const apiKey = validateApiKey(
+          taskProvider,
+          taskModel,
+          clientApiKey || serverApiKey
+        );
+
         this.taskModel = await createAIProvider({
           provider: taskProvider,
           model: taskModel,
