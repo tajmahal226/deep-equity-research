@@ -142,3 +142,4 @@ describe("Company Research Initialization Integration Test", () => {
     }
   });
 });
+
