@@ -117,12 +117,26 @@ export class CompanyDeepResearch {
   private initialized: boolean = false;
   
   constructor(config: CompanyResearchConfig) {
-    this.config = config;
-    
+    // Provide safe defaults for optional array fields
+    this.config = {
+      subIndustries: [],
+      competitors: [],
+      researchSources: [],
+      ...config,
+    };
+
     // Debug: Check if imports are loaded
     logger.log("CompanyDeepResearch constructor - Checking imports:");
-    logger.log("systemInstruction:", typeof systemInstruction, systemInstruction?.substring(0, 50) + "...");
-    logger.log("outputGuidelinesPrompt:", typeof outputGuidelinesPrompt, outputGuidelinesPrompt?.substring(0, 50) + "...");
+    logger.log(
+      "systemInstruction:",
+      typeof systemInstruction,
+      systemInstruction?.substring(0, 50) + "..."
+    );
+    logger.log(
+      "outputGuidelinesPrompt:",
+      typeof outputGuidelinesPrompt,
+      outputGuidelinesPrompt?.substring(0, 50) + "..."
+    );
     logger.log(
       "INVESTMENT_RESEARCH_SECTIONS:",
       typeof INVESTMENT_RESEARCH_SECTIONS,
@@ -500,14 +514,16 @@ export class CompanyDeepResearch {
    * Includes all company context in a single prompt
    */
   private buildFastResearchPrompt(): string {
-    const { 
-      companyName, 
-      companyWebsite, 
-      industry, 
-      subIndustries,
-      competitors,
-      additionalContext 
+    const {
+      companyName,
+      companyWebsite,
+      industry,
+      additionalContext
     } = this.config;
+
+    // Ensure optional arrays are always defined
+    const subIndustries = this.config.subIndustries || [];
+    const competitors = this.config.competitors || [];
     
     // Check if systemInstruction is available
     if (!systemInstruction) {

@@ -27,7 +27,7 @@ import { nanoid } from "nanoid";
 import { logger } from "@/utils/logger";
 
 // Helper function to get default model configuration for any provider
-function getDefaultModelConfig(providerId?: string) {
+export function getDefaultModelConfig(providerId?: string) {
   switch (providerId) {
     case "anthropic":
       return { thinkingModel: "claude-3-5-sonnet-20241022", networkingModel: "claude-3-5-haiku-20241022" };
