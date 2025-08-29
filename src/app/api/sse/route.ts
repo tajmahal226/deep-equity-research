@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       logger.log("Client connected");
       controller.enqueue(
         encoder.encode(
-          `event: infor\ndata: ${JSON.stringify({
+          `event: info\ndata: ${JSON.stringify({
             name: "deep-research",
             version: "0.1.0",
           })}\n\n`
@@ -81,12 +81,14 @@ export async function POST(req: NextRequest) {
           } else if (event === "error") {
             console.error(data);
             controller.close();
+          } else if (event === "complete") {
+            logger.log("Research complete");
           } else {
             console.warn(`Unknown event: ${event}`);
           }
           controller.enqueue(
             encoder.encode(
-              `event: ${event}\ndata: ${JSON.stringify(data)})}\n\n`
+              `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
             )
           );
         },
