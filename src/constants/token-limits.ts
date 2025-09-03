@@ -23,7 +23,15 @@ export const DEEPSEEK_MODEL_TOKEN_LIMITS: Record<string, number> = {
 };
 
 export const XAI_MODEL_TOKEN_LIMITS: Record<string, number> = {
+  // Grok models generally support large context windows (~128k tokens)
+  // Include common prefixes so matchModel() can handle versioned variants
   "grok-beta": 128000,
+  "grok-1": 128000,
+  "grok-1-mini": 128000,
+  "grok-2": 128000,
+  "grok-2-mini": 128000,
+  "grok-3": 128000,
+  "grok-3-mini": 128000,
 };
 
 // Fallback limit used when we don't have an explicit token limit for a

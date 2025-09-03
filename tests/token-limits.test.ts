@@ -13,4 +13,9 @@ describe('getMaxTokens', () => {
   it('falls back to default limit for unknown provider', () => {
     expect(getMaxTokens('unknown', 'gpt-4o')).toBe(DEFAULT_MODEL_TOKEN_LIMIT);
   });
+
+  it('recognizes xAI Grok models', () => {
+    expect(getMaxTokens('xai', 'grok-2-1212')).toBe(128000);
+    expect(getMaxTokens('xai', 'grok-2-mini-1212')).toBe(128000);
+  });
 });
