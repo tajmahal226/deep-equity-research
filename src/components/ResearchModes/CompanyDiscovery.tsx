@@ -53,6 +53,7 @@ import { useFinancialData } from "@/hooks/useFinancialData";
 import { toast } from "sonner";
 import { filterCompanies } from "@/utils/company-filters";
 import { nanoid } from "nanoid";
+import Plimit from "p-limit";
 
 interface SearchProgress {
   step: string;
@@ -130,35 +131,38 @@ export default function CompanyDiscovery() {
         setSearchProgress({ step: "Processing results", status: "Enriching company data..." });
         
         // Convert financial search results to CompanyResult format
+        const limit = Plimit(5);
         const enrichedCompanies = await Promise.all(
-          searchResponse.results.map(async (result, index) => {
-            // Get additional company profile data
-            const profile = await getCompanyProfile(result.ticker);
+          searchResponse.results.map((result, index) =>
+            limit(async () => {
+              // Get additional company profile data
+              const profile = await getCompanyProfile(result.ticker);
 
-            const company: Omit<CompanyResult, "id" | "discoveredAt"> = {
-              name: result.name,
-              description: profile?.description || `${result.name} is a ${result.sector.toLowerCase()} company.`,
-              industry: profile?.industry || result.sector,
-              location: profile?.headquarters || "United States",
-              website: profile?.website || `https://www.${result.ticker.toLowerCase()}.com`,
-              employeeCount: profile?.employees ? `${profile.employees.toLocaleString()}+` : "1000+",
-              fundingStage: "Public",
-              totalFunding: result.marketCap,
-              ticker: result.ticker,
-              marketCap: result.marketCap,
-              currentPrice: result.price,
-              priceChange: result.change,
-              priceChangePercent: result.changePercent,
-              tags: [result.sector, "Public Company", "Financial Data Available"],
-              matchScore: 100 - index, // Deterministic relevance score based on position
-              reasoning: `Found through financial database search. Market cap: ${result.marketCap}, Current price: $${result.price}`,
-              sources: ["Financial API", "Company Profile Database"],
-              competitors: [],
-              foundedYear: profile?.founded,
-            };
-            
-            return company;
-          })
+              const company: Omit<CompanyResult, "id" | "discoveredAt"> = {
+                name: result.name,
+                description: profile?.description || `${result.name} is a ${result.sector.toLowerCase()} company.`,
+                industry: profile?.industry || result.sector,
+                location: profile?.headquarters || "United States",
+                website: profile?.website || `https://www.${result.ticker.toLowerCase()}.com`,
+                employeeCount: profile?.employees ? `${profile.employees.toLocaleString()}+` : "1000+",
+                fundingStage: "Public",
+                totalFunding: result.marketCap,
+                ticker: result.ticker,
+                marketCap: result.marketCap,
+                currentPrice: result.price,
+                priceChange: result.change,
+                priceChangePercent: result.changePercent,
+                tags: [result.sector, "Public Company", "Financial Data Available"],
+                matchScore: 100 - index, // Deterministic relevance score based on position
+                reasoning: `Found through financial database search. Market cap: ${result.marketCap}, Current price: $${result.price}`,
+                sources: ["Financial API", "Company Profile Database"],
+                competitors: [],
+                foundedYear: profile?.founded,
+              };
+
+              return company;
+            })
+          )
         );
 
         // Add identifiers before filtering so results can be tracked and displayed
