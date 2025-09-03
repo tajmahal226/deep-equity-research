@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/Internal/Button";
 import {
   Form,
@@ -49,6 +50,7 @@ function Feedback() {
       accurateTimerStart();
       setIsResaerch(true);
       await deepResearch();
+      toast.success(t("research.common.researchComplete"));
     } finally {
       setIsResaerch(false);
       accurateTimerStop();
@@ -68,6 +70,7 @@ function Feedback() {
       accurateTimerStart();
       setIsThinking(true);
       await writeReportPlan();
+      toast.success(t("research.common.thinkingComplete"));
       setIsThinking(false);
     } finally {
       accurateTimerStop();

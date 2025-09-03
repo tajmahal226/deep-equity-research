@@ -81,6 +81,7 @@ function FinalReport() {
       setIsWriting(true);
       if (values.requirement) setRequirement(values.requirement);
       await writeFinalReport();
+      toast.success(t("research.common.reportComplete"));
     } finally {
       setIsWriting(false);
       accurateTimerStop();

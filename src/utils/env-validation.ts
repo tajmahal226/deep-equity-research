@@ -116,7 +116,7 @@ export function validateEnvironment(): ValidationResult {
   });
 
   // Specific validations
-  validateSpecificConfig(config, warnings, errors);
+  validateSpecificConfig(config, warnings);
 
   return {
     isValid: errors.length === 0,
@@ -131,8 +131,7 @@ export function validateEnvironment(): ValidationResult {
  */
 function validateSpecificConfig(
   config: Record<string, string | undefined>,
-  warnings: string[],
-  errors: string[]
+  warnings: string[]
 ): void {
   // MCP configuration validation
   const mcpProvider = config.MCP_AI_PROVIDER;
