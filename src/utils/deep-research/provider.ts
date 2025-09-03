@@ -232,15 +232,58 @@ export async function createAIProvider({
         return {
           ...responsesModel,
           async doGenerate(options) {
-            return baseGenerate(sanitizeOptions(options));
+            const clean = sanitizeOptions(options);
+            try {
+              return await baseGenerate(clean);
+            } catch (error) {
+              logOpenAIError(error, { provider, model, parameters: clean });
+              throw error;
+            }
           },
           async doStream(options) {
-            return baseStream(sanitizeOptions(options));
+            const clean = sanitizeOptions(options);
+            try {
+              return await baseStream(clean);
+            } catch (error) {
+              logOpenAIError(error, { provider, model, parameters: clean });
+              throw error;
+            }
           },
         } as typeof responsesModel;
       } else {
         console.log(`[DEBUG] createAIProvider: Using openai(${model}, filteredSettings)`);
-        return openai(model, filteredSettings);
+        const modelInstance = openai(model, filteredSettings);
+
+        const baseGenerate = (modelInstance as any).doGenerate?.bind(modelInstance);
+        const baseStream = (modelInstance as any).doStream?.bind(modelInstance);
+
+        if (!baseGenerate && !baseStream) {
+          return modelInstance;
+        }
+
+        return {
+          ...modelInstance,
+          ...(baseGenerate && {
+            async doGenerate(options: any) {
+              try {
+                return await baseGenerate(options);
+              } catch (error) {
+                logOpenAIError(error, { provider, model, parameters: options });
+                throw error;
+              }
+            },
+          }),
+          ...(baseStream && {
+            async doStream(options: any) {
+              try {
+                return await baseStream(options);
+              } catch (error) {
+                logOpenAIError(error, { provider, model, parameters: options });
+                throw error;
+              }
+            },
+          }),
+        } as typeof modelInstance;
       }
   } else if (provider === "anthropic") {
     const { createAnthropic } = await import("@ai-sdk/anthropic");
