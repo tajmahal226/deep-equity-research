@@ -19,6 +19,8 @@ interface ReaderResult extends CrawlerResult {
 }
 
 export async function jinaReader(url: string) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60_000);
   const response = await fetch("https://r.jina.ai", {
     method: "POST",
     headers: {
@@ -26,7 +28,9 @@ export async function jinaReader(url: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ url }),
+    signal: controller.signal,
   });
+  clearTimeout(timeoutId);
 
   const { data }: { data: ReaderResult } = await response.json();
   if (data.warning) {
@@ -37,6 +41,8 @@ export async function jinaReader(url: string) {
 
 export async function localCrawler(url: string, password: string) {
   const accessKey = generateSignature(password, Date.now());
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60_000);
   const response = await fetch("/api/crawler", {
     method: "POST",
     headers: {
@@ -44,7 +50,9 @@ export async function localCrawler(url: string, password: string) {
       Authorization: `Bearer ${accessKey}`,
     },
     body: JSON.stringify({ url }),
+    signal: controller.signal,
   });
+  clearTimeout(timeoutId);
   const result: CrawlerResult = await response.json();
   return result;
 }
