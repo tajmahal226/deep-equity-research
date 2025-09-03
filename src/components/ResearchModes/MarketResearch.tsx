@@ -112,7 +112,23 @@ export default function MarketResearch() {
       });
 
       if (!response.ok) {
-        throw new Error(`Research failed: ${response.statusText}`);
+        let errorMessage = "";
+        try {
+          const data = await response.json();
+          if (typeof data === "string") {
+            errorMessage = data;
+          } else if (data && (data.message || data.error)) {
+            errorMessage = data.message || data.error;
+          } else {
+            errorMessage = JSON.stringify(data);
+          }
+        } catch {
+          const text = await response.text();
+          if (text) errorMessage = text;
+        }
+        throw new Error(
+          `Research failed${errorMessage ? ": " + errorMessage : ""}`
+        );
       }
 
       const reader = response.body?.getReader();
