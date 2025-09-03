@@ -1,22 +1,36 @@
 <div align="center">
 <h1>TJ Deep Research</h1>
-
 </div>
 
 **Deep Equity Research Analyst**
 
-based off of https://github.com/u14app/deep-research
+Based on [u14app/deep-research](https://github.com/u14app/deep-research).
 
-Deep Research uses a variety of powerful AI models to generate in-depth research reports in just a few minutes. It leverages advanced "Thinking" and "Task" models, combined with an internet connection, to provide fast and insightful analysis on a variety of topics. *All data is processed and stored locally in the browser.*
+TJ Deep Research orchestrates advanced "Thinking" and "Task" AI models with live web search to generate in‑depth equity research reports within minutes. All processing and storage happen locally in the browser.
+
+## Table of Contents
+- [Features](#features)
+- [Installation](#installation)
+- [Environment Setup](#environment-setup)
+- [Running Research Modes](#running-research-modes)
+- [Documentation](#documentation)
+- [Contributing](#contributing)
+- [Testing](#testing)
+- [Deployment Tips](#deployment-tips)
+- [License](#license)
 
 ## Features
 - Rapid deep research using thinking and reasoning models with web search
 - Supports multiple AI and search providers (OpenAI and Tavily recommended)
+- UI modes for company deep dives, market research, document analysis, and more
+- All research runs locally in your browser
 
 ## Installation
-1. **Requirements**
-   - [Node.js](https://nodejs.org/) (version 18.18.0 LTS or later recommended)
-   - [pnpm](https://pnpm.io/) (preferred) or [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/tajmahal226/deep-equity-research.git
+   cd deep-equity-research
+   ```
 2. **Install dependencies**
    ```bash
    pnpm install
@@ -52,23 +66,31 @@ pnpm build
 pnpm start
 ```
 
+## Documentation
+Additional usage notes and API details can be found in the [docs](./docs) directory, including [API documentation](./docs/deep-research-api-doc.md).
+
 ## Contributing
 1. Fork the repository and create a feature branch.
 2. Install dependencies and ensure the development server runs.
-3. Run linting before committing:
+3. Run linting and tests before committing:
    ```bash
    pnpm lint
+   pnpm test
    ```
 4. Submit a pull request describing your changes.
 
 ## Testing
-Run the project lint checks:
+Run project checks locally:
 ```bash
 pnpm lint
+pnpm test
 ```
 
 ## Deployment Tips
 - **Vercel**: configure environment variables in project settings. To opt into the experimental React Compiler, set `REACT_COMPILER=true`.
 - **Docker/Standalone**: build with `pnpm build:standalone` and run the resulting image.
 - **Static Hosting**: generate static export with `pnpm build:export`.
+
+## License
+This project is licensed under the [MIT License](./LICENSE).
 
