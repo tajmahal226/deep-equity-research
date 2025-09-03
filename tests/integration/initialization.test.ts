@@ -73,6 +73,11 @@ describe("Company Research Initialization Integration Test", () => {
         provider: "xai",
         envVar: "XAI_API_KEY",
         expectedMessage: /xAI API key.*Grok/i
+      },
+      {
+        provider: "google",
+        envVar: "GOOGLE_GENERATIVE_AI_API_KEY",
+        expectedMessage: /Google API key/i
       }
     ];
 
