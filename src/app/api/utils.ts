@@ -35,9 +35,27 @@ const BOCHA_API_BASE_URL =
 const SEARXNG_API_BASE_URL =
   process.env.SEARXNG_API_BASE_URL || "http://0.0.0.0:8080";
 
-// API keys are resolved dynamically from environment variables within
-// their respective lookup functions. This avoids stale values when tests or
-// runtime code modify `process.env` after module initialization.
+// Map of AI provider IDs to their corresponding environment variable names.
+// This allows us to log accurate setup instructions for providers whose
+// variable name doesn't follow the default `${PROVIDER}_API_KEY` convention
+// (e.g. Google).
+const AI_PROVIDER_ENV_VARS: Record<string, string> = {
+  google: "GOOGLE_GENERATIVE_AI_API_KEY",
+  openai: "OPENAI_API_KEY",
+  anthropic: "ANTHROPIC_API_KEY",
+  deepseek: "DEEPSEEK_API_KEY",
+  xai: "XAI_API_KEY",
+  mistral: "MISTRAL_API_KEY",
+  cohere: "COHERE_API_KEY",
+  together: "TOGETHER_API_KEY",
+  groq: "GROQ_API_KEY",
+  perplexity: "PERPLEXITY_API_KEY",
+  openrouter: "OPENROUTER_API_KEY",
+};
+
+// API keys are resolved dynamically from environment variables within their
+// respective lookup functions. This avoids stale values when tests or runtime
+// code modify `process.env` after module initialization.
 
 export function getAIProviderBaseURL(provider: string) {
   switch (provider) {
@@ -74,25 +92,12 @@ export function getAIProviderApiKey(provider: string) {
   const providersWithoutKeys = ["ollama"];
   if (providersWithoutKeys.includes(provider)) return "";
 
-  const envVarMap: Record<string, string | undefined> = {
-    google: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-    openai: process.env.OPENAI_API_KEY,
-    anthropic: process.env.ANTHROPIC_API_KEY,
-    deepseek: process.env.DEEPSEEK_API_KEY,
-    xai: process.env.XAI_API_KEY,
-    mistral: process.env.MISTRAL_API_KEY,
-    cohere: process.env.COHERE_API_KEY,
-    together: process.env.TOGETHER_API_KEY,
-    groq: process.env.GROQ_API_KEY,
-    perplexity: process.env.PERPLEXITY_API_KEY,
-    openrouter: process.env.OPENROUTER_API_KEY,
-  };
-
-  if (!(provider in envVarMap)) {
+  const envVarName = AI_PROVIDER_ENV_VARS[provider];
+  if (!envVarName) {
     throw new Error("Unsupported Provider: " + provider);
   }
 
-  const apiKey = envVarMap[provider] || "";
+  const apiKey = process.env[envVarName] || "";
 
   if (process.env.NODE_ENV === "development") {
     console.log(
@@ -102,7 +107,7 @@ export function getAIProviderApiKey(provider: string) {
 
   if (!apiKey) {
     console.warn(
-      `[API Key Warning] No API key found for provider: ${provider}. Set ${provider.toUpperCase()}_API_KEY environment variable.`
+      `[API Key Warning] No API key found for provider: ${provider}. Set ${envVarName} environment variable.`
     );
   }
 
@@ -115,17 +120,18 @@ export function getAIProviderApiKey(provider: string) {
  */
 export function getAIProviderApiKeyWithFallback(provider: string): string {
   const apiKey = getAIProviderApiKey(provider);
-  
+
   // If no API key is found and we're in development, provide guidance
   if (!apiKey && process.env.NODE_ENV === 'development') {
+    const envVarName = AI_PROVIDER_ENV_VARS[provider];
     console.warn(`\n🔑 [Setup Required] No API key found for ${provider}.`);
     console.warn(`   To fix this, add your API key to .env.local:`);
-    console.warn(`   ${provider.toUpperCase()}_API_KEY=your-key-here\n`);
-    
+    console.warn(`   ${envVarName}=your-key-here\n`);
+
     // Return empty string - the error handling in the calling code will handle this gracefully
     return '';
   }
-  
+
   return apiKey;
 }
 

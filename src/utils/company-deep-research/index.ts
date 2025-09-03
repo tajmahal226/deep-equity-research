@@ -61,7 +61,9 @@ function validateApiKey(provider: string, model: string, apiKey?: string): strin
     throw new Error(`No xAI API key found for Grok ${model}. Please click the settings gear icon in the top-right corner to enter your xAI API key, or set the XAI_API_KEY environment variable.`);
   }
   if (provider === "google") {
-    throw new Error(`No Google API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Google API key, or set the GOOGLE_GENERATIVE_AI_API_KEY environment variable.`);
+    throw new Error(
+      `No Google API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Google API key, or set the GOOGLE_GENERATIVE_AI_API_KEY environment variable.`
+    );
   }
 
   throw new Error(`No API key found for ${provider}. Please click the settings gear icon in the top-right corner to enter your ${provider.toUpperCase()} API key.`);
