@@ -143,10 +143,39 @@ export default function MarketResearch() {
           const data = JSON.parse(dataLine.replace("data:", "").trim());
 
           switch (eventType) {
-            case "progress":
-              setProgress(data.percentage ?? 0);
-              if (data.message) setProgressMessage(data.message);
+            case "progress": {
+              // Map known steps to rough completion percentages
+              const stepProgress: Record<string, number> = {
+                "report-plan": 25,
+                "task-list": 50,
+                "search-task": 75,
+                "final-report": 100,
+              };
+
+              if (data.step === "final-report" && data.status === "end") {
+                // Transform final report structure to match expected format
+                setAnalysisResults({
+                  report: {
+                    title: data.data?.title,
+                    content: data.data?.finalReport,
+                  },
+                  learnings: data.data?.learnings,
+                  sources: data.data?.sources,
+                  images: data.data?.images,
+                });
+                setProgress(100);
+                done = true;
+              } else {
+                if (typeof data.percentage === "number") {
+                  setProgress(data.percentage);
+                } else if (data.step && data.status === "end") {
+                  const p = stepProgress[data.step];
+                  if (p !== undefined) setProgress(p);
+                }
+                if (data.message) setProgressMessage(data.message);
+              }
               break;
+            }
             case "message":
               setAnalysisResults((prev: any) => ({ ...prev, ...data }));
               break;
