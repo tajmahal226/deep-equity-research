@@ -58,7 +58,6 @@ import {
   DEEPSEEK_BASE_URL,
   XAI_BASE_URL,
   MISTRAL_BASE_URL,
-  POLLINATIONS_BASE_URL,
   OLLAMA_BASE_URL,
   TAVILY_BASE_URL,
   FIRECRAWL_BASE_URL,
@@ -74,7 +73,6 @@ import {
   filterDeepSeekModelList,
   filterOpenAIModelList,
   filterMistralModelList,
-  filterPollinationsModelList,
   getCustomModelList,
 } from "@/utils/model";
 import { researchStore } from "@/utils/storage";
@@ -127,18 +125,6 @@ const formSchema = z.object({
   mistralApiProxy: z.string().optional(),
   mistralThinkingModel: z.string().optional(),
   mistralNetworkingModel: z.string().optional(),
-  azureApiKey: z.string().optional(),
-  azureResourceName: z.string().optional(),
-  azureApiVersion: z.string().optional(),
-  azureThinkingModel: z.string().optional(),
-  azureNetworkingModel: z.string().optional(),
-  openAICompatibleApiKey: z.string().optional(),
-  openAICompatibleApiProxy: z.string().optional(),
-  openAICompatibleThinkingModel: z.string().optional(),
-  openAICompatibleNetworkingModel: z.string().optional(),
-  pollinationsApiProxy: z.string().optional(),
-  pollinationsThinkingModel: z.string().optional(),
-  pollinationsNetworkingModel: z.string().optional(),
   ollamaApiProxy: z.string().optional(),
   ollamaThinkingModel: z.string().optional(),
   ollamaNetworkingModel: z.string().optional(),
@@ -236,8 +222,6 @@ function Setting({ open, onClose }: SettingProps) {
       return filterDeepSeekModelList(modelList);
     } else if (provider === "mistral") {
       return filterMistralModelList(modelList);
-    } else if (provider === "pollinations") {
-      return filterPollinationsModelList(modelList);
     }
     return [[], modelList];
   }, [modelList]);
@@ -251,8 +235,6 @@ function Setting({ open, onClose }: SettingProps) {
       return filterOpenAIModelList(modelList);
     } else if (provider === "mistral") {
       return filterMistralModelList(modelList);
-    } else if (provider === "pollinations") {
-      return filterPollinationsModelList(modelList);
     }
     return [[], modelList];
   }, [modelList]);
@@ -335,21 +317,12 @@ function Setting({ open, onClose }: SettingProps) {
                 modelName.includes("o3-") ||
                 hasTemperatureRestrictions(modelName));
       
-      case "azure":
-        // Azure uses OpenAI models - same reasoning model detection
-        return !(modelName.startsWith("o1") || 
-                modelName.startsWith("o3") || 
-                modelName.includes("o3-") ||
-                hasTemperatureRestrictions(modelName));
-      
       case "anthropic":
       case "mistral":
       case "deepseek":
       case "xai":
       case "google":
       case "openrouter":
-      case "openaicompatible":
-      case "pollinations":
       case "ollama":
         // These providers generally support temperature
         return true;
@@ -538,24 +511,9 @@ function Setting({ open, onClose }: SettingProps) {
                             {!isDisabledAIProvider("mistral") ? (
                               <SelectItem value="mistral">Mistral</SelectItem>
                             ) : null}
-                            {!isDisabledAIProvider("azure") ? (
-                              <SelectItem value="azure">
-                                Azure OpenAI
-                              </SelectItem>
-                            ) : null}
                             {!isDisabledAIProvider("openrouter") ? (
                               <SelectItem value="openrouter">
                                 OpenRouter
-                              </SelectItem>
-                            ) : null}
-                            {!isDisabledAIProvider("openaicompatible") ? (
-                              <SelectItem value="openaicompatible">
-                                {t("setting.openAICompatible")}
-                              </SelectItem>
-                            ) : null}
-                            {!isDisabledAIProvider("pollinations") ? (
-                              <SelectItem value="pollinations">
-                                Pollinations ({t("setting.free")})
                               </SelectItem>
                             ) : null}
                             {!isDisabledAIProvider("ollama") ? (
@@ -952,173 +910,6 @@ function Setting({ open, onClose }: SettingProps) {
                                 updateSetting(
                                   "mistralApiProxy",
                                   form.getValues("mistralApiProxy")
-                                )
-                              }
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div
-                    className={cn("space-y-4", {
-                      hidden: provider !== "azure",
-                    })}
-                  >
-                    <FormField
-                      control={form.control}
-                      name="azureApiKey"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            {t("setting.apiKeyLabel")}
-                            <span className="ml-1 text-red-500 max-sm:hidden">
-                              *
-                            </span>
-                          </FormLabel>
-                          <FormControl className="form-field">
-                            <Password
-                              type="text"
-                              placeholder={t("setting.apiKeyPlaceholder")}
-                              {...field}
-                              onBlur={() =>
-                                updateSetting(
-                                  "azureApiKey",
-                                  form.getValues("azureApiKey")
-                                )
-                              }
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="azureResourceName"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            {t("setting.resourceNameLabel")}
-                            <span className="ml-1 text-red-500 max-sm:hidden">
-                              *
-                            </span>
-                          </FormLabel>
-                          <FormControl className="form-field">
-                            <Input
-                              placeholder={t("setting.resourceNamePlaceholder")}
-                              {...field}
-                              onBlur={() =>
-                                updateSetting(
-                                  "azureResourceName",
-                                  form.getValues("azureResourceName")
-                                )
-                              }
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="azureApiVersion"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            {t("setting.apiVersionLabel")}
-                          </FormLabel>
-                          <FormControl className="form-field">
-                            <Input
-                              placeholder={t("setting.apiVersionPlaceholder")}
-                              {...field}
-                              onBlur={() =>
-                                updateSetting(
-                                  "azureApiVersion",
-                                  form.getValues("azureApiVersion")
-                                )
-                              }
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div
-                    className={cn("space-y-4", {
-                      hidden: provider !== "openaicompatible",
-                    })}
-                  >
-                    <FormField
-                      control={form.control}
-                      name="openAICompatibleApiKey"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            {t("setting.apiKeyLabel")}
-                            <span className="ml-1 text-red-500 max-sm:hidden">
-                              *
-                            </span>
-                          </FormLabel>
-                          <FormControl className="form-field">
-                            <Password
-                              type="text"
-                              placeholder={t("setting.apiKeyPlaceholder")}
-                              {...field}
-                              onBlur={() =>
-                                updateSetting(
-                                  "openAICompatibleApiKey",
-                                  form.getValues("openAICompatibleApiKey")
-                                )
-                              }
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="openAICompatibleApiProxy"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            {t("setting.apiUrlLabel")}
-                          </FormLabel>
-                          <FormControl className="form-field">
-                            <Input
-                              placeholder={t("setting.apiUrlPlaceholder")}
-                              {...field}
-                              onBlur={() =>
-                                updateSetting(
-                                  "openAICompatibleApiProxy",
-                                  form.getValues("openAICompatibleApiProxy")
-                                )
-                              }
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div
-                    className={cn("space-y-4", {
-                      hidden: provider !== "pollinations",
-                    })}
-                  >
-                    <FormField
-                      control={form.control}
-                      name="pollinationsApiProxy"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            {t("setting.apiUrlLabel")}
-                          </FormLabel>
-                          <FormControl className="form-field">
-                            <Input
-                              placeholder={POLLINATIONS_BASE_URL}
-                              {...field}
-                              onBlur={() =>
-                                updateSetting(
-                                  "pollinationsApiProxy",
-                                  form.getValues("pollinationsApiProxy")
                                 )
                               }
                             />
@@ -2488,445 +2279,7 @@ function Setting({ open, onClose }: SettingProps) {
                     />
                   )}
                 </div>
-                <div
-                  className={cn("space-y-4", {
-                    hidden: provider !== "azure",
-                  })}
-                >
-                  <FormField
-                    control={form.control}
-                    name="azureThinkingModel"
-                    render={({ field }) => (
-                      <FormItem className="from-item">
-                        <FormLabel className="from-label">
-                          <HelpTip tip={t("setting.thinkingModelTip")}>
-                            {t("setting.thinkingModel")}
-                            <span className="ml-1 text-red-500 max-sm:hidden">
-                              *
-                            </span>
-                          </HelpTip>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="form-field w-full">
-                            <Input
-                              placeholder={t("setting.modelListPlaceholder")}
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="azureNetworkingModel"
-                    render={({ field }) => (
-                      <FormItem className="from-item">
-                        <FormLabel className="from-label">
-                          <HelpTip tip={t("setting.networkingModelTip")}>
-                            {t("setting.networkingModel")}
-                            <span className="ml-1 text-red-500 max-sm:hidden">
-                              *
-                            </span>
-                          </HelpTip>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="form-field w-full">
-                            <Input
-                              placeholder={t("setting.modelListPlaceholder")}
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  {supportsTemperature("azure", form.watch("azureThinkingModel") || "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Note: Azure reasoning models (o1, o3) use fixed temperature">
-                              Temperature
-                            </HelpTip>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="form-field w-full">
-                              <div className="space-y-2">
-                                <Slider
-                                  value={[field.value || 0.7]}
-                                  onValueChange={(value) => {
-                                    field.onChange(value[0]);
-                                    updateSetting("temperature", value[0]);
-                                  }}
-                                  max={2}
-                                  min={0}
-                                  step={0.1}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>More focused (0)</span>
-                                  <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
-                                  <span>More creative (2)</span>
-                                </div>
-                              </div>
-                            </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </div>
-                <div
-                  className={cn("space-y-4", {
-                    hidden: provider !== "openaicompatible",
-                  })}
-                >
-                  <FormField
-                    control={form.control}
-                    name="openAICompatibleThinkingModel"
-                    render={({ field }) => (
-                      <FormItem className="from-item">
-                        <FormLabel className="from-label">
-                          <HelpTip tip={t("setting.thinkingModelTip")}>
-                            {t("setting.thinkingModel")}
-                            <span className="ml-1 text-red-500 max-sm:hidden">
-                              *
-                            </span>
-                          </HelpTip>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="form-field flex gap-2">
-                            <Input
-                              className={cn("flex-1", {
-                                hidden: modelList.length > 0,
-                              })}
-                              placeholder={t("setting.modelListPlaceholder")}
-                              {...field}
-                            />
-                            <div
-                              className={cn("flex-1", {
-                                hidden: modelList.length === 0,
-                              })}
-                            >
-                              <Select
-                                defaultValue={field.value}
-                                onValueChange={field.onChange}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue
-                                    placeholder={t(
-                                      "setting.modelListLoadingPlaceholder"
-                                    )}
-                                  />
-                                </SelectTrigger>
-                                <SelectContent className="max-sm:max-h-72">
-                                  {modelList.map(renderModelItem)}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              disabled={isRefreshing}
-                              onClick={() => fetchModelList()}
-                            >
-                              <RefreshCw
-                                className={isRefreshing ? "animate-spin" : ""}
-                              />
-                            </Button>
-                          </div>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="openAICompatibleNetworkingModel"
-                    render={({ field }) => (
-                      <FormItem className="from-item">
-                        <FormLabel className="from-label">
-                          <HelpTip tip={t("setting.networkingModelTip")}>
-                            {t("setting.networkingModel")}
-                            <span className="ml-1 text-red-500 max-sm:hidden">
-                              *
-                            </span>
-                          </HelpTip>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="form-field w-full flex gap-2">
-                            <Input
-                              className={cn("flex-1", {
-                                hidden: modelList.length > 0,
-                              })}
-                              placeholder={t("setting.modelListPlaceholder")}
-                              {...field}
-                            />
-                            <div
-                              className={cn("flex-1", {
-                                hidden: modelList.length === 0,
-                              })}
-                            >
-                              <Select
-                                defaultValue={field.value}
-                                onValueChange={field.onChange}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue
-                                    placeholder={t(
-                                      "setting.modelListLoadingPlaceholder"
-                                    )}
-                                  />
-                                </SelectTrigger>
-                                <SelectContent className="max-sm:max-h-72">
-                                  {modelList.map(renderModelItem)}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              disabled={isRefreshing}
-                              onClick={() => fetchModelList()}
-                            >
-                              <RefreshCw
-                                className={isRefreshing ? "animate-spin" : ""}
-                              />
-                            </Button>
-                          </div>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  {supportsTemperature("openaicompatible", form.watch("openAICompatibleThinkingModel") || "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
-                              Temperature
-                            </HelpTip>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="form-field w-full">
-                              <div className="space-y-2">
-                                <Slider
-                                  value={[field.value || 0.7]}
-                                  onValueChange={(value) => {
-                                    field.onChange(value[0]);
-                                    updateSetting("temperature", value[0]);
-                                  }}
-                                  max={2}
-                                  min={0}
-                                  step={0.1}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>More focused (0)</span>
-                                  <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
-                                  <span>More creative (2)</span>
-                                </div>
-                              </div>
-                            </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </div>
-                <div
-                  className={cn("space-y-4", {
-                    hidden: provider !== "pollinations",
-                  })}
-                >
-                  <FormField
-                    control={form.control}
-                    name="pollinationsThinkingModel"
-                    render={({ field }) => (
-                      <FormItem className="from-item">
-                        <FormLabel className="from-label">
-                          <HelpTip tip={t("setting.thinkingModelTip")}>
-                            {t("setting.thinkingModel")}
-                            <span className="ml-1 text-red-500 max-sm:hidden">
-                              *
-                            </span>
-                          </HelpTip>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="form-field w-full">
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <SelectTrigger
-                                className={cn({
-                                  hidden: modelList.length === 0,
-                                })}
-                              >
-                                <SelectValue
-                                  placeholder={t(
-                                    "setting.modelListLoadingPlaceholder"
-                                  )}
-                                />
-                              </SelectTrigger>
-                              <SelectContent className="max-sm:max-h-72">
-                                {thinkingModelList[0].length > 0 ? (
-                                  <SelectGroup>
-                                    <SelectLabel>
-                                      {t("setting.recommendedModels")}
-                                    </SelectLabel>
-                                    {thinkingModelList[0].map(renderModelItem)}
-                                  </SelectGroup>
-                                ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {thinkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              className={cn("w-full", {
-                                hidden: modelList.length > 0,
-                              })}
-                              type="button"
-                              variant="outline"
-                              disabled={isRefreshing}
-                              onClick={() => fetchModelList()}
-                            >
-                              {isRefreshing ? (
-                                <>
-                                  <RefreshCw className="animate-spin" />{" "}
-                                  {t("setting.modelListLoading")}
-                                </>
-                              ) : (
-                                <>
-                                  <RefreshCw /> {t("setting.refresh")}
-                                </>
-                              )}
-                            </Button>
-                          </div>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pollinationsNetworkingModel"
-                    render={({ field }) => (
-                      <FormItem className="from-item">
-                        <FormLabel className="from-label">
-                          <HelpTip tip={t("setting.networkingModelTip")}>
-                            {t("setting.networkingModel")}
-                            <span className="ml-1 text-red-500 max-sm:hidden">
-                              *
-                            </span>
-                          </HelpTip>
-                        </FormLabel>
-                        <FormControl>
-                          <div className="form-field w-full">
-                            <Select
-                              value={field.value}
-                              onValueChange={field.onChange}
-                            >
-                              <SelectTrigger
-                                className={cn({
-                                  hidden: modelList.length === 0,
-                                })}
-                              >
-                                <SelectValue
-                                  placeholder={t(
-                                    "setting.modelListLoadingPlaceholder"
-                                  )}
-                                />
-                              </SelectTrigger>
-                              <SelectContent className="max-sm:max-h-72">
-                                {networkingModelList[0].length > 0 ? (
-                                  <SelectGroup>
-                                    <SelectLabel>
-                                      {t("setting.recommendedModels")}
-                                    </SelectLabel>
-                                    {networkingModelList[0].map(renderModelItem)}
-                                  </SelectGroup>
-                                ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {networkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              className={cn("w-full", {
-                                hidden: modelList.length > 0,
-                              })}
-                              type="button"
-                              variant="outline"
-                              disabled={isRefreshing}
-                              onClick={() => fetchModelList()}
-                            >
-                              {isRefreshing ? (
-                                <>
-                                  <RefreshCw className="animate-spin" />{" "}
-                                  {t("setting.modelListLoading")}
-                                </>
-                              ) : (
-                                <>
-                                  <RefreshCw /> {t("setting.refresh")}
-                                </>
-                              )}
-                            </Button>
-                          </div>
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                  {supportsTemperature("pollinations", form.watch("pollinationsThinkingModel") || "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
-                              Temperature
-                            </HelpTip>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="form-field w-full">
-                              <div className="space-y-2">
-                                <Slider
-                                  value={[field.value || 0.7]}
-                                  onValueChange={(value) => {
-                                    field.onChange(value[0]);
-                                    updateSetting("temperature", value[0]);
-                                  }}
-                                  max={2}
-                                  min={0}
-                                  step={0.1}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>More focused (0)</span>
-                                  <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
-                                  <span>More creative (2)</span>
-                                </div>
-                              </div>
-                            </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </div>
+                
                 <div
                   className={cn("space-y-4", {
                     hidden: provider !== "ollama",

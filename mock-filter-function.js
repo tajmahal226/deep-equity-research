@@ -22,14 +22,6 @@ function filterModelSettings(provider, model, settings) {
       }
       break;
       
-    case "azure":
-      // Azure OpenAI uses same parameters as OpenAI
-      if (model.startsWith("o3") || model.startsWith("gpt-5") || model.includes("o3-")) {
-        // Azure responses API does NOT support temperature parameter - remove it completely
-        delete filteredSettings.temperature;
-      }
-      break;
-      
     default:
       // Other providers typically support temperature
       break;

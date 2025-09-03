@@ -133,22 +133,6 @@ export function getAllowedTemperature(model: string, requestedTemp?: number) {
   return requestedTemp;
 }
 
-export function filterPollinationsModelList(modelList: string[]) {
-  const recommendModelList: string[] = [];
-  const normalModelList: string[] = [];
-  modelList.filter((model) => {
-    if (
-      model.startsWith("openai") ||
-      model.startsWith("deepseek") ||
-      model.startsWith("searchgpt")
-    ) {
-      recommendModelList.push(model);
-    } else {
-      normalModelList.push(model);
-    }
-  });
-  return [recommendModelList, normalModelList];
-}
 
 export function filterMistralModelList(modelList: string[]) {
   const recommendModelList: string[] = [];

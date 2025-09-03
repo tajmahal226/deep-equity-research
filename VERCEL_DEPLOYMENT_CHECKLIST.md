@@ -92,13 +92,6 @@ ACCESS_PASSWORD=your_secure_password
 NEXT_PUBLIC_ACCESS_PASSWORD=your_secure_password
 ```
 
-### **☁️ Azure Support (Optional)**
-```bash
-AZURE_API_KEY=your_azure_api_key
-AZURE_RESOURCE_NAME=your_azure_resource_name
-AZURE_API_VERSION=2024-02-15-preview
-```
-
 ---
 
 ## ⚡ **Performance Optimizations**
@@ -153,7 +146,6 @@ After deployment, test these endpoints:
 | API Key errors | Set environment variables in Vercel dashboard |
 | CORS errors | Already configured in middleware |
 | Memory limits | Application optimized for Vercel's limits |
-| Azure warnings | Expected when `AZURE_RESOURCE_NAME` not set |
 
 ---
 
@@ -206,7 +198,6 @@ After deployment, test these endpoints:
 - OpenAI (GPT-4, GPT-3.5, GPT o3 Pro, GPT-5)
 - Anthropic (Claude 3.5 Sonnet, Claude 3 Opus)
 - Google (Gemini Pro, Gemini Flash)
-- Azure OpenAI Service
 - DeepSeek, xAI, Mistral, Cohere, Together, Groq, Perplexity
 
 ### **Advanced Features**

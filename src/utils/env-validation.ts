@@ -134,17 +134,6 @@ function validateSpecificConfig(
   warnings: string[],
   errors: string[]
 ): void {
-  // Azure configuration validation
-  const azureResourceName = config.AZURE_RESOURCE_NAME;
-  const azureApiKey = config.AZURE_API_KEY;
-  
-  if (azureResourceName && !azureApiKey) {
-    warnings.push('AZURE_RESOURCE_NAME is set but AZURE_API_KEY is missing');
-  }
-  if (azureApiKey && !azureResourceName) {
-    errors.push('AZURE_API_KEY is set but AZURE_RESOURCE_NAME is missing');
-  }
-  
   // MCP configuration validation
   const mcpProvider = config.MCP_AI_PROVIDER;
   const mcpTaskModel = config.MCP_TASK_MODEL;
@@ -229,11 +218,6 @@ export function getProviderConfigs() {
       anthropic: {
         apiKey: getEnvVar('ANTHROPIC_API_KEY'),
         baseUrl: getEnvVar('ANTHROPIC_API_BASE_URL', 'https://api.anthropic.com'),
-      },
-      azure: {
-        apiKey: getEnvVar('AZURE_API_KEY'),
-        resourceName: getEnvVar('AZURE_RESOURCE_NAME'),
-        apiVersion: getEnvVar('AZURE_API_VERSION', '2024-02-15-preview'),
       },
       // Add other providers as needed
     },

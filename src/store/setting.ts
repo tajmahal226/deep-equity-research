@@ -46,18 +46,6 @@ export interface SettingStore {
   perplexityApiProxy: string;
   perplexityThinkingModel: string;
   perplexityNetworkingModel: string;
-  azureApiKey: string;
-  azureResourceName: string;
-  azureApiVersion: string;
-  azureThinkingModel: string;
-  azureNetworkingModel: string;
-  openAICompatibleApiKey: string;
-  openAICompatibleApiProxy: string;
-  openAICompatibleThinkingModel: string;
-  openAICompatibleNetworkingModel: string;
-  pollinationsApiProxy: string;
-  pollinationsThinkingModel: string;
-  pollinationsNetworkingModel: string;
   ollamaApiProxy: string;
   ollamaThinkingModel: string;
   ollamaNetworkingModel: string;
@@ -153,18 +141,6 @@ export const defaultValues: SettingStore = {
   perplexityApiProxy: "",
   perplexityThinkingModel: "llama-3.1-sonar-large-128k-online",
   perplexityNetworkingModel: "llama-3.1-sonar-small-128k-online",
-  azureApiKey: "",
-  azureResourceName: "",
-  azureApiVersion: "",
-  azureThinkingModel: "gpt-4o",
-  azureNetworkingModel: "gpt-4o-mini",
-  openAICompatibleApiKey: "",
-  openAICompatibleApiProxy: "",
-  openAICompatibleThinkingModel: "",
-  openAICompatibleNetworkingModel: "",
-  pollinationsApiProxy: "",
-  pollinationsThinkingModel: "",
-  pollinationsNetworkingModel: "",
   ollamaApiProxy: "",
   ollamaThinkingModel: "",
   ollamaNetworkingModel: "",

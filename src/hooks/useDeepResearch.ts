@@ -211,7 +211,7 @@ function useDeepResearch() {
       // Enable OpenAI's built-in search tool
       if (enableSearch && searchProvider === "model") {
         if (
-          ["openai", "azure"].includes(provider) &&
+          provider === "openai" &&
           model.startsWith("gpt-4o")
         ) {
           return {

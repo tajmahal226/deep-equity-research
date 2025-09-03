@@ -31,7 +31,6 @@ describe("API Key Resolution", () => {
 
     it("returns empty string for providers that don't need keys", () => {
       expect(getAIProviderApiKey("ollama")).toBe("");
-      expect(getAIProviderApiKey("pollinations")).toBe("");
     });
 
     it("throws error for unsupported provider", () => {
@@ -43,8 +42,7 @@ describe("API Key Resolution", () => {
     it("handles all supported providers", () => {
       const providers = [
         "google", "openai", "anthropic", "deepseek", "xai", "mistral",
-        "cohere", "together", "groq", "perplexity", "azure", "openrouter",
-        "openaicompatible", "pollinations", "ollama"
+        "cohere", "together", "groq", "perplexity", "openrouter", "ollama"
       ];
       
       providers.forEach(provider => {
@@ -105,7 +103,6 @@ describe("API Key Resolution", () => {
         "deepseek": "DEEPSEEK_API_KEY",
         "xai": "XAI_API_KEY",
         "mistral": "MISTRAL_API_KEY",
-        "azure": "AZURE_API_KEY",
         "openrouter": "OPENROUTER_API_KEY",
       };
 

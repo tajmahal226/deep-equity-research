@@ -11,9 +11,8 @@ console.log('🧪 Testing API Key Resolution System...\n');
 
 // Test 1: Test all providers
 const providers = [
-  'openai', 'anthropic', 'google', 'deepseek', 'xai', 'mistral', 
-  'azure', 'openrouter', 'cohere', 'together', 'groq', 'perplexity',
-  'openaicompatible', 'pollinations', 'ollama'
+  'openai', 'anthropic', 'google', 'deepseek', 'xai', 'mistral',
+  'openrouter', 'cohere', 'together', 'groq', 'perplexity', 'ollama'
 ];
 
 console.log('1️⃣ Testing all AI providers:');
@@ -43,9 +42,9 @@ providers.forEach(provider => {
 console.log('\n3️⃣ Environment variables check:');
 const envVars = [
   'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_GENERATIVE_AI_API_KEY',
-  'DEEPSEEK_API_KEY', 'XAI_API_KEY', 'MISTRAL_API_KEY', 'AZURE_API_KEY',
+  'DEEPSEEK_API_KEY', 'XAI_API_KEY', 'MISTRAL_API_KEY',
   'OPENROUTER_API_KEY', 'COHERE_API_KEY', 'TOGETHER_API_KEY', 'GROQ_API_KEY',
-  'PERPLEXITY_API_KEY', 'OPENAI_COMPATIBLE_API_KEY'
+  'PERPLEXITY_API_KEY'
 ];
 
 envVars.forEach(envVar => {
