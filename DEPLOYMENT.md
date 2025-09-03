@@ -15,11 +15,10 @@ This repository is fully optimized and ready for deployment to Vercel with zero 
 ## 🔧 Recent Fixes Applied
 
 ### Critical Issues Resolved
-1. **Azure API Base URL Construction** - Fixed malformed URLs when `AZURE_RESOURCE_NAME` is undefined
-2. **Middleware Request Body Consumption** - Resolved runtime errors from multiple `request.json()` calls
-3. **ESLint Unused Variables** - Fixed all unused variable warnings in MCP server and financial API
-4. **React Unescaped Entities** - Fixed HTML entity encoding in Setting component
-5. **TypeScript Variable References** - Fixed all variable reference issues
+1. **Middleware Request Body Consumption** - Resolved runtime errors from multiple `request.json()` calls
+2. **ESLint Unused Variables** - Fixed all unused variable warnings in MCP server and financial API
+3. **React Unescaped Entities** - Fixed HTML entity encoding in Setting component
+4. **TypeScript Variable References** - Fixed all variable reference issues
 
 ### Build Optimizations
 - Proper environment variable handling with fallbacks
@@ -75,12 +74,6 @@ FINANCIAL_DATASETS_API_KEY=your_financial_datasets_key
 #### Optional Security
 ```env
 ACCESS_PASSWORD=your_secure_password
-```
-
-### Optional Azure Support
-```env
-AZURE_API_KEY=your_azure_api_key
-AZURE_RESOURCE_NAME=your_azure_resource_name
 ```
 
 ## 🏗️ Build Information

@@ -38,8 +38,6 @@ function getDefaultModelConfig(providerId?: string) {
       return { thinkingModel: "mistral-large-latest", networkingModel: "mistral-medium-latest" };
     case "xai":
       return { thinkingModel: "grok-2-1212", networkingModel: "grok-2-mini-1212" };
-    case "azure":
-      return { thinkingModel: "gpt-4o", networkingModel: "gpt-4o-mini" };
     case "google":
       return { thinkingModel: "gemini-2.0-flash-exp", networkingModel: "gemini-1.5-flash" };
     case "openrouter":

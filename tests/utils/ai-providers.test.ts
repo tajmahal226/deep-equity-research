@@ -85,15 +85,6 @@ vi.mock('@ai-sdk/mistral', () => ({
   ),
 }));
 
-registerProvider('azure');
-vi.mock('@ai-sdk/azure', () => ({
-  createAzure: vi.fn(() =>
-    vi.fn((model: string, settings: any) => {
-      providerCalls.azure.push(settings);
-      return { model, settings } as any;
-    })
-  ),
-}));
 
 registerProvider('openrouter');
 vi.mock('@openrouter/ai-sdk-provider', () => ({
@@ -116,19 +107,6 @@ vi.mock('ollama-ai-provider', () => ({
 }));
 
 // OpenAI-compatible providers differentiate by name
-registerProvider('openaicompatible');
-registerProvider('pollinations');
-vi.mock('@ai-sdk/openai-compatible', () => {
-  return {
-    createOpenAICompatible: vi.fn((options: any) => {
-      const key = options?.name as string;
-      return vi.fn((model: string, settings: any) => {
-        providerCalls[key].push(settings);
-        return { model, settings } as any;
-      });
-    }),
-  } as any;
-});
 
 beforeEach(() => {
   for (const key of Object.keys(providerCalls)) providerCalls[key] = [];
@@ -142,10 +120,7 @@ const providerModels: Record<string, { basic: string; thinking: string }> = {
   deepseek: { basic: 'deepseek-chat', thinking: 'deepseek-reasoner' },
   xai: { basic: 'grok-2-mini', thinking: 'grok-2' },
   mistral: { basic: 'mistral-small', thinking: 'mistral-large-latest' },
-  azure: { basic: 'gpt-4o-mini', thinking: 'o1-mini' },
   openrouter: { basic: 'openrouter/anthropic/claude-3-haiku', thinking: 'openrouter/openai/gpt-4o' },
-  openaicompatible: { basic: 'gpt-3.5-turbo', thinking: 'gpt-4' },
-  pollinations: { basic: 'gpt-3.5-turbo', thinking: 'gpt-4o' },
   ollama: { basic: 'llama3.2', thinking: 'qwen2.5:7b' },
 };
 
@@ -189,12 +164,7 @@ describe('AI provider initialization', () => {
       } else {
         const call = providerCalls[provider][0];
         expect(call).toBeDefined();
-        if (provider === 'azure') {
-          expect(call.temperature).toBeUndefined();
-          expect(call.reasoning_effort).toBe('medium');
-        } else {
-          expect(call.temperature).toBe(0.7);
-        }
+        expect(call.temperature).toBe(0.7);
       }
     });
   }

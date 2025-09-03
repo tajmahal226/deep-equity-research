@@ -50,8 +50,6 @@ export function getMaxTokens(provider: string, model: string): number {
   let limit: number | undefined;
   switch (key) {
     case "openai":
-    case "azure":
-    case "openaicompatible":
       limit = matchModel(OPENAI_MODEL_TOKEN_LIMITS, model);
       break;
     case "anthropic":

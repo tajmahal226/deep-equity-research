@@ -36,7 +36,7 @@ Body:
 interface Config {
   // Research topic
   query: string;
-  // AI provider, Possible values ​​include: google, openai, anthropic, deepseek, xai, mistral, azure, openrouter, openaicompatible, pollinations, ollama
+  // AI provider, Possible values ​​include: google, openai, anthropic, deepseek, xai, mistral, openrouter, ollama
   provider: string;
   // Thinking model id
   thinkingModel: string;

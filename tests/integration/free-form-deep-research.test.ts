@@ -10,7 +10,6 @@ import {
   XAI_BASE_URL,
   MISTRAL_BASE_URL,
   OPENROUTER_BASE_URL,
-  POLLINATIONS_BASE_URL,
   OLLAMA_BASE_URL,
 } from '@/constants/urls';
 
@@ -22,10 +21,7 @@ describe('Free-Form Deep Research Module', () => {
     { provider: 'deepseek', baseURL: DEEPSEEK_BASE_URL, thinkingModel: 'deepseek-reasoner', taskModel: 'deepseek-chat' },
     { provider: 'xai', baseURL: XAI_BASE_URL, thinkingModel: 'grok-beta', taskModel: 'grok-1' },
     { provider: 'mistral', baseURL: MISTRAL_BASE_URL, thinkingModel: 'mistral-large', taskModel: 'mistral-small' },
-    { provider: 'azure', baseURL: 'https://example.azure.com', thinkingModel: 'gpt-5', taskModel: 'gpt-4o-mini' },
     { provider: 'openrouter', baseURL: OPENROUTER_BASE_URL, thinkingModel: 'openrouter/reasoning-model', taskModel: 'openrouter/basic-model' },
-    { provider: 'openaicompatible', baseURL: OPENAI_BASE_URL, thinkingModel: 'gpt-5', taskModel: 'gpt-3.5-turbo' },
-    { provider: 'pollinations', baseURL: POLLINATIONS_BASE_URL, thinkingModel: 'gpt-4o', taskModel: 'gpt-4o-mini' },
     { provider: 'ollama', baseURL: OLLAMA_BASE_URL, thinkingModel: 'llama3.1:70b', taskModel: 'llama3.1:8b' },
   ];
 

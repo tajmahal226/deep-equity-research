@@ -96,13 +96,6 @@ function useModelProvider() {
           thinkingModel: anthropicThinkingModel,
           networkingModel: anthropicNetworkingModel,
         };
-      case "azure":
-        const { azureThinkingModel, azureNetworkingModel } =
-          useSettingStore.getState();
-        return {
-          thinkingModel: azureThinkingModel,
-          networkingModel: azureNetworkingModel,
-        };
       default:
         throw new Error("Unsupported Provider: " + provider);
     }

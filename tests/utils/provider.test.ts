@@ -5,7 +5,6 @@ describe("getProviderStateKey", () => {
   it("maps special providers to state keys", () => {
     expect(getProviderStateKey("openai")).toBe("openAI");
     expect(getProviderStateKey("openrouter")).toBe("openRouter");
-    expect(getProviderStateKey("openaicompatible")).toBe("openAICompatible");
     expect(getProviderStateKey("xai")).toBe("xAI");
   });
 

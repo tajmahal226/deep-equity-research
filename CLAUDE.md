@@ -70,7 +70,7 @@ The app supports 11+ AI providers through a unified interface:
 - Each provider has its own API route in `/src/app/api/ai/[provider]`
 - Provider configurations are managed through environment variables
 - API routes are rewritten in `next.config.ts` to proxy requests
-- Supports: OpenAI, Anthropic, Google, Azure, DeepSeek, xAI, Mistral, Ollama, OpenRouter, and OpenAI-compatible endpoints
+- Supports: OpenAI, Anthropic, Google, DeepSeek, xAI, Mistral, Ollama, and OpenRouter
 
 #### 2. Research Flow Architecture
 The research process follows a multi-stage pipeline:

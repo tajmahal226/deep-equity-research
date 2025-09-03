@@ -286,7 +286,7 @@ class DeepResearch {
           // Enable OpenAI's built-in search tool
           if (
             provider === "model" &&
-            ["openai", "azure"].includes(taskModel) &&
+            taskModel === "openai" &&
             taskModel.startsWith("gpt-4o")
           ) {
             const { openai } = await import("@ai-sdk/openai");

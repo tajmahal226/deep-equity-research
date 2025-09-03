@@ -17,20 +17,6 @@ const DEEPSEEK_API_BASE_URL =
 const XAI_API_BASE_URL = process.env.XAI_API_BASE_URL || "https://api.x.ai";
 const MISTRAL_API_BASE_URL =
   process.env.MISTRAL_API_BASE_URL || "https://api.mistral.ai";
-const AZURE_RESOURCE_NAME = process.env.AZURE_RESOURCE_NAME;
-const AZURE_API_BASE_URL =
-  AZURE_RESOURCE_NAME &&
-  `https://${AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments`;
-if (!AZURE_API_BASE_URL) {
-  console.warn(
-    "AZURE_RESOURCE_NAME env variable is missing. Azure rewrite will be skipped.",
-  );
-}
-const OPENAI_COMPATIBLE_API_BASE_URL =
-  process.env.OPENAI_COMPATIBLE_API_BASE_URL || "";
-const POLLINATIONS_API_BASE_URL =
-  process.env.POLLINATIONS_API_BASE_URL ||
-  "https://text.pollinations.ai/openai";
 const OLLAMA_API_BASE_URL =
   process.env.OLLAMA_API_BASE_URL || "http://0.0.0.0:11434";
 // Search provider API base url
@@ -85,22 +71,6 @@ export default async function Config(phase: string) {
         {
           source: "/api/ai/mistral/:path*",
           destination: `${MISTRAL_API_BASE_URL}/:path*`,
-        },
-        ...(AZURE_API_BASE_URL
-          ? [
-              {
-                source: "/api/ai/azure/:path*",
-                destination: `${AZURE_API_BASE_URL}/:path*`,
-              },
-            ]
-          : []),
-        {
-          source: "/api/ai/openaicompatible/:path*",
-          destination: `${OPENAI_COMPATIBLE_API_BASE_URL}/:path*`,
-        },
-        {
-          source: "/api/ai/pollinations/:path*",
-          destination: `${POLLINATIONS_API_BASE_URL}/:path*`,
         },
         {
           source: "/api/ai/ollama/:path*",

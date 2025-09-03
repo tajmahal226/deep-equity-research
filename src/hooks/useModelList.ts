@@ -8,7 +8,6 @@ import {
   DEEPSEEK_BASE_URL,
   XAI_BASE_URL,
   MISTRAL_BASE_URL,
-  POLLINATIONS_BASE_URL,
   OLLAMA_BASE_URL,
 } from "@/constants/urls";
 import { multiApiKeyPolling } from "@/utils/model";
@@ -341,50 +340,6 @@ function useModelList() {
           tokenMap[item.id] = item.max_context_length;
           return item.id;
         });
-      setModelTokenMap(tokenMap);
-      setModelList(newModelList);
-      return newModelList;
-    } else if (provider === "openaicompatible") {
-      const { openAICompatibleApiKey = "", openAICompatibleApiProxy } =
-        useSettingStore.getState();
-      if (mode === "local" && !openAICompatibleApiKey) {
-        return [];
-      }
-      const apiKey = multiApiKeyPolling(openAICompatibleApiKey);
-      const response = await fetch(
-        mode === "local"
-          ? completePath(openAICompatibleApiProxy, "/v1") + "/models"
-          : "/api/ai/openaicompatible/v1/models",
-        {
-          headers: {
-            authorization: `Bearer ${mode === "local" ? apiKey : accessKey}`,
-          },
-        }
-      );
-      const { data = [] } = await response.json();
-      const tokenMap: Record<string, number> = {};
-      const newModelList = (data as OpenAIModel[]).map((item) => item.id);
-      setModelTokenMap(tokenMap);
-      setModelList(newModelList);
-      return newModelList;
-    } else if (provider === "pollinations") {
-      const { pollinationsApiProxy } = useSettingStore.getState();
-      const headers = new Headers();
-      if (mode === "proxy") headers.set("Authorization", `Bearer ${accessKey}`);
-      const response = await fetch(
-        mode === "proxy"
-          ? "/api/ai/pollinations/models"
-          : completePath(pollinationsApiProxy || POLLINATIONS_BASE_URL) +
-              "/models",
-        {
-          headers,
-        }
-      );
-      const { data = [] } = await response.json();
-      const tokenMap: Record<string, number> = {};
-      const newModelList = (data as OpenAIModel[])
-        .map((item) => item.id)
-        .filter((name) => !name.includes("audio"));
       setModelTokenMap(tokenMap);
       setModelList(newModelList);
       return newModelList;

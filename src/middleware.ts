@@ -181,46 +181,6 @@ export async function middleware(request: NextRequest) {
       }
     }
   }
-  if (request.nextUrl.pathname.startsWith("/api/ai/openaicompatible")) {
-    const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = hasDisabledAIModel(requestBody);
-    if (
-      !verifySignature(
-        authorization.substring(7),
-        accessPassword,
-        Date.now()
-      ) ||
-      disabledAIProviders.includes("openaicompatible") ||
-      isDisabledModel
-    ) {
-      return NextResponse.json(
-        { error: ERRORS.NO_PERMISSIONS },
-        { status: 403 }
-      );
-    } else {
-      const apiKey = multiApiKeyPolling(OPENAI_COMPATIBLE_API_KEY);
-      if (apiKey) {
-        const requestHeaders = new Headers();
-        requestHeaders.set(
-          "Content-Type",
-          request.headers.get("Content-Type") || "application/json"
-        );
-        requestHeaders.set("Authorization", `Bearer ${apiKey}`);
-        return NextResponse.next({
-          request: {
-            headers: requestHeaders,
-          },
-        });
-      } else {
-        return NextResponse.json(
-          {
-            error: ERRORS.NO_API_KEY,
-          },
-          { status: 500 }
-        );
-      }
-    }
-  }
   if (request.nextUrl.pathname.startsWith("/api/ai/openai")) {
     const authorization = request.headers.get("authorization") || "";
     const isDisabledModel = hasDisabledAIModel(requestBody);
@@ -419,76 +379,6 @@ export async function middleware(request: NextRequest) {
           { status: 500 }
         );
       }
-    }
-  }
-  if (request.nextUrl.pathname.startsWith("/api/ai/azure")) {
-    const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = hasDisabledAIModel(requestBody);
-    if (
-      !verifySignature(
-        authorization.substring(7),
-        accessPassword,
-        Date.now()
-      ) ||
-      disabledAIProviders.includes("azure") ||
-      isDisabledModel
-    ) {
-      return NextResponse.json(
-        { error: ERRORS.NO_PERMISSIONS },
-        { status: 403 }
-      );
-    } else {
-      const apiKey = multiApiKeyPolling(AZURE_API_KEY);
-      if (apiKey) {
-        const requestHeaders = new Headers();
-        requestHeaders.set(
-          "Content-Type",
-          request.headers.get("Content-Type") || "application/json"
-        );
-        requestHeaders.set("Authorization", `Bearer ${apiKey}`);
-        return NextResponse.next({
-          request: {
-            headers: requestHeaders,
-          },
-        });
-      } else {
-        return NextResponse.json(
-          {
-            error: ERRORS.NO_API_KEY,
-          },
-          { status: 500 }
-        );
-      }
-    }
-  }
-  // The pollinations model only verifies access to the backend API
-  if (request.nextUrl.pathname.startsWith("/api/ai/pollinations")) {
-    const authorization = request.headers.get("authorization") || "";
-    const isDisabledModel = hasDisabledAIModel(requestBody);
-    if (
-      !verifySignature(
-        authorization.substring(7),
-        accessPassword,
-        Date.now()
-      ) ||
-      disabledAIProviders.includes("pollinations") ||
-      isDisabledModel
-    ) {
-      return NextResponse.json(
-        { error: ERRORS.NO_PERMISSIONS },
-        { status: 403 }
-      );
-    } else {
-      const requestHeaders = new Headers();
-      requestHeaders.set(
-        "Content-Type",
-        request.headers.get("Content-Type") || "application/json"
-      );
-      return NextResponse.next({
-        request: {
-          headers: requestHeaders,
-        },
-      });
     }
   }
   // The ollama model only verifies access to the backend API

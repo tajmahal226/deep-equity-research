@@ -99,14 +99,6 @@ export function filterModelSettings(provider: string, model: string, settings: a
       // xAI Grok models support temperature
       break;
       
-    case "azure":
-      // Azure OpenAI uses same parameters as OpenAI
-      if (model.startsWith("o1") || hasTemperatureRestrictions(model)) {
-        // Azure reasoning models only support default temperature=1 - remove parameter entirely
-        delete filteredSettings.temperature;
-      }
-      break;
-      
     case "mistral":
       // Mistral models support temperature 0-1
       if (filteredSettings.temperature !== undefined && filteredSettings.temperature > 1) {
@@ -316,13 +308,6 @@ export async function createAIProvider({
       apiKey,
     });
     return mistral(model, filterModelSettings(provider, model, settings));
-  } else if (provider === "azure") {
-    const { createAzure } = await import("@ai-sdk/azure");
-    const azure = createAzure({
-      baseURL,
-      apiKey,
-    });
-    return azure(model, filterModelSettings(provider, model, settings));
   } else if (provider === "openrouter") {
     const { createOpenRouter } = await import("@openrouter/ai-sdk-provider");
     const openrouter = createOpenRouter({
@@ -330,26 +315,6 @@ export async function createAIProvider({
       apiKey,
     });
     return openrouter(model, filterModelSettings(provider, model, settings));
-  } else if (provider === "openaicompatible") {
-    const { createOpenAICompatible } = await import(
-      "@ai-sdk/openai-compatible"
-    );
-    const openaicompatible = createOpenAICompatible({
-      name: "openaicompatible",
-      baseURL,
-      apiKey,
-    });
-    return openaicompatible(model, filterModelSettings(provider, model, settings));
-  } else if (provider === "pollinations") {
-    const { createOpenAICompatible } = await import(
-      "@ai-sdk/openai-compatible"
-    );
-    const pollinations = createOpenAICompatible({
-      name: "pollinations",
-      baseURL,
-      apiKey,
-    });
-    return pollinations(model, filterModelSettings(provider, model, settings));
   } else if (provider === "ollama") {
     const { createOllama } = await import("ollama-ai-provider");
     const local = global.location || {};
@@ -376,11 +341,11 @@ export async function createAIProvider({
     return ollama(model, filterModelSettings(provider, model, settings));
     } else {
       console.error('[AI Provider Error]', { provider, model, error: 'Unsupported provider' });
-      throw new Error(`Unsupported Provider: ${provider}. Supported providers: openai, anthropic, google, deepseek, xai, mistral, azure, openrouter, openaicompatible, pollinations, ollama`);
+      throw new Error(`Unsupported Provider: ${provider}. Supported providers: openai, anthropic, google, deepseek, xai, mistral, openrouter, ollama`);
     }
   } catch (error) {
-    // Use OpenAI-specific error logging for OpenAI providers
-    if (provider === 'openai' || provider === 'azure') {
+    // Use OpenAI-specific error logging for OpenAI provider
+    if (provider === 'openai') {
       logOpenAIError(error, { provider, model, parameters: settings });
     } else {
       console.error('[AI Provider Creation Failed]', {

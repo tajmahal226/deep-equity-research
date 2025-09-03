@@ -22,13 +22,6 @@ const TOGETHER_API_BASE_URL =
 const GROQ_API_BASE_URL = process.env.GROQ_API_BASE_URL || "https://api.groq.com";
 const PERPLEXITY_API_BASE_URL =
   process.env.PERPLEXITY_API_BASE_URL || "https://api.perplexity.ai";
-const AZURE_RESOURCE_NAME = process.env.AZURE_RESOURCE_NAME;
-const AZURE_API_BASE_URL = AZURE_RESOURCE_NAME ? `https://${AZURE_RESOURCE_NAME}.openai.azure.com/openai/deployments` : "";
-const OPENAI_COMPATIBLE_API_BASE_URL =
-  process.env.OPENAI_COMPATIBLE_API_BASE_URL || "";
-const POLLINATIONS_API_BASE_URL =
-  process.env.POLLINATIONS_API_BASE_URL ||
-  "https://text.pollinations.ai/openai";
 const OLLAMA_API_BASE_URL =
   process.env.OLLAMA_API_BASE_URL || "http://0.0.0.0:11434";
 // Search provider API base url
@@ -68,14 +61,8 @@ export function getAIProviderBaseURL(provider: string) {
       return completePath(GROQ_API_BASE_URL, "/openai/v1");
     case "perplexity":
       return completePath(PERPLEXITY_API_BASE_URL, "/");
-    case "azure":
-      return AZURE_API_BASE_URL;
     case "openrouter":
       return completePath(OPENROUTER_API_BASE_URL, "/api/v1");
-    case "openaicompatible":
-      return completePath(OPENAI_COMPATIBLE_API_BASE_URL, "/v1");
-    case "pollinations":
-      return completePath(POLLINATIONS_API_BASE_URL, "/v1");
     case "ollama":
       return completePath(OLLAMA_API_BASE_URL, "/api");
     default:
@@ -84,7 +71,7 @@ export function getAIProviderBaseURL(provider: string) {
 }
 
 export function getAIProviderApiKey(provider: string) {
-  const providersWithoutKeys = ["ollama", "pollinations"];
+  const providersWithoutKeys = ["ollama"];
   if (providersWithoutKeys.includes(provider)) return "";
 
   const envVarMap: Record<string, string | undefined> = {
@@ -98,9 +85,7 @@ export function getAIProviderApiKey(provider: string) {
     together: process.env.TOGETHER_API_KEY,
     groq: process.env.GROQ_API_KEY,
     perplexity: process.env.PERPLEXITY_API_KEY,
-    azure: process.env.AZURE_API_KEY,
     openrouter: process.env.OPENROUTER_API_KEY,
-    openaicompatible: process.env.OPENAI_COMPATIBLE_API_KEY,
   };
 
   if (!(provider in envVarMap)) {
