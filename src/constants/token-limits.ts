@@ -26,26 +26,38 @@ export const XAI_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "grok-beta": 128000,
 };
 
+// Fallback limit used when we don't have an explicit token limit for a
+// provider/model pair.  This prevents unbounded requests that can exhaust
+// tokens or cause timeouts when the model's true limit is unknown.
+export const DEFAULT_MODEL_TOKEN_LIMIT = 4000;
+
 function matchModel(map: Record<string, number>, model: string): number | undefined {
   if (map[model] !== undefined) return map[model];
   const entry = Object.entries(map).find(([key]) => model.startsWith(key));
   return entry ? entry[1] : undefined;
 }
 
-export function getMaxTokens(provider: string, model: string): number | undefined {
+export function getMaxTokens(provider: string, model: string): number {
   const key = provider.toLowerCase();
+  let limit: number | undefined;
   switch (key) {
     case "openai":
     case "azure":
     case "openaicompatible":
-      return matchModel(OPENAI_MODEL_TOKEN_LIMITS, model);
+      limit = matchModel(OPENAI_MODEL_TOKEN_LIMITS, model);
+      break;
     case "anthropic":
-      return matchModel(ANTHROPIC_MODEL_TOKEN_LIMITS, model);
+      limit = matchModel(ANTHROPIC_MODEL_TOKEN_LIMITS, model);
+      break;
     case "deepseek":
-      return matchModel(DEEPSEEK_MODEL_TOKEN_LIMITS, model);
+      limit = matchModel(DEEPSEEK_MODEL_TOKEN_LIMITS, model);
+      break;
     case "xai":
-      return matchModel(XAI_MODEL_TOKEN_LIMITS, model);
+      limit = matchModel(XAI_MODEL_TOKEN_LIMITS, model);
+      break;
     default:
-      return undefined;
+      limit = undefined;
   }
+
+  return limit ?? DEFAULT_MODEL_TOKEN_LIMIT;
 }
