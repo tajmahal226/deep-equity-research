@@ -171,12 +171,15 @@ export async function createSearchProvider({
       images: images as ImageSource[],
     };
   } else if (provider === "firecrawl") {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60_000);
     const response = await fetch(
       `${completePath(baseURL || FIRECRAWL_BASE_URL, "/v1")}/search`,
       {
         method: "POST",
         headers,
         credentials: "omit",
+        signal: controller.signal,
         body: JSON.stringify({
           query,
           limit: maxResult,
@@ -189,6 +192,7 @@ export async function createSearchProvider({
         }),
       }
     );
+    clearTimeout(timeoutId);
     const { data = [] } = await response.json();
     return {
       sources: (data as FirecrawlDocument[])

@@ -316,11 +316,18 @@ export async function createAIProvider({
       fetch: async (input, init) => {
         const headers = (init?.headers || {}) as Record<string, string>;
         if (!baseURL?.startsWith(local.origin)) delete headers["Authorization"];
-        return await fetch(input, {
-          ...init,
-          headers,
-          credentials: "omit",
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60_000);
+        try {
+          return await fetch(input, {
+            ...init,
+            headers,
+            credentials: "omit",
+            signal: controller.signal,
+          });
+        } finally {
+          clearTimeout(timeoutId);
+        }
       },
     });
     return ollama(model, filterModelSettings(provider, model, settings));
