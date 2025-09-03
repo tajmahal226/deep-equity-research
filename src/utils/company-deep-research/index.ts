@@ -28,7 +28,7 @@ import {
   guidelinesPrompt,
   INVESTMENT_RESEARCH_SECTIONS 
 } from "@/constants/companyDivePrompts";
-import { multiApiKeyPolling, hasTemperatureRestrictions } from "@/utils/model";
+import { multiApiKeyPolling, hasTemperatureRestrictions, isNetworkingModel } from "@/utils/model";
 import { 
   getAIProviderBaseURL, 
   getAIProviderApiKeyWithFallback,
@@ -59,6 +59,9 @@ function validateApiKey(provider: string, model: string, apiKey?: string): strin
   }
   if (provider === "xai") {
     throw new Error(`No xAI API key found for Grok ${model}. Please click the settings gear icon in the top-right corner to enter your xAI API key, or set the XAI_API_KEY environment variable.`);
+  }
+  if (provider === "google") {
+    throw new Error(`No Google API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Google API key, or set the GOOGLE_GENERATIVE_AI_API_KEY environment variable.`);
   }
 
   throw new Error(`No API key found for ${provider}. Please click the settings gear icon in the top-right corner to enter your ${provider.toUpperCase()} API key.`);
@@ -368,6 +371,11 @@ export class CompanyDeepResearch {
     const maxTokens = getMaxTokens(providerId, modelId);
     if (maxTokens !== undefined) {
       settingsWithReasoning.maxTokens = maxTokens;
+    }
+
+    // Enable Google search grounding for supported models
+    if (providerId === 'google' && isNetworkingModel(modelId)) {
+      (settingsWithReasoning as any).useSearchGrounding = true;
     }
 
     const filteredSettings = filterModelSettings(providerId, modelId, settingsWithReasoning);
