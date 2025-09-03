@@ -210,10 +210,12 @@ export default function CompanyDeepDive() {
                   logger.log("Research complete:", data);
                   setSearchResults(data);
                   setIsSearching(false);
-                  break;
-                  
+                  await reader.cancel();
+                  return;
+
                 case "error":
                   console.error("Research error:", data);
+                  await reader.cancel();
                   throw new Error(data.message || "Research failed");
               }
             }
