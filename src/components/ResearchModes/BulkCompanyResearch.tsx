@@ -317,11 +317,13 @@ export default function BulkCompanyResearch() {
                     // All companies processed
                     logger.log("Bulk research complete:", data);
                     setIsSearching(false);
-                    break;
+                    await reader.cancel();
+                    return;
 
                   case "error":
                     // General, non-company-specific error
                     console.error("Bulk research error:", data);
+                    await reader.cancel();
                     throw new Error(data.message || "Research failed");
 
                   default:
