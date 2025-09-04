@@ -98,7 +98,7 @@ describe("API Key Resolution", () => {
     it("works with all provider environment variables", () => {
       const envMapping = {
         "openai": "OPENAI_API_KEY",
-        "anthropic": "ANTHROPIC_API_KEY", 
+        "anthropic": "ANTHROPIC_API_KEY",
         "google": "GOOGLE_GENERATIVE_AI_API_KEY",
         "deepseek": "DEEPSEEK_API_KEY",
         "xai": "XAI_API_KEY",
@@ -110,6 +110,20 @@ describe("API Key Resolution", () => {
         const testKey = `test-${provider}-key`;
         process.env[envVar] = testKey;
         expect(getAIProviderApiKey(provider)).toBe(testKey);
+        delete process.env[envVar];
+      });
+    });
+
+    it("supports legacy Google environment variables", () => {
+      const legacyVars = ["GOOGLE_API_KEY", "GEMINI_API_KEY"] as const;
+
+      legacyVars.forEach(envVar => {
+        delete process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+        delete process.env.GOOGLE_API_KEY;
+        delete process.env.GEMINI_API_KEY;
+        const testKey = `test-${envVar.toLowerCase()}-key`;
+        process.env[envVar] = testKey;
+        expect(getAIProviderApiKey("google")).toBe(testKey);
         delete process.env[envVar];
       });
     });
