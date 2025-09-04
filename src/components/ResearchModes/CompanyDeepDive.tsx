@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,19 @@ const MagicDown = dynamic(() => import("@/components/MagicDown"));
 type SearchDepth = "fast" | "medium" | "deep";
 
 export default function CompanyDeepDive() {
+  // Track active fetch controller for cleanup
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Abort any ongoing requests when component unmounts
+      if (abortController) {
+        abortController.abort();
+      }
+    };
+  }, [abortController]);
+
   const { t } = useTranslation();
   const settingStore = useSettingStore();
   const [companyName, setCompanyName] = useState("");
@@ -103,6 +116,11 @@ export default function CompanyDeepDive() {
   const handleSearch = async () => {
     if (!companyName.trim()) return;
     
+    // Abort any existing request
+    if (abortController) {
+      abortController.abort();
+    }
+    
     setIsSearching(true);
     setSearchResults(null); // Clear previous results
     
@@ -152,7 +170,15 @@ export default function CompanyDeepDive() {
         searchApiKey: searchApiKey,
       };
       
-      // Make the API call to our company research endpoint
+      // Make the API call with appropriate timeout based on search depth
+      const timeoutMs = searchDepth === "deep" ? 600000 : // 10 minutes for deep
+                       searchDepth === "medium" ? 300000 : // 5 minutes for medium
+                       180000; // 3 minutes for fast
+      
+      const controller = new AbortController();
+      setAbortController(controller); // Track for cleanup
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      
       const response = await fetch("/api/company-research", {
         method: "POST",
         headers: {
@@ -163,7 +189,10 @@ export default function CompanyDeepDive() {
           })
         },
         body: JSON.stringify(requestBody),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         throw new Error(`Research failed: ${response.statusText}`);
@@ -210,11 +239,13 @@ export default function CompanyDeepDive() {
                   logger.log("Research complete:", data);
                   setSearchResults(data);
                   setIsSearching(false);
+                  setAbortController(null); // Clear controller
                   await reader.cancel();
                   return;
 
                 case "error":
                   console.error("Research error:", data);
+                  setAbortController(null); // Clear controller
                   await reader.cancel();
                   throw new Error(data.message || "Research failed");
               }
@@ -223,9 +254,13 @@ export default function CompanyDeepDive() {
         }
       }
       
-    } catch (error) {
-      console.error("Company research error:", error);
+    } catch (error: any) {
+      // Don't log abort errors (they're intentional)
+      if (error?.name !== 'AbortError') {
+        console.error("Company research error:", error);
+      }
       setIsSearching(false);
+      setAbortController(null); // Clear controller
       setSearchResults({
         error: error instanceof Error ? error.message : "Research failed",
         company: companyName,
