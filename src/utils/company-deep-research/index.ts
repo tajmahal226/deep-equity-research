@@ -917,7 +917,15 @@ Be specific and include data points, dates, and concrete details when available.
       } catch (error) {
         console.error(`Error executing search for "${task.query}":`, error);
         // Continue with other searches even if one fails
-        this.config.onError?.(new Error(`Search failed for "${task.query}": ${error}`));
+        // Surface the issue as a non-fatal message so the overall research
+        // process keeps running. Using onError here would emit an "error"
+        // SSE event which aborts the client-side stream, so we instead send
+        // a normal message that the UI can display or ignore.
+        this.config.onMessage?.({
+          type: "search-error",
+          query: task.query,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
     
