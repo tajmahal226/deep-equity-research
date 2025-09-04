@@ -25,31 +25,40 @@ import { CompanyDeepResearch } from "@/utils/company-deep-research";
 import { createSSEStream, getSSEHeaders } from "@/utils/sse";
 import { nanoid } from "nanoid";
 import { logger } from "@/utils/logger";
+import { 
+  getTimeoutConfig, 
+  OPERATION_TIMEOUTS, 
+  withTimeout, 
+  retryWithBackoff 
+} from "@/utils/timeout-config";
 
 // Helper function to get default model configuration for any provider
 function getDefaultModelConfig(providerId?: string) {
   switch (providerId) {
     case "anthropic":
-      return { thinkingModel: "claude-3-5-sonnet-20241022", networkingModel: "claude-3-5-haiku-20241022" };
+      return { thinkingModel: "claude-opus-4-1-20250805", networkingModel: "claude-sonnet-4-0-20250805" };
     case "deepseek":
       return { thinkingModel: "deepseek-reasoner", networkingModel: "deepseek-chat" };
     case "mistral":
-      return { thinkingModel: "mistral-large-latest", networkingModel: "mistral-medium-latest" };
+      return { thinkingModel: "mistral-large-2411", networkingModel: "mistral-large-latest" };
     case "xai":
-      return { thinkingModel: "grok-2-1212", networkingModel: "grok-2-mini-1212" };
+      return { thinkingModel: "grok-3", networkingModel: "grok-3" };
     case "google":
-      return { thinkingModel: "gemini-2.0-flash-exp", networkingModel: "gemini-1.5-flash" };
+      return { thinkingModel: "gemini-2.5-flash-thinking", networkingModel: "gemini-2.5-pro" };
     case "openrouter":
-      return { thinkingModel: "anthropic/claude-3.5-sonnet", networkingModel: "anthropic/claude-3.5-haiku" };
+      return { thinkingModel: "anthropic/claude-3.5-sonnet", networkingModel: "anthropic/claude-3.5-sonnet" };
     case "openai":
     default:
-      return { thinkingModel: "gpt-4o", networkingModel: "gpt-4o-mini" };
+      return { thinkingModel: "gpt-5", networkingModel: "gpt-5-turbo" };
   }
 }
 
 // Define how many companies to research at the same time
-// Lower = less resource usage, Higher = faster completion
-const BATCH_SIZE = 3;
+// Reduced from 3 to 2 to prevent timeouts with powerful models
+const BATCH_SIZE = 2;
+
+// Maximum time per company (3 minutes for bleeding-edge models)
+const TIMEOUT_PER_COMPANY = OPERATION_TIMEOUTS.BULK_COMPANY_PER_ITEM;
 
 // Define the shape of our request for TypeScript type safety
 interface BulkCompanyRequest {
@@ -235,8 +244,23 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        // Run the fast research
-        const result = await researcher.runFastResearch();
+        // Run the fast research with timeout and retry logic
+        const modelId = body.thinkingModelId || getDefaultModelConfig(body.thinkingProviderId).thinkingModel;
+        const providerId = body.thinkingProviderId || "openai";
+        const timeoutConfig = getTimeoutConfig(modelId, providerId);
+        
+        // Use the total timeout for the operation
+        const result = await retryWithBackoff(
+          async () => withTimeout(
+            researcher.runFastResearch(),
+            timeoutConfig.total,
+            `Research for ${companyName} timed out after ${timeoutConfig.total}ms`
+          ),
+          {
+            maxRetries: 2,  // Retry once if it times out
+            initialDelay: 2000
+          }
+        );
 
         // Update the results
         companyResults[companyName] = {
@@ -287,8 +311,15 @@ export async function POST(req: NextRequest) {
       batches.push(body.companies.slice(i, i + BATCH_SIZE));
     }
 
-    // Process each batch sequentially
+    // Process each batch sequentially with overall timeout
+    const startTime = Date.now();
     for (const batch of batches) {
+      // Check if we're approaching the total timeout
+      if (Date.now() - startTime > OPERATION_TIMEOUTS.BULK_COMPANY_TOTAL - 60000) {
+        logger.warn(`[Bulk Research ${bulkResearchId}] Approaching total timeout, stopping batch processing`);
+        break;
+      }
+      
       await processBatch(batch);
       
       // Send progress update after each batch
@@ -316,8 +347,16 @@ export async function POST(req: NextRequest) {
 
     logger.log(`[Bulk Research ${bulkResearchId}] All companies processed`);
 
+    // Add keepalive mechanism to prevent connection drops
+    const keepaliveInterval = setInterval(() => {
+      safeSendEvent("keepalive", { timestamp: new Date().toISOString() });
+    }, OPERATION_TIMEOUTS.SSE_KEEPALIVE);
+    
     // Add a small delay before closing to ensure all events are sent
     await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Clear keepalive
+    clearInterval(keepaliveInterval);
 
     // Close the stream
     closeStream();

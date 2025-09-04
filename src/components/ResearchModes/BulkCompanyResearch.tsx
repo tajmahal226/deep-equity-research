@@ -24,7 +24,7 @@
  */
 
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
@@ -81,6 +81,20 @@ interface BulkProgress {
 
 export default function BulkCompanyResearch() {
   const { t } = useTranslation();
+  
+  // Track active abort controller for cleanup
+  const abortControllerRef = useRef<AbortController | null>(null);
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Abort any ongoing requests when component unmounts
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
   const settingStore = useSettingStore();
   
   // State management
@@ -184,7 +198,11 @@ export default function BulkCompanyResearch() {
         searchApiKey: searchApiKey,
       };
       
-      // Make the API call
+      // Make the API call with extended timeout for bulk operations
+      // Bulk operations with bleeding-edge models need more time
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 600000); // 10 minutes timeout
+      
       const response = await fetch("/api/bulk-company-research", {
         method: "POST",
         headers: {
@@ -195,7 +213,10 @@ export default function BulkCompanyResearch() {
           })
         },
         body: JSON.stringify(requestBody),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         let errorMessage = "";

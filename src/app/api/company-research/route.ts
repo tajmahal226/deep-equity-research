@@ -26,25 +26,31 @@ import { CompanyDeepResearch } from "@/utils/company-deep-research";
 import { createSSEStream, getSSEHeaders } from "@/utils/sse";
 import { nanoid } from "nanoid";
 import { logger } from "@/utils/logger";
+import { 
+  getTimeoutConfig, 
+  OPERATION_TIMEOUTS, 
+  withTimeout, 
+  retryWithBackoff 
+} from "@/utils/timeout-config";
 
 // Helper function to get default model configuration for any provider
 function getDefaultModelConfig(providerId?: string) {
   switch (providerId) {
     case "anthropic":
-      return { thinkingModel: "claude-3-5-sonnet-20241022", networkingModel: "claude-3-5-haiku-20241022" };
+      return { thinkingModel: "claude-opus-4-1-20250805", networkingModel: "claude-sonnet-4-0-20250805" };
     case "deepseek":
       return { thinkingModel: "deepseek-reasoner", networkingModel: "deepseek-chat" };
     case "mistral":
-      return { thinkingModel: "mistral-large-latest", networkingModel: "mistral-medium-latest" };
+      return { thinkingModel: "mistral-large-2411", networkingModel: "mistral-large-latest" };
     case "xai":
-      return { thinkingModel: "grok-2-1212", networkingModel: "grok-2-mini-1212" };
+      return { thinkingModel: "grok-3", networkingModel: "grok-3" };
     case "google":
-      return { thinkingModel: "gemini-2.0-flash-exp", networkingModel: "gemini-1.5-flash" };
+      return { thinkingModel: "gemini-2.5-flash-thinking", networkingModel: "gemini-2.5-pro" };
     case "openrouter":
-      return { thinkingModel: "anthropic/claude-3.5-sonnet", networkingModel: "anthropic/claude-3.5-haiku" };
+      return { thinkingModel: "anthropic/claude-3.5-sonnet", networkingModel: "anthropic/claude-3.5-sonnet" };
     case "openai":
     default:
-      return { thinkingModel: "gpt-4o", networkingModel: "gpt-4o-mini" };
+      return { thinkingModel: "gpt-5", networkingModel: "gpt-5-turbo" };
   }
 }
 
@@ -213,31 +219,62 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Step 6: Run the research based on the selected depth
-    // This is where the magic happens!
+    // Step 6: Run the research based on the selected depth with proper timeouts
     try {
       let result;
+      
+      // Get timeout configuration based on model and depth
+      const modelId = body.thinkingModelId || getDefaultModelConfig(body.thinkingProviderId).thinkingModel;
+      const providerId = body.thinkingProviderId || "openai";
+      const timeoutConfig = getTimeoutConfig(modelId, providerId);
+      
+      // Determine timeout based on search depth
+      let depthTimeout: number;
       
       switch (body.searchDepth) {
         case "fast":
           // Fast mode: Direct AI response, no web searches
-          // Perfect for quick overviews or when you're in a hurry
-          logger.log(`[Company Research ${researchId}] Running fast research`);
-          result = await researcher.runFastResearch();
+          depthTimeout = OPERATION_TIMEOUTS.COMPANY_FAST;
+          logger.log(`[Company Research ${researchId}] Running fast research with ${depthTimeout}ms timeout`);
+          
+          result = await retryWithBackoff(
+            async () => withTimeout(
+              researcher.runFastResearch(),
+              depthTimeout,
+              `Fast research timed out after ${depthTimeout}ms`
+            ),
+            { maxRetries: 2, initialDelay: 2000 }
+          );
           break;
           
         case "medium":
           // Medium mode: Limited searches focusing on key areas
-          // Good balance between speed and depth
-          logger.log(`[Company Research ${researchId}] Running medium research`);
-          result = await researcher.runMediumResearch();
+          depthTimeout = OPERATION_TIMEOUTS.COMPANY_MEDIUM;
+          logger.log(`[Company Research ${researchId}] Running medium research with ${depthTimeout}ms timeout`);
+          
+          result = await retryWithBackoff(
+            async () => withTimeout(
+              researcher.runMediumResearch(),
+              depthTimeout,
+              `Medium research timed out after ${depthTimeout}ms`
+            ),
+            { maxRetries: 2, initialDelay: 3000 }
+          );
           break;
           
         case "deep":
           // Deep mode: Comprehensive research with all investment sections
-          // Use this when preparing for important meetings or decisions
-          logger.log(`[Company Research ${researchId}] Running deep research`);
-          result = await researcher.runDeepResearch();
+          depthTimeout = OPERATION_TIMEOUTS.COMPANY_DEEP;
+          logger.log(`[Company Research ${researchId}] Running deep research with ${depthTimeout}ms timeout`);
+          
+          result = await retryWithBackoff(
+            async () => withTimeout(
+              researcher.runDeepResearch(),
+              depthTimeout,
+              `Deep research timed out after ${depthTimeout}ms`
+            ),
+            { maxRetries: 1, initialDelay: 5000 }  // Only retry once for deep mode
+          );
           break;
           
         default:
@@ -260,12 +297,34 @@ export async function POST(req: NextRequest) {
 
       logger.log(`[Company Research ${researchId}] Research completed successfully`);
       
+      // Set up keepalive to prevent connection drops
+      const keepaliveInterval = setInterval(() => {
+        sendEvent("keepalive", { timestamp: new Date().toISOString() });
+      }, OPERATION_TIMEOUTS.SSE_KEEPALIVE);
+      
+      // Give time for final events to send
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      clearInterval(keepaliveInterval);
+      
     } catch (error) {
       // Handle any errors during research
       console.error(`[Company Research ${researchId}] Error:`, error);
+      
+      // Provide more detailed error messages
+      let errorMessage = "Unknown error occurred";
+      if (error instanceof Error) {
+        if (error.message.includes("timeout")) {
+          errorMessage = `Research timed out. The model (${body.thinkingModelId || 'default'}) may be slower than expected. Try using 'fast' mode or a faster model.`;
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       sendEvent("error", { 
-        message: error instanceof Error ? error.message : "Unknown error occurred",
-        researchId: researchId 
+        message: errorMessage,
+        researchId: researchId,
+        searchDepth: body.searchDepth,
+        provider: body.thinkingProviderId
       });
     } finally {
       // Always close the stream when done
