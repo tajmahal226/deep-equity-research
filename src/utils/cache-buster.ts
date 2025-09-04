@@ -119,7 +119,7 @@ export function refreshSettings(keys?: string[]): void {
           ...parsed,
           _refreshed: Date.now(),
         }));
-      } catch (e) {
+      } catch {
         // Not JSON, just remove
         localStorage.removeItem(key);
       }

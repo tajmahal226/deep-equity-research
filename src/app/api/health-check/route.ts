@@ -219,7 +219,7 @@ async function checkMistral(apiKey: string): Promise<void> {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const startTime = Date.now();
   
   try {
@@ -244,7 +244,6 @@ export async function GET(req: NextRequest) {
 
     // Determine overall health
     const healthyCount = providerChecks.filter(p => p.status === "healthy").length;
-    const degradedCount = providerChecks.filter(p => p.status === "degraded").length;
     
     let overallStatus: "healthy" | "degraded" | "unhealthy";
     if (healthyCount >= providers.length * 0.7) {

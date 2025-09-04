@@ -57,8 +57,7 @@ function getDefaultModelConfig(providerId?: string) {
 // Reduced from 3 to 2 to prevent timeouts with powerful models
 const BATCH_SIZE = 2;
 
-// Maximum time per company (3 minutes for bleeding-edge models)
-const TIMEOUT_PER_COMPANY = OPERATION_TIMEOUTS.BULK_COMPANY_PER_ITEM;
+// Maximum time per company is defined in OPERATION_TIMEOUTS.BULK_COMPANY_PER_ITEM
 
 // Define the shape of our request for TypeScript type safety
 interface BulkCompanyRequest {

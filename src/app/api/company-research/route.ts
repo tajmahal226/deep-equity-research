@@ -27,7 +27,6 @@ import { createSSEStream, getSSEHeaders } from "@/utils/sse";
 import { nanoid } from "nanoid";
 import { logger } from "@/utils/logger";
 import { 
-  getTimeoutConfig, 
   OPERATION_TIMEOUTS, 
   withTimeout, 
   retryWithBackoff 
@@ -222,11 +221,6 @@ export async function POST(req: NextRequest) {
     // Step 6: Run the research based on the selected depth with proper timeouts
     try {
       let result;
-      
-      // Get timeout configuration based on model and depth
-      const modelId = body.thinkingModelId || getDefaultModelConfig(body.thinkingProviderId).thinkingModel;
-      const providerId = body.thinkingProviderId || "openai";
-      const timeoutConfig = getTimeoutConfig(modelId, providerId);
       
       // Determine timeout based on search depth
       let depthTimeout: number;
