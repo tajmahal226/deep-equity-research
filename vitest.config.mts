@@ -6,6 +6,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   test: {
+    // Use the threads pool so Vitest evaluates mocks in-process.
+    // The suite relies on `vi.doMock`, which isn't supported by the default forks pool
+    // and crashes the worker with "Channel closed" errors.
+    pool: "threads",
     exclude: [
       "**/node_modules/**",
       "**/dist/**",
