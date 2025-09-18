@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { handler as deepseekHandler } from "../../src/app/api/ai/deepseek/[...slug]/route";
+import { proxyHandler as deepseekHandler } from "../../src/app/api/ai/deepseek/[...slug]/proxy-handler";
 import { createMockRequest } from "./mocks";
 
 const buildRequest = (slug: string[]) => {

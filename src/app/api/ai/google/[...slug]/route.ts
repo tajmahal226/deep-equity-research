@@ -1,6 +1,4 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { GEMINI_BASE_URL } from "@/constants/urls";
-import { buildUpstreamURL } from "../../helpers";
+import { proxyHandler } from "./proxy-handler";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -14,53 +12,4 @@ export const preferredRegion = [
   "kix1",
 ];
 
-const API_PROXY_BASE_URL =
-  process.env.API_PROXY_BASE_URL ||
-  process.env.GOOGLE_GENERATIVE_AI_API_BASE_URL ||
-  GEMINI_BASE_URL;
-
-type RouteParams = {
-  slug?: string[];
-};
-
-export async function handler(
-  req: NextRequest,
-  context: { params: Promise<RouteParams> },
-) {
-  let body;
-  if (req.method.toUpperCase() !== "GET") {
-    body = await req.json();
-  }
-  const { slug = [] } = await context.params;
-  const slugSegments = slug;
-
-  try {
-    const url = buildUpstreamURL(
-      API_PROXY_BASE_URL,
-      slugSegments,
-      req.nextUrl.searchParams,
-    );
-    const payload: RequestInit = {
-      method: req.method,
-      headers: {
-        "Content-Type": req.headers.get("Content-Type") || "application/json",
-        "x-goog-api-client":
-          req.headers.get("x-goog-api-client") || "genai-js/0.24.0",
-        "x-goog-api-key": req.headers.get("x-goog-api-key") || "",
-      },
-    };
-    if (body) payload.body = JSON.stringify(body);
-    const response = await fetch(url, payload);
-    return new NextResponse(response.body, response);
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error);
-      return NextResponse.json(
-        { code: 500, message: error.message },
-        { status: 500 }
-      );
-    }
-  }
-}
-
-export { handler as GET, handler as POST, handler as PUT, handler as DELETE };
+export { proxyHandler as GET, proxyHandler as POST, proxyHandler as PUT, proxyHandler as DELETE };
