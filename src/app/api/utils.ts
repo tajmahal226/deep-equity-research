@@ -5,7 +5,7 @@ const GOOGLE_GENERATIVE_AI_API_BASE_URL =
   process.env.GOOGLE_GENERATIVE_AI_API_BASE_URL ||
   "https://generativelanguage.googleapis.com";
 const OPENROUTER_API_BASE_URL =
-  process.env.OPENROUTER_API_BASE_URL || "https://openrouter.ai/api";
+  process.env.OPENROUTER_API_BASE_URL || "https://openrouter.ai";
 const OPENAI_API_BASE_URL =
   process.env.OPENAI_API_BASE_URL || "https://api.openai.com";
 const ANTHROPIC_API_BASE_URL =
@@ -83,8 +83,11 @@ export function getAIProviderBaseURL(provider: string) {
       return completePath(GROQ_API_BASE_URL, "/openai/v1");
     case "perplexity":
       return completePath(PERPLEXITY_API_BASE_URL, "/");
-    case "openrouter":
-      return completePath(OPENROUTER_API_BASE_URL, "/api/v1");
+    case "openrouter": {
+      const base = OPENROUTER_API_BASE_URL.replace(/\/+$/, "");
+      const normalizedBase = base.endsWith("/api") ? base : `${base}/api`;
+      return completePath(normalizedBase, "/v1");
+    }
     case "ollama":
       return completePath(OLLAMA_API_BASE_URL, "/api");
     default:

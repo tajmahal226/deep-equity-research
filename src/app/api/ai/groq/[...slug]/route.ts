@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GROQ_BASE_URL } from "@/constants/urls";
+import { buildUpstreamURL } from "../../helpers";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -15,19 +16,25 @@ export const preferredRegion = [
 
 const API_PROXY_BASE_URL = process.env.GROQ_API_BASE_URL || GROQ_BASE_URL;
 
-async function handler(req: NextRequest) {
+type RouteContext = {
+  params: {
+    slug?: string[];
+  };
+};
+
+async function handler(req: NextRequest, context: RouteContext) {
   let body;
   if (req.method.toUpperCase() !== "GET") {
     body = await req.json();
   }
-  const searchParams = req.nextUrl.searchParams;
-  const path = searchParams.getAll("slug");
-  searchParams.delete("slug");
-  const params = searchParams.toString();
+  const slugSegments = context.params?.slug ?? [];
 
   try {
-    let url = `${API_PROXY_BASE_URL}/${decodeURIComponent(path.join("/"))}`;
-    if (params) url += `?${params}`;
+    const url = buildUpstreamURL(
+      API_PROXY_BASE_URL,
+      slugSegments,
+      req.nextUrl.searchParams,
+    );
     const payload: RequestInit = {
       method: req.method,
       headers: {
@@ -49,4 +56,4 @@ async function handler(req: NextRequest) {
   }
 }
 
-export { handler as GET, handler as POST, handler as PUT, handler as DELETE };
+export { handler as GET, handler as POST, handler as PUT, handler as DELETE, handler };
