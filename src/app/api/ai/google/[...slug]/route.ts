@@ -19,18 +19,20 @@ const API_PROXY_BASE_URL =
   process.env.GOOGLE_GENERATIVE_AI_API_BASE_URL ||
   GEMINI_BASE_URL;
 
-type RouteContext = {
-  params: {
-    slug?: string[];
-  };
+type RouteParams = {
+  slug?: string[];
 };
 
-async function handler(req: NextRequest, context: RouteContext) {
+async function handler(
+  req: NextRequest,
+  context: { params: Promise<RouteParams> },
+) {
   let body;
   if (req.method.toUpperCase() !== "GET") {
     body = await req.json();
   }
-  const slugSegments = context.params?.slug ?? [];
+  const { slug = [] } = await context.params;
+  const slugSegments = slug;
 
   try {
     const url = buildUpstreamURL(
@@ -61,4 +63,4 @@ async function handler(req: NextRequest, context: RouteContext) {
   }
 }
 
-export { handler as GET, handler as POST, handler as PUT, handler as DELETE, handler };
+export { handler as GET, handler as POST, handler as PUT, handler as DELETE };
