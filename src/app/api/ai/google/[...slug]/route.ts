@@ -23,7 +23,7 @@ type RouteParams = {
   slug?: string[];
 };
 
-async function handler(
+export async function handler(
   req: NextRequest,
   context: { params: Promise<RouteParams> },
 ) {
