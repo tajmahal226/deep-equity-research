@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { handler as googleHandler } from "../../src/app/api/ai/google/[...slug]/route";
+import { proxyHandler as googleHandler } from "../../src/app/api/ai/google/[...slug]/proxy-handler";
 import { createMockRequest } from "./mocks";
 
 const buildRequest = (slug: string[], search = "") => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { handler as openaiHandler } from "../../src/app/api/ai/openai/[...slug]/route";
+import { proxyHandler as openaiHandler } from "../../src/app/api/ai/openai/[...slug]/proxy-handler";
 import { createMockRequest } from "./mocks";
 
 const buildRequest = (init: {
