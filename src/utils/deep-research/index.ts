@@ -279,14 +279,14 @@ class DeepResearch {
       let searchResult;
       let sources: Source[] = [];
       let images: ImageSource[] = [];
-      const { taskModel } = this.options.AIProvider;
+      const { provider: aiProvider, taskModel } = this.options.AIProvider;
       const { provider = "model", maxResult = 5 } = this.options.searchProvider;
       if (provider === "model") {
         const getTools = async () => {
           // Enable OpenAI's built-in search tool
           if (
             provider === "model" &&
-            taskModel === "openai" &&
+            aiProvider === "openai" &&
             taskModel.startsWith("gpt-4o")
           ) {
             const { openai } = await import("@ai-sdk/openai");
@@ -302,7 +302,7 @@ class DeepResearch {
         };
         const getProviderOptions = () => {
           // Enable OpenRouter's built-in search tool
-          if (provider === "model" && taskModel === "openrouter") {
+          if (provider === "model" && aiProvider === "openrouter") {
             return {
               openrouter: {
                 plugins: [
