@@ -1,5 +1,15 @@
 import { describe, it, expect } from "vitest";
-import { getProviderStateKey, getProviderApiKey } from "@/utils/provider";
+import { defaultValues, type SettingStore } from "@/store/setting";
+import {
+  getProviderStateKey,
+  getProviderApiKey,
+  resolveProviderModels,
+  getProviderModelDefaults,
+} from "@/utils/provider";
+
+function cloneStore(overrides: Partial<SettingStore> = {}): SettingStore {
+  return { ...defaultValues, ...overrides };
+}
 
 describe("getProviderStateKey", () => {
   it("maps special providers to state keys", () => {
@@ -34,3 +44,38 @@ describe("getProviderApiKey", () => {
   });
 });
 
+describe("resolveProviderModels", () => {
+  it("returns the persisted models when they exist", () => {
+    const store = cloneStore({
+      openAIThinkingModel: "custom-think",
+      openAINetworkingModel: "custom-task",
+      provider: "openai",
+    });
+
+    expect(resolveProviderModels(store, "openai")).toEqual({
+      thinkingModel: "custom-think",
+      taskModel: "custom-task",
+    });
+  });
+
+  it("falls back to curated defaults for providers with empty settings", () => {
+    const store = cloneStore({
+      openRouterThinkingModel: "",
+      openRouterNetworkingModel: "",
+      provider: "openrouter",
+    });
+
+    expect(resolveProviderModels(store, "openrouter")).toEqual({
+      thinkingModel: "anthropic/claude-3.5-sonnet",
+      taskModel: "anthropic/claude-3.5-sonnet",
+    });
+  });
+
+  it("uses OpenAI defaults when the provider is unknown", () => {
+    const store = cloneStore();
+
+    expect(resolveProviderModels(store, "unknown-provider")).toEqual(
+      getProviderModelDefaults("openai"),
+    );
+  });
+});
