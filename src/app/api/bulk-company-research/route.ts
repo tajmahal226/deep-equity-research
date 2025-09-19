@@ -47,6 +47,8 @@ function getDefaultModelConfig(providerId?: string) {
       return { thinkingModel: "gemini-2.5-flash-thinking", networkingModel: "gemini-2.5-pro" };
     case "openrouter":
       return { thinkingModel: "anthropic/claude-3.5-sonnet", networkingModel: "anthropic/claude-3.5-sonnet" };
+    case "ollama":
+      return { thinkingModel: "llama3.1:8b", networkingModel: "llama3.1:8b" };
     case "openai":
     default:
       return { thinkingModel: "gpt-5", networkingModel: "gpt-5-turbo" };
