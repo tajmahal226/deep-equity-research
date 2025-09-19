@@ -47,6 +47,10 @@ import { ThinkTagStreamProcessor } from "@/utils/text";
 function validateApiKey(provider: string, model: string, apiKey?: string): string {
   if (apiKey) return apiKey;
 
+  if (provider === "ollama") {
+    return "";
+  }
+
   if (provider === "openai" && (model.includes("o3") || model.startsWith("gpt-5"))) {
     throw new Error(`No OpenAI API key found for ${model}. Advanced OpenAI models (GPT-5, o3 series) require a valid API key. Please click the settings gear icon in the top-right corner to enter your OpenAI API key, or set the OPENAI_API_KEY environment variable.`);
   }
