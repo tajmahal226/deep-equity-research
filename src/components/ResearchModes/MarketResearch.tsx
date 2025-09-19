@@ -2,7 +2,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingStore } from "@/store/setting";
-import { getProviderStateKey, getProviderApiKey } from "@/utils/provider";
+import {
+  getProviderApiKey,
+  resolveProviderModels,
+} from "@/utils/provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Search, Loader2, BarChart, PieChart, LineChart, Download, FileText, Signature } from "lucide-react";
@@ -66,18 +69,55 @@ export default function MarketResearch() {
     setProgressMessage("");
 
     try {
-      // Get current AI provider and model settings from user configuration
+      // Determine the active AI provider and resolve the model pair with safe fallbacks
       const currentProvider = settingStore.provider || "openai";
-      const providerKey = getProviderStateKey(currentProvider);
-      const thinkingModel = settingStore[
-        `${providerKey}ThinkingModel` as keyof typeof settingStore
-      ] as string;
-      const taskModel = settingStore[
-        `${providerKey}NetworkingModel` as keyof typeof settingStore
-      ] as string;
+      const { thinkingModel, taskModel } = resolveProviderModels(
+        settingStore,
+        currentProvider,
+      );
 
-      // Create market research query with context
-      const marketQuery = `${marketTopic}${specificQuestions ? `\n\nSpecific focus areas: ${specificQuestions}` : ''}`;
+      // Create market research query with explicit context so the backend receives
+      // a structured brief that captures the chosen research type, timeframe, and
+      // any custom questions the user provided.
+      const researchTypeLabels: Record<string, string> = {
+        industry: t(
+          "marketResearch.industryAnalysis",
+          "Industry structure and key segments",
+        ),
+        competitive: t(
+          "marketResearch.competitiveLandscape",
+          "Competitive landscape and positioning",
+        ),
+        trends: t(
+          "marketResearch.trendsForecast",
+          "Emerging trends and forward-looking insights",
+        ),
+      };
+
+      const timeframeLabels: Record<string, string> = {
+        current: t("marketResearch.currentState", "Current state"),
+        "1year": t("marketResearch.past1Year", "Past 12 months"),
+        "3years": t("marketResearch.past3Years", "Past 3 years"),
+        "5years": t("marketResearch.past5Years", "Past 5 years"),
+        future: t(
+          "marketResearch.futureProjections",
+          "Future projections",
+        ),
+      };
+
+      const querySections = [
+        `Market Topic: ${marketTopic.trim()}`,
+        `Research Focus: ${researchTypeLabels[researchType] || researchType}`,
+        `Timeframe: ${timeframeLabels[timeframe] || timeframe}`,
+      ];
+
+      if (specificQuestions.trim()) {
+        querySections.push(
+          `Key Questions: ${specificQuestions.trim().replace(/\s+/g, " ")}`,
+        );
+      }
+
+      const marketQuery = querySections.join("\n\n");
 
       // Get API keys from user settings
       const aiApiKey = getProviderApiKey(settingStore, currentProvider);
@@ -156,7 +196,15 @@ export default function MarketResearch() {
           if (!eventLine || !dataLine) continue;
 
           const eventType = eventLine.replace("event:", "").trim();
-          const data = JSON.parse(dataLine.replace("data:", "").trim());
+          let parsedData: unknown;
+          try {
+            parsedData = JSON.parse(dataLine.replace("data:", "").trim());
+          } catch (error) {
+            console.error("Failed to parse SSE payload", error, { eventType, dataLine });
+            continue;
+          }
+
+          const data = parsedData as Record<string, any>;
 
           switch (eventType) {
             case "progress": {
@@ -193,7 +241,9 @@ export default function MarketResearch() {
               break;
             }
             case "message":
-              setAnalysisResults((prev: any) => ({ ...prev, ...data }));
+              if (data && typeof data === "object") {
+                setAnalysisResults((prev: any) => ({ ...prev, ...data }));
+              }
               break;
             case "complete":
               setAnalysisResults(data);
