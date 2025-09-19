@@ -69,6 +69,24 @@ function validateApiKey(provider: string, model: string, apiKey?: string): strin
       `No Google API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Google API key, or set the GOOGLE_GENERATIVE_AI_API_KEY environment variable.`
     );
   }
+  if (provider === "mistral") {
+    throw new Error(`No Mistral API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Mistral API key, or set the MISTRAL_API_KEY environment variable.`);
+  }
+  if (provider === "openrouter") {
+    throw new Error(`No OpenRouter API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your OpenRouter API key, or set the OPENROUTER_API_KEY environment variable.`);
+  }
+  if (provider === "cohere") {
+    throw new Error(`No Cohere API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Cohere API key, or set the COHERE_API_KEY environment variable.`);
+  }
+  if (provider === "groq") {
+    throw new Error(`No Groq API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Groq API key, or set the GROQ_API_KEY environment variable.`);
+  }
+  if (provider === "perplexity") {
+    throw new Error(`No Perplexity API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Perplexity API key, or set the PERPLEXITY_API_KEY environment variable.`);
+  }
+  if (provider === "together") {
+    throw new Error(`No Together AI API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Together AI API key, or set the TOGETHER_API_KEY environment variable.`);
+  }
 
   throw new Error(`No API key found for ${provider}. Please click the settings gear icon in the top-right corner to enter your ${provider.toUpperCase()} API key.`);
 }
