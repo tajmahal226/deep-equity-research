@@ -25,11 +25,11 @@ import { CompanyDeepResearch } from "@/utils/company-deep-research";
 import { createSSEStream, getSSEHeaders } from "@/utils/sse";
 import { nanoid } from "nanoid";
 import { logger } from "@/utils/logger";
-import { 
-  getTimeoutConfig, 
-  OPERATION_TIMEOUTS, 
-  withTimeout, 
-  retryWithBackoff 
+import {
+  getTimeoutConfig,
+  OPERATION_TIMEOUTS,
+  withTimeout,
+  retryWithBackoff
 } from "@/utils/timeout-config";
 
 // Helper function to get default model configuration for any provider
@@ -47,6 +47,8 @@ function getDefaultModelConfig(providerId?: string) {
       return { thinkingModel: "gemini-2.5-flash-thinking", networkingModel: "gemini-2.5-pro" };
     case "openrouter":
       return { thinkingModel: "anthropic/claude-3.5-sonnet", networkingModel: "anthropic/claude-3.5-sonnet" };
+    case "ollama":
+      return { thinkingModel: "llama3.1:8b", networkingModel: "llama3.1:8b" };
     case "openai":
     default:
       return { thinkingModel: "gpt-5", networkingModel: "gpt-5-turbo" };
@@ -57,10 +59,16 @@ function getDefaultModelConfig(providerId?: string) {
 // Reduced from 3 to 2 to prevent timeouts with powerful models
 const BATCH_SIZE = 2;
 
+interface ModelConfig {
+  modelId: string;
+  providerId: string;
+  apiKey?: string;
+}
+
 // Maximum time per company is defined in OPERATION_TIMEOUTS.BULK_COMPANY_PER_ITEM
 
 // Define the shape of our request for TypeScript type safety
-interface BulkCompanyRequest {
+export interface BulkCompanyRequest {
   // Array of company names to research
   companies: string[];
   
@@ -84,6 +92,37 @@ interface BulkCompanyRequest {
   // Search provider settings
   searchProviderId?: string;
   searchApiKey?: string;
+}
+
+export function resolveModelConfigs(body: BulkCompanyRequest): {
+  thinkingModelConfig: ModelConfig;
+  taskModelConfig: ModelConfig;
+} {
+  const resolvedThinkingProvider = body.thinkingProviderId || body.taskProviderId || "openai";
+  const resolvedTaskProvider = body.taskProviderId || body.thinkingProviderId || "openai";
+
+  const thinkingDefaults = getDefaultModelConfig(resolvedThinkingProvider);
+  const taskDefaults = getDefaultModelConfig(resolvedTaskProvider);
+
+  const thinkingModelConfig: ModelConfig = {
+    modelId: body.thinkingModelId || thinkingDefaults.thinkingModel,
+    providerId: resolvedThinkingProvider,
+  };
+
+  if (body.thinkingApiKey !== undefined) {
+    thinkingModelConfig.apiKey = body.thinkingApiKey;
+  }
+
+  const taskModelConfig: ModelConfig = {
+    modelId: body.taskModelId || taskDefaults.networkingModel,
+    providerId: resolvedTaskProvider,
+  };
+
+  if (body.taskApiKey !== undefined) {
+    taskModelConfig.apiKey = body.taskApiKey;
+  }
+
+  return { thinkingModelConfig, taskModelConfig };
 }
 
 // This is what we'll send back for each company
@@ -177,6 +216,8 @@ export async function POST(req: NextRequest) {
           status: "processing"
         });
 
+        const { thinkingModelConfig, taskModelConfig } = resolveModelConfigs(body);
+
         // Create a researcher instance for this company
         const researcher = new CompanyDeepResearch({
           companyName,
@@ -186,37 +227,14 @@ export async function POST(req: NextRequest) {
           subIndustries: [],
           competitors: [],
           researchSources: [],
-          
+
           // Always use "fast" mode for bulk research
           searchDepth: "fast",
           language: body.language || "en-US",
-          
+
           // AI provider configuration with smart defaults for all providers
-          thinkingModelConfig: body.thinkingModelId && body.thinkingProviderId ? {
-            modelId: body.thinkingModelId,
-            providerId: body.thinkingProviderId,
-            apiKey: body.thinkingApiKey,
-          } : (() => {
-            const defaults = getDefaultModelConfig(body.thinkingProviderId);
-            return {
-              modelId: defaults.thinkingModel,
-              providerId: body.thinkingProviderId || "openai",
-              apiKey: undefined, // Will use server-side API key
-            };
-          })(),
-          
-          taskModelConfig: body.taskModelId && body.taskProviderId ? {
-            modelId: body.taskModelId,
-            providerId: body.taskProviderId,
-            apiKey: body.taskApiKey,
-          } : (() => {
-            const defaults = getDefaultModelConfig(body.taskProviderId);
-            return {
-              modelId: defaults.networkingModel,
-              providerId: body.taskProviderId || "openai",
-              apiKey: undefined, // Will use server-side API key
-            };
-          })(),
+          thinkingModelConfig,
+          taskModelConfig,
           
           // Search provider configuration
           searchProviderId: body.searchProviderId,
@@ -244,9 +262,10 @@ export async function POST(req: NextRequest) {
         });
 
         // Run the fast research with timeout and retry logic
-        const modelId = body.thinkingModelId || getDefaultModelConfig(body.thinkingProviderId).thinkingModel;
-        const providerId = body.thinkingProviderId || "openai";
-        const timeoutConfig = getTimeoutConfig(modelId, providerId);
+        const timeoutConfig = getTimeoutConfig(
+          thinkingModelConfig.modelId,
+          thinkingModelConfig.providerId
+        );
         
         // Use the total timeout for the operation
         const result = await retryWithBackoff(

@@ -1,4 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {
+  resolveModelConfigs,
+  type BulkCompanyRequest,
+} from "@/app/api/bulk-company-research/route";
 
 // Test that CompanyDeepResearch initializes search provider correctly
 // for different search depths and provider IDs
@@ -80,6 +84,90 @@ describe("Bulk Company Research search provider configuration", () => {
           })
         );
       });
+    });
+  });
+});
+
+describe("Bulk Company Research model configuration resolution", () => {
+  it("reuses the thinking provider when the task provider is missing", () => {
+    const body: BulkCompanyRequest = {
+      companies: ["Alpha Corp"],
+      thinkingProviderId: "mistral",
+    };
+
+    const { thinkingModelConfig, taskModelConfig } = resolveModelConfigs(body);
+
+    expect(thinkingModelConfig).toEqual({
+      modelId: "mistral-large-2411",
+      providerId: "mistral",
+    });
+
+    expect(taskModelConfig).toEqual({
+      modelId: "mistral-large-latest",
+      providerId: "mistral",
+    });
+  });
+
+  it("reuses the task provider when the thinking provider is missing", () => {
+    const body: BulkCompanyRequest = {
+      companies: ["Beta Inc"],
+      taskProviderId: "xai",
+    };
+
+    const { thinkingModelConfig, taskModelConfig } = resolveModelConfigs(body);
+
+    expect(thinkingModelConfig).toEqual({
+      modelId: "grok-3",
+      providerId: "xai",
+    });
+
+    expect(taskModelConfig).toEqual({
+      modelId: "grok-3",
+      providerId: "xai",
+    });
+  });
+
+  it("preserves explicit models and API keys when provided", () => {
+    const body: BulkCompanyRequest = {
+      companies: ["Gamma LLC"],
+      thinkingProviderId: "openai",
+      thinkingModelId: "gpt-5",
+      thinkingApiKey: "client-think",
+      taskProviderId: "openrouter",
+      taskModelId: "anthropic/claude-3.5-sonnet",
+      taskApiKey: "",
+    };
+
+    const { thinkingModelConfig, taskModelConfig } = resolveModelConfigs(body);
+
+    expect(thinkingModelConfig).toEqual({
+      modelId: "gpt-5",
+      providerId: "openai",
+      apiKey: "client-think",
+    });
+
+    expect(taskModelConfig).toEqual({
+      modelId: "anthropic/claude-3.5-sonnet",
+      providerId: "openrouter",
+      apiKey: "",
+    });
+  });
+
+  it("defaults both providers to OpenAI when none are provided", () => {
+    const body: BulkCompanyRequest = {
+      companies: ["Delta Co"],
+    };
+
+    const { thinkingModelConfig, taskModelConfig } = resolveModelConfigs(body);
+
+    expect(thinkingModelConfig).toEqual({
+      modelId: "gpt-5",
+      providerId: "openai",
+    });
+
+    expect(taskModelConfig).toEqual({
+      modelId: "gpt-5-turbo",
+      providerId: "openai",
     });
   });
 });
