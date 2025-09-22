@@ -10,10 +10,6 @@ import { logger } from "@/utils/logger";
 
 export const runtime = "edge";
 
-type StockDataProvider = "financial_datasets" | "alpha_vantage" | "yahoo_finance";
-
-type NormalizedFinancialProvider = StockDataProvider | "mock" | "auto";
-
 const FinancialDataRequestSchema = z.object({
   action: z.enum(["stock-price", "company-financials", "company-profile", "search-companies"]),
   ticker: z.string().optional(),
@@ -30,41 +26,10 @@ const FinancialDataRequestSchema = z.object({
   deterministic: z.boolean().optional(),
 });
 
-function normalizeFinancialProvider(provider?: string | null): NormalizedFinancialProvider {
-  if (!provider) {
-    return "mock";
-  }
-
-  const value = provider.toLowerCase();
-  if (value.includes("mock")) {
-    return "mock";
-  }
-
-  if (value.includes("auto") || value === "default") {
-    return "auto";
-  }
-
-  if (value.includes("financial")) {
-    return "financial_datasets";
-  }
-
-  if (value.includes("alpha")) {
-    return "alpha_vantage";
-  }
-
-  if (value.includes("yahoo")) {
-    return "yahoo_finance";
-  }
-
-  return "auto";
-}
-
 // Helper function to get financial provider configuration
 function getFinancialConfig(clientConfig?: any) {
   // Use client-provided configuration if available, otherwise fallback to environment variables
-  const provider = normalizeFinancialProvider(
-    clientConfig?.financialProvider || process.env.FINANCIAL_PROVIDER || "mock"
-  );
+  const provider = clientConfig?.financialProvider || process.env.FINANCIAL_PROVIDER || "mock";
   const alphaVantageKey = clientConfig?.alphaVantageApiKey || process.env.ALPHA_VANTAGE_API_KEY || "";
   const yahooKey = clientConfig?.yahooFinanceApiKey || process.env.YAHOO_FINANCE_API_KEY || "";
   const financialDatasetsKey = clientConfig?.financialDatasetsApiKey || process.env.FINANCIAL_DATASETS_API_KEY || "";
@@ -78,24 +43,9 @@ function getFinancialConfig(clientConfig?: any) {
     alphaVantageApiKey: alphaVantageKey,
     yahooFinanceApiKey: yahooKey,
     financialDatasetsApiKey: financialDatasetsKey,
+    hasApiKey: alphaVantageKey.length > 0 || yahooKey.length > 0 || financialDatasetsKey.length > 0,
     deterministicMockData: deterministic,
   };
-}
-
-function getProviderPriority(provider: NormalizedFinancialProvider): StockDataProvider[] {
-  switch (provider) {
-    case "financial_datasets":
-      return ["financial_datasets", "alpha_vantage", "yahoo_finance"];
-    case "alpha_vantage":
-      return ["alpha_vantage", "financial_datasets", "yahoo_finance"];
-    case "yahoo_finance":
-      return ["yahoo_finance"];
-    case "auto":
-      return ["financial_datasets", "alpha_vantage", "yahoo_finance"];
-    case "mock":
-    default:
-      return [];
-  }
 }
 
 // Constants for the Park-Miller "minimal standard" linear congruential generator (LCG)
@@ -239,8 +189,7 @@ export async function POST(request: NextRequest) {
 
     const config = getFinancialConfig(validatedData);
     const random = createRNG(config.deterministicMockData);
-    const providerPriority = getProviderPriority(config.provider);
-    const useRealData = config.provider !== "mock" && providerPriority.length > 0;
+    const useRealData = config.hasApiKey && config.provider !== "mock";
 
     switch (action) {
       case "stock-price":
@@ -255,21 +204,22 @@ export async function POST(request: NextRequest) {
         
         // Try to fetch real data from available providers
         if (useRealData) {
-          for (const provider of providerPriority) {
-            if (provider === "financial_datasets" && config.financialDatasetsApiKey) {
-              stockData = await fetchFinancialDatasetsStock(ticker, config.financialDatasetsApiKey);
-            } else if (provider === "alpha_vantage" && config.alphaVantageApiKey) {
-              stockData = await fetchRealStockData(ticker, config.alphaVantageApiKey);
-            } else if (provider === "yahoo_finance") {
-              stockData = await fetchYahooFinanceStock(ticker, config.yahooFinanceApiKey);
-            }
-
-            if (stockData) {
-              break;
-            }
+          // Try Financial Datasets first (most comprehensive)
+          if (config.financialDatasetsApiKey && !stockData) {
+            stockData = await fetchFinancialDatasetsStock(ticker, config.financialDatasetsApiKey);
+          }
+          
+          // Try Alpha Vantage if Financial Datasets failed
+          if (config.alphaVantageApiKey && !stockData) {
+            stockData = await fetchRealStockData(ticker, config.alphaVantageApiKey);
+          }
+          
+          // Try Yahoo Finance as fallback (free but rate limited)
+          if (!stockData) {
+            stockData = await fetchYahooFinanceStock(ticker, config.yahooFinanceApiKey);
           }
         }
-
+        
         // Fallback to mock data if all real providers failed or not configured
         if (!stockData) {
           stockData = {
