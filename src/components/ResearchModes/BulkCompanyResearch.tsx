@@ -51,7 +51,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { logger } from "@/utils/logger";
 import { useSettingStore } from "@/store/setting";
-import { getProviderStateKey, getProviderApiKey } from "@/utils/provider";
+import { getProviderStateKey, getProviderApiKey, resolveActiveProvider } from "@/utils/provider";
 
 // Import MagicDown for rendering markdown
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
@@ -163,7 +163,7 @@ export default function BulkCompanyResearch() {
     
     try {
       // Get current AI provider and model settings from user configuration
-      const currentProvider = settingStore.provider || "openai";
+      const currentProvider = resolveActiveProvider(settingStore);
       const providerKey = getProviderStateKey(currentProvider);
       const thinkingModel = settingStore[
         `${providerKey}ThinkingModel` as keyof typeof settingStore

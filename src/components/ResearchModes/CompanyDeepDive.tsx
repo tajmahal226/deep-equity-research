@@ -19,7 +19,7 @@ import {
 import { downloadFile } from "@/utils/file";
 import { logger } from "@/utils/logger";
 import { useSettingStore } from "@/store/setting";
-import { getProviderStateKey, getProviderApiKey } from "@/utils/provider";
+import { getProviderStateKey, getProviderApiKey, resolveActiveProvider } from "@/utils/provider";
 
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
 
@@ -126,7 +126,7 @@ export default function CompanyDeepDive() {
     
     try {
       // Get current AI provider and model settings from user configuration
-      const currentProvider = settingStore.provider || "openai";
+      const currentProvider = resolveActiveProvider(settingStore);
       const providerKey = getProviderStateKey(currentProvider);
       const thinkingModel = settingStore[
         `${providerKey}ThinkingModel` as keyof typeof settingStore

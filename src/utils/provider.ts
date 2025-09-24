@@ -22,6 +22,63 @@ export function getProviderApiKey(
   return store[keyName] || store.apiKey || "";
 }
 
+/**
+ * Resolve the currently active provider using the persisted settings.
+ *
+ * If the user selected a provider and supplied the corresponding API key we
+ * honor that preference. Otherwise we look for the first provider with an
+ * available API key so that research flows do not fail due to an empty key
+ * (for example when the settings were reset or a provider was selected
+ * without configuring credentials). Ollama is treated as always available
+ * because it does not require a key.
+ */
+export function resolveActiveProvider(
+  store: SettingStore & Record<string, unknown>,
+): string {
+  const preferred = store.provider?.trim();
+
+  if (preferred) {
+    if (preferred === "ollama") {
+      return preferred;
+    }
+
+    const preferredKey = getProviderApiKey(store, preferred);
+    if (preferredKey) {
+      return preferred;
+    }
+  }
+
+  const fallbackOrder = [
+    "openai",
+    "anthropic",
+    "deepseek",
+    "xai",
+    "mistral",
+    "openrouter",
+    "google",
+    "cohere",
+    "together",
+    "groq",
+    "perplexity",
+    "ollama",
+  ];
+
+  for (const candidate of fallbackOrder) {
+    if (candidate === preferred) continue;
+
+    if (candidate === "ollama") {
+      return candidate;
+    }
+
+    const apiKey = getProviderApiKey(store, candidate);
+    if (apiKey) {
+      return candidate;
+    }
+  }
+
+  return preferred || "openai";
+}
+
 type ProviderModelPair = {
   thinkingModel: string;
   taskModel: string;
