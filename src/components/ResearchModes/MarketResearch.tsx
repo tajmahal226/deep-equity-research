@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useSettingStore } from "@/store/setting";
 import {
   getProviderApiKey,
+  resolveActiveProvider,
   resolveProviderModels,
 } from "@/utils/provider";
 import { Button } from "@/components/ui/button";
@@ -70,7 +71,7 @@ export default function MarketResearch() {
 
     try {
       // Determine the active AI provider and resolve the model pair with safe fallbacks
-      const currentProvider = settingStore.provider || "openai";
+      const currentProvider = resolveActiveProvider(settingStore);
       const { thinkingModel, taskModel } = resolveProviderModels(
         settingStore,
         currentProvider,
