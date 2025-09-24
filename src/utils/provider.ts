@@ -1,4 +1,4 @@
-import type { SettingStore } from "@/store/setting";
+import type { SettingStore, SettingFunction } from "@/store/setting";
 
 const PROVIDER_STATE_KEY_MAP: Record<string, string> = {
   openai: "openAI",
@@ -33,8 +33,9 @@ export function getProviderApiKey(
  * because it does not require a key.
  */
 export function resolveActiveProvider(
-  store: SettingStore & Record<string, unknown>,
+  store: SettingStore & SettingFunction,
 ): string {
+  const storeWithIndex = store as unknown as SettingStore & Record<string, unknown>;
   const preferred = store.provider?.trim();
 
   if (preferred) {
@@ -42,7 +43,7 @@ export function resolveActiveProvider(
       return preferred;
     }
 
-    const preferredKey = getProviderApiKey(store, preferred);
+    const preferredKey = getProviderApiKey(storeWithIndex, preferred);
     if (preferredKey) {
       return preferred;
     }
@@ -70,7 +71,7 @@ export function resolveActiveProvider(
       return candidate;
     }
 
-    const apiKey = getProviderApiKey(store, candidate);
+    const apiKey = getProviderApiKey(storeWithIndex, candidate);
     if (apiKey) {
       return candidate;
     }

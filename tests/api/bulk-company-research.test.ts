@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   resolveModelConfigs,
   type BulkCompanyRequest,
-} from "@/app/api/bulk-company-research/route";
+} from "@/app/api/bulk-company-research/model-config";
 
 // Test that CompanyDeepResearch initializes search provider correctly
 // for different search depths and provider IDs

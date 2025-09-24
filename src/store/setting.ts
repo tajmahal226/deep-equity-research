@@ -89,7 +89,7 @@ export interface SettingStore {
   temperature: number;
 }
 
-interface SettingFunction {
+export interface SettingFunction {
   update: (values: Partial<SettingStore>) => void;
   reset: () => void;
 }
