@@ -57,6 +57,10 @@ const AI_PROVIDER_ENV_VARS: Record<string, string[]> = {
   openrouter: ["OPENROUTER_API_KEY"],
 };
 
+export function getAIProviderEnvVarNames(provider: string): string[] {
+  return AI_PROVIDER_ENV_VARS[provider] ?? [];
+}
+
 // API keys are resolved dynamically from environment variables within their
 // respective lookup functions. This avoids stale values when tests or runtime
 // code modify `process.env` after module initialization.
@@ -99,8 +103,8 @@ export function getAIProviderApiKey(provider: string) {
   const providersWithoutKeys = ["ollama"];
   if (providersWithoutKeys.includes(provider)) return "";
 
-  const envVarNames = AI_PROVIDER_ENV_VARS[provider];
-  if (!envVarNames) {
+  const envVarNames = getAIProviderEnvVarNames(provider);
+  if (envVarNames.length === 0) {
     throw new Error("Unsupported Provider: " + provider);
   }
 
