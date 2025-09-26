@@ -92,6 +92,17 @@ describe("API Key Resolution", () => {
       
       consoleSpy.mockRestore();
     });
+
+    it("skips setup guidance for providers without API keys", () => {
+      process.env.NODE_ENV = "development";
+
+      const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+      expect(() => getAIProviderApiKeyWithFallback("ollama")).not.toThrow();
+      expect(consoleSpy).not.toHaveBeenCalled();
+
+      consoleSpy.mockRestore();
+    });
   });
 
   describe("Environment Variable Integration", () => {
