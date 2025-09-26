@@ -134,10 +134,19 @@ export function getAIProviderApiKeyWithFallback(provider: string): string {
 
   // If no API key is found and we're in development, provide guidance
   if (!apiKey && process.env.NODE_ENV === 'development') {
-    const envVarNames = AI_PROVIDER_ENV_VARS[provider];
+    const envVarNames = getAIProviderEnvVarNames(provider);
+
+    if (envVarNames.length === 0) {
+      // Providers like Ollama do not require API keys, so skip noisy guidance.
+      return '';
+    }
+
     console.warn(`\n🔑 [Setup Required] No API key found for ${provider}.`);
     console.warn(`   To fix this, add your API key to .env.local:`);
-    console.warn(`   ${envVarNames.join(" or ")}=your-key-here\n`);
+    envVarNames.forEach(name => {
+      console.warn(`   ${name}=your-key-here`);
+    });
+    console.warn('');
 
     // Return empty string - the error handling in the calling code will handle this gracefully
     return '';
