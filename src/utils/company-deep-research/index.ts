@@ -29,11 +29,12 @@ import {
   INVESTMENT_RESEARCH_SECTIONS 
 } from "@/constants/companyDivePrompts";
 import { multiApiKeyPolling, hasTemperatureRestrictions, isNetworkingModel } from "@/utils/model";
-import { 
-  getAIProviderBaseURL, 
+import {
+  getAIProviderBaseURL,
   getAIProviderApiKeyWithFallback,
   getSearchProviderBaseURL,
-  getSearchProviderApiKey 
+  getSearchProviderApiKey,
+  getAIProviderEnvVarNames
 } from "@/app/api/utils";
 import { streamText, generateText } from "ai";
 import { createAIProvider, filterModelSettings } from "@/utils/deep-research/provider";
@@ -51,44 +52,70 @@ function validateApiKey(provider: string, model: string, apiKey?: string): strin
     return "";
   }
 
+  const envVarNames = getAIProviderEnvVarNames(provider);
+  const envVarList = envVarNames.length > 0 ? envVarNames.join(" or ") : `${provider.toUpperCase()}_API_KEY`;
+  const envVarLabel = envVarNames.length > 1 ? "environment variables" : "environment variable";
+
   if (provider === "openai" && (model.includes("o3") || model.startsWith("gpt-5"))) {
-    throw new Error(`No OpenAI API key found for ${model}. Advanced OpenAI models (GPT-5, o3 series) require a valid API key. Please click the settings gear icon in the top-right corner to enter your OpenAI API key, or set the OPENAI_API_KEY environment variable.`);
+    throw new Error(
+      `No OpenAI API key found for ${model}. Advanced OpenAI models (GPT-5, o3 series) require a valid API key. Please click the settings gear icon in the top-right corner to enter your OpenAI API key, or set the ${envVarList} ${envVarLabel}.`
+    );
   }
   if (provider === "anthropic") {
-    throw new Error(`No Anthropic API key found for Claude ${model}. Please click the settings gear icon in the top-right corner to enter your Anthropic API key, or set the ANTHROPIC_API_KEY environment variable.`);
+    throw new Error(
+      `No Anthropic API key found for Claude ${model}. Please click the settings gear icon in the top-right corner to enter your Anthropic API key, or set the ${envVarList} ${envVarLabel}.`
+    );
   }
   if (provider === "deepseek") {
     const modelLabel = model.includes("reasoner") ? `reasoning model ${model}` : model;
-    throw new Error(`No DeepSeek API key found for ${modelLabel}. Please click the settings gear icon in the top-right corner to enter your DeepSeek API key, or set the DEEPSEEK_API_KEY environment variable.`);
+    throw new Error(
+      `No DeepSeek API key found for ${modelLabel}. Please click the settings gear icon in the top-right corner to enter your DeepSeek API key, or set the ${envVarList} ${envVarLabel}.`
+    );
   }
   if (provider === "xai") {
-    throw new Error(`No xAI API key found for Grok ${model}. Please click the settings gear icon in the top-right corner to enter your xAI API key, or set the XAI_API_KEY environment variable.`);
+    throw new Error(
+      `No xAI API key found for Grok ${model}. Please click the settings gear icon in the top-right corner to enter your xAI API key, or set the ${envVarList} ${envVarLabel}.`
+    );
   }
   if (provider === "google") {
     throw new Error(
-      `No Google API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Google API key, or set the GOOGLE_GENERATIVE_AI_API_KEY environment variable.`
+      `No Google API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Google API key, or set the ${envVarList} ${envVarLabel}.`
     );
   }
   if (provider === "mistral") {
-    throw new Error(`No Mistral API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Mistral API key, or set the MISTRAL_API_KEY environment variable.`);
+    throw new Error(
+      `No Mistral API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Mistral API key, or set the ${envVarList} ${envVarLabel}.`
+    );
   }
   if (provider === "openrouter") {
-    throw new Error(`No OpenRouter API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your OpenRouter API key, or set the OPENROUTER_API_KEY environment variable.`);
+    throw new Error(
+      `No OpenRouter API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your OpenRouter API key, or set the ${envVarList} ${envVarLabel}.`
+    );
   }
   if (provider === "cohere") {
-    throw new Error(`No Cohere API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Cohere API key, or set the COHERE_API_KEY environment variable.`);
+    throw new Error(
+      `No Cohere API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Cohere API key, or set the ${envVarList} ${envVarLabel}.`
+    );
   }
   if (provider === "groq") {
-    throw new Error(`No Groq API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Groq API key, or set the GROQ_API_KEY environment variable.`);
+    throw new Error(
+      `No Groq API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Groq API key, or set the ${envVarList} ${envVarLabel}.`
+    );
   }
   if (provider === "perplexity") {
-    throw new Error(`No Perplexity API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Perplexity API key, or set the PERPLEXITY_API_KEY environment variable.`);
+    throw new Error(
+      `No Perplexity API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Perplexity API key, or set the ${envVarList} ${envVarLabel}.`
+    );
   }
   if (provider === "together") {
-    throw new Error(`No Together AI API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Together AI API key, or set the TOGETHER_API_KEY environment variable.`);
+    throw new Error(
+      `No Together AI API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Together AI API key, or set the ${envVarList} ${envVarLabel}.`
+    );
   }
 
-  throw new Error(`No API key found for ${provider}. Please click the settings gear icon in the top-right corner to enter your ${provider.toUpperCase()} API key.`);
+  throw new Error(
+    `No API key found for ${provider}. Please click the settings gear icon in the top-right corner to enter your ${provider.toUpperCase()} API key, or set the ${envVarList} ${envVarLabel}.`
+  );
 }
 
 // Import types we'll need
