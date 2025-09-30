@@ -9,8 +9,10 @@ import {
 } from "../../utils";
 import { logger } from "@/utils/logger";
 
-export const runtime = "edge";
+// Remove edge runtime to support long-running SSE connections
+// Edge runtime has 25-30 second timeout which is too short for research
 export const dynamic = "force-dynamic";
+export const maxDuration = 600; // 10 minutes
 export const preferredRegion = [
   "cle1",
   "iad1",

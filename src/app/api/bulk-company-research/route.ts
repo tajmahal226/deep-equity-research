@@ -36,6 +36,10 @@ import {
   type BulkCompanyRequest,
 } from "./model-config";
 
+// Configure Node.js runtime for long-running bulk research operations
+export const dynamic = "force-dynamic";
+export const maxDuration = 900; // 15 minutes for bulk research (multiple companies)
+
 // Define how many companies to research at the same time
 // Reduced from 3 to 2 to prevent timeouts with powerful models
 const BATCH_SIZE = 2;

@@ -26,11 +26,15 @@ import { CompanyDeepResearch } from "@/utils/company-deep-research";
 import { createSSEStream, getSSEHeaders } from "@/utils/sse";
 import { nanoid } from "nanoid";
 import { logger } from "@/utils/logger";
-import { 
-  OPERATION_TIMEOUTS, 
-  withTimeout, 
-  retryWithBackoff 
+import {
+  OPERATION_TIMEOUTS,
+  withTimeout,
+  retryWithBackoff
 } from "@/utils/timeout-config";
+
+// Configure Node.js runtime for long-running research operations
+export const dynamic = "force-dynamic";
+export const maxDuration = 600; // 10 minutes for deep research mode
 
 // Helper function to get default model configuration for any provider
 function getDefaultModelConfig(providerId?: string) {
