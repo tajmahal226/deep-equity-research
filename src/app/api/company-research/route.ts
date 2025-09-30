@@ -34,7 +34,7 @@ import {
 
 // Configure Node.js runtime for long-running research operations
 export const dynamic = "force-dynamic";
-export const maxDuration = 600; // 10 minutes for deep research mode
+export const maxDuration = 300; // 5 minutes (Vercel Hobby max)
 
 // Helper function to get default model configuration for any provider
 function getDefaultModelConfig(providerId?: string) {

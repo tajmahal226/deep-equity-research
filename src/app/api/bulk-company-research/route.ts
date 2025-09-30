@@ -38,7 +38,7 @@ import {
 
 // Configure Node.js runtime for long-running bulk research operations
 export const dynamic = "force-dynamic";
-export const maxDuration = 900; // 15 minutes for bulk research (multiple companies)
+export const maxDuration = 300; // 5 minutes (Vercel Hobby max)
 
 // Define how many companies to research at the same time
 // Reduced from 3 to 2 to prevent timeouts with powerful models
