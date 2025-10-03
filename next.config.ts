@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
-import pkg from "./package.json";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const pkg = require("./package.json") as typeof import("./package.json");
 
 // AI provider API base url
 const API_PROXY_BASE_URL = process.env.API_PROXY_BASE_URL || "";
