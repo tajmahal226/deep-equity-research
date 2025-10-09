@@ -30,6 +30,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# Debug and test scripts (keep existing ones for reference)
+# Add new debug/test scripts here to prevent accidental commits
+# test-*.js
+# debug-*.js
+# mock-*.js
+
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
