@@ -4,6 +4,7 @@ import { createAIProvider } from "./provider";
 import { createSearchProvider } from "./search";
 import { getMaxTokens } from "@/constants/token-limits";
 import { hasTemperatureRestrictions } from "@/utils/model";
+import { logger } from "@/utils/logger";
 import {
   getSystemPrompt,
   writeReportPlanPrompt,
@@ -95,7 +96,7 @@ class DeepResearch {
       settings = { ...(settings || {}), maxTokens };
     }
     
-    console.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", hasRestrictions=${hasTemperatureRestrictions(AIProvider.thinkingModel)}, temperature=${AIProvider.temperature}, finalSettings=`, settings);
+    logger.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", hasRestrictions=${hasTemperatureRestrictions(AIProvider.thinkingModel)}, temperature=${AIProvider.temperature}, finalSettings=`, settings);
     
     return await createAIProvider({
       provider: AIProvider.provider,
@@ -127,7 +128,7 @@ class DeepResearch {
     }
     
     const finalSettings = Object.keys(settings).length > 0 ? settings : undefined;
-    console.log(`[DEBUG] DeepResearch.getTaskModel: model="${AIProvider.taskModel}", hasRestrictions=${hasTemperatureRestrictions(AIProvider.taskModel)}, temperature=${AIProvider.temperature}, finalSettings=`, finalSettings);
+    logger.log(`[DEBUG] DeepResearch.getTaskModel: model="${AIProvider.taskModel}", hasRestrictions=${hasTemperatureRestrictions(AIProvider.taskModel)}, temperature=${AIProvider.temperature}, finalSettings=`, finalSettings);
     
     return await createAIProvider({
       provider: AIProvider.provider,
@@ -145,7 +146,7 @@ class DeepResearch {
     const cleanParams = { ...params };
     
     if (hasTemperatureRestrictions(AIProvider.thinkingModel) && cleanParams.temperature !== undefined) {
-      console.log(`[DEBUG] DeepResearch: Removing temperature ${cleanParams.temperature} for restricted thinking model ${AIProvider.thinkingModel}`);
+      logger.log(`[DEBUG] DeepResearch: Removing temperature ${cleanParams.temperature} for restricted thinking model ${AIProvider.thinkingModel}`);
       delete cleanParams.temperature;
     }
     const limit = getMaxTokens(AIProvider.provider, AIProvider.thinkingModel);
@@ -166,7 +167,7 @@ class DeepResearch {
     const cleanParams = { ...params };
     
     if (hasTemperatureRestrictions(AIProvider.taskModel) && cleanParams.temperature !== undefined) {
-      console.log(`[DEBUG] DeepResearch: Removing temperature ${cleanParams.temperature} for restricted task model ${AIProvider.taskModel}`);
+      logger.log(`[DEBUG] DeepResearch: Removing temperature ${cleanParams.temperature} for restricted task model ${AIProvider.taskModel}`);
       delete cleanParams.temperature;
     }
     const limit = getMaxTokens(AIProvider.provider, AIProvider.taskModel);

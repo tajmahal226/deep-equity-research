@@ -337,7 +337,7 @@ export class CompanyDeepResearch {
 
     if (hasTemperatureRestrictions(modelName)) {
       if (cleanParams.temperature !== undefined) {
-        console.log(`[DEBUG] cleanThinkingModelParameters: REMOVING temperature ${cleanParams.temperature} for reasoning model ${modelName}`);
+        logger.log(`[DEBUG] cleanThinkingModelParameters: REMOVING temperature ${cleanParams.temperature} for reasoning model ${modelName}`);
         delete cleanParams.temperature;
       }
     }
@@ -349,7 +349,7 @@ export class CompanyDeepResearch {
       }
     }
 
-    console.log(`[DEBUG] cleanThinkingModelParameters: model=${modelName}, finalParams=`, cleanParams);
+    logger.log(`[DEBUG] cleanThinkingModelParameters: model=${modelName}, finalParams=`, cleanParams);
     return cleanParams;
   }
 
@@ -363,7 +363,7 @@ export class CompanyDeepResearch {
 
     if (hasTemperatureRestrictions(modelName)) {
       if (cleanParams.temperature !== undefined) {
-        console.log(`[DEBUG] cleanTaskModelParameters: REMOVING temperature ${cleanParams.temperature} for reasoning model ${modelName}`);
+        logger.log(`[DEBUG] cleanTaskModelParameters: REMOVING temperature ${cleanParams.temperature} for reasoning model ${modelName}`);
         delete cleanParams.temperature;
       }
     }
@@ -375,7 +375,7 @@ export class CompanyDeepResearch {
       }
     }
 
-    console.log(`[DEBUG] cleanTaskModelParameters: model=${modelName}, finalParams=`, cleanParams);
+    logger.log(`[DEBUG] cleanTaskModelParameters: model=${modelName}, finalParams=`, cleanParams);
     return cleanParams;
   }
   
@@ -400,7 +400,7 @@ export class CompanyDeepResearch {
     }
 
     const filteredSettings = filterModelSettings(providerId, modelId, settingsWithReasoning);
-    console.log(`[DEBUG] getThinkingModelSettings: provider="${providerId}", model="${modelId}", filtered=`, filteredSettings);
+    logger.log(`[DEBUG] getThinkingModelSettings: provider="${providerId}", model="${modelId}", filtered=`, filteredSettings);
     return filteredSettings;
   }
 
@@ -430,7 +430,7 @@ export class CompanyDeepResearch {
     }
 
     const filteredSettings = filterModelSettings(providerId, modelId, settingsWithReasoning);
-    console.log(`[DEBUG] getTaskModelSettings: provider="${providerId}", model="${modelId}", filtered=`, filteredSettings);
+    logger.log(`[DEBUG] getTaskModelSettings: provider="${providerId}", model="${modelId}", filtered=`, filteredSettings);
     return filteredSettings;
   }
   
