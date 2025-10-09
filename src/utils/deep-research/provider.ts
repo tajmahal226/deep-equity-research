@@ -1,6 +1,7 @@
 import { logOpenAIRequest, logOpenAIError, validateOpenAIParameters } from '@/utils/openai-debug';
 import { hasTemperatureRestrictions } from '@/utils/model';
 import { getMaxTokens } from '@/constants/token-limits';
+import { logger } from '@/utils/logger';
 
 export interface AIProviderOptions {
   provider: string;
@@ -57,13 +58,13 @@ export function filterModelSettings(provider: string, model: string, settings: a
     case "openai":
       // OpenAI API parameters based on official documentation
       // Use centralized logic to detect temperature restrictions
-      console.log(`[DEBUG] filterModelSettings: model="${model}", hasRestrictions=${hasTemperatureRestrictions(model)}, originalTemp=${settings.temperature}`);
+      logger.log(`[DEBUG] filterModelSettings: model="${model}", hasRestrictions=${hasTemperatureRestrictions(model)}, originalTemp=${settings.temperature}`);
       
       if (model.startsWith("o1") || hasTemperatureRestrictions(model)) {
         // Reasoning models (o1, o3, gpt-5) only support default temperature=1
         // Any explicit temperature parameter will cause "Unsupported parameter" error
         if (filteredSettings.temperature !== undefined) {
-          console.log(`[DEBUG] filterModelSettings: REMOVING temperature for model "${model}"`);
+          logger.log(`[DEBUG] filterModelSettings: REMOVING temperature for model "${model}"`);
           delete filteredSettings.temperature;
         }
         
@@ -139,7 +140,7 @@ export async function createAIProvider({
     timestamp: new Date().toISOString(),
   };
   
-  console.log('[AI Provider Debug]', debugInfo);
+  logger.log('[AI Provider Debug]', debugInfo);
   try {
     if (provider === "google") {
       const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
@@ -148,7 +149,7 @@ export async function createAIProvider({
         apiKey,
       });
       const filteredSettings = filterModelSettings(provider, model, settings);
-      console.log('[Google Provider]', { model, filteredSettings });
+      logger.log('[Google Provider]', { model, filteredSettings });
       return google(model, filteredSettings);
     } else if (provider === "openai") {
       const { createOpenAI } = await import("@ai-sdk/openai");
@@ -160,11 +161,11 @@ export async function createAIProvider({
       const isResponsesModel = model.startsWith("o1") || hasTemperatureRestrictions(model);
       
       let filteredSettings = filterModelSettings(provider, model, settings);
-      console.log(`[DEBUG] createAIProvider OpenAI: model="${model}", filteredSettings=`, filteredSettings);
+      logger.log(`[DEBUG] createAIProvider OpenAI: model="${model}", filteredSettings=`, filteredSettings);
       
       // Add required tools for deep research models
       if (modelRequiresTools(provider, model)) {
-        console.log(`[OpenAI Provider] Model ${model} requires tools - adding web_search_preview`);
+        logger.log(`[OpenAI Provider] Model ${model} requires tools - adding web_search_preview`);
         filteredSettings = {
           ...filteredSettings,
           tools: {
@@ -189,7 +190,7 @@ export async function createAIProvider({
       });
       
       if (isResponsesModel) {
-        console.log(`[DEBUG] createAIProvider: Using openai.responses(${model})`, filteredSettings);
+        logger.log(`[DEBUG] createAIProvider: Using openai.responses(${model})`, filteredSettings);
         // OpenAI responses models currently do not accept configuration
         // parameters at creation time. We still need to ensure deep research
         // models receive the required tools. Additionally, these models do not
@@ -208,7 +209,7 @@ export async function createAIProvider({
         function sanitizeOptions(options: any) {
           const cleanOptions = { ...options };
           if ("temperature" in cleanOptions) {
-            console.log(`[DEBUG] createAIProvider: REMOVING temperature for responses model "${model}"`);
+            logger.log(`[DEBUG] createAIProvider: REMOVING temperature for responses model "${model}"`);
             delete cleanOptions.temperature;
           }
           if (requiredTool) {
@@ -243,7 +244,7 @@ export async function createAIProvider({
           },
         } as typeof responsesModel;
       } else {
-        console.log(`[DEBUG] createAIProvider: Using openai(${model}, filteredSettings)`);
+        logger.log(`[DEBUG] createAIProvider: Using openai(${model}, filteredSettings)`);
         const modelInstance = openai(model, filteredSettings);
 
         const baseGenerate = (modelInstance as any).doGenerate?.bind(modelInstance);
