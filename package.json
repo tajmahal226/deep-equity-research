@@ -17,7 +17,8 @@
     "build:export": "next build && next export",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "pnpm build && playwright test"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.10",
@@ -105,6 +106,7 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
+    "@playwright/test": "^1.51.1",
     "vitest": "^3.2.4"
   },
   "engines": {
