@@ -12,7 +12,7 @@ const ANTHROPIC_API_BASE_URL =
   process.env.ANTHROPIC_API_BASE_URL || "https://api.anthropic.com";
 const DEEPSEEK_API_BASE_URL =
   process.env.DEEPSEEK_API_BASE_URL || "https://api.deepseek.com";
-const XAI_API_BASE_URL = process.env.XAI_API_BASE_URL || "https://api.x.ai";
+const XAI_API_BASE_URL = process.env.XAI_API_BASE_URL || "https://api.x.ai/v1";
 const MISTRAL_API_BASE_URL =
   process.env.MISTRAL_API_BASE_URL || "https://api.mistral.ai";
 const COHERE_API_BASE_URL =
