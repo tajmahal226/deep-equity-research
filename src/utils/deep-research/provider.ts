@@ -318,13 +318,18 @@ export async function createAIProvider({
     return openrouter(model, filterModelSettings(provider, model, settings));
   } else if (provider === "ollama") {
     const { createOllama } = await import("ollama-ai-provider");
-    const local = global.location || {};
+    const origin =
+      typeof location !== "undefined"
+        ? location.origin
+        : typeof globalThis.location !== "undefined"
+          ? globalThis.location.origin
+          : undefined;
     const ollama = createOllama({
       baseURL,
       headers,
       fetch: async (input, init) => {
         const headers = (init?.headers || {}) as Record<string, string>;
-        if (!baseURL?.startsWith(local.origin)) delete headers["Authorization"];
+        if (!origin || !baseURL?.startsWith(origin)) delete headers["Authorization"];
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 60_000);
         try {
