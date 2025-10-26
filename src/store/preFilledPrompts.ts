@@ -109,7 +109,7 @@ The report should be extremely well researched from a variety of web-sources, in
 </Research input>
  
 <Success criteria>
-The user should be able to deeply understand the market context and the business overview.  The goal is not to try and do financial analysis necesarily, unless you are 100% confident about financials (3-4 sources confirm the same number), If you are unsure about certain areas – you must say so and not make broad inferences without discussing where you have information gaps.  It is absolutely critical that the user not be fed information that is not accurate, or at least has a perspective on relative level of certainty across all areas discussed above.  It is far more important that the user is accurately informed, than detail that is inaccurate or potentially inaccurate
+The user should be able to deeply understand the market context and the business overview.  The goal is not to try and do financial analysis necessarily, unless you are 100% confident about financials (3-4 sources confirm the same number), If you are unsure about certain areas – you must say so and not make broad inferences without discussing where you have information gaps.  It is absolutely critical that the user not be fed information that is not accurate, or at least has a perspective on relative level of certainty across all areas discussed above.  It is far more important that the user is accurately informed, than detail that is inaccurate or potentially inaccurate
 </Success criteria>.`,
   createdAt: new Date(),
 };
