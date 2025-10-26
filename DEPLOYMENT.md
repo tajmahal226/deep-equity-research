@@ -86,7 +86,7 @@ ACCESS_PASSWORD=your_secure_password
 - **Middleware Size**: 36kB (optimized)
 
 ### Supported Frameworks
-- **Next.js**: 15.3.3 with App Router
+- **Next.js**: ^15.3.1 with App Router
 - **React**: 19.1.0
 - **TypeScript**: Strict mode enabled
 - **Tailwind CSS**: 3.4.1

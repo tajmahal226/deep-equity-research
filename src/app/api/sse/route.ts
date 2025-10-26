@@ -45,14 +45,31 @@ export async function POST(req: NextRequest) {
   const readableStream = new ReadableStream({
     start: async (controller) => {
       logger.log("Client connected");
-      controller.enqueue(
-        encoder.encode(
-          `event: infor\ndata: ${JSON.stringify({
-            name: "deep-research",
-            version: "0.1.0",
-          })}\n\n`
-        )
-      );
+      let streamClosed = false;
+
+      const closeStream = () => {
+        if (streamClosed) {
+          return;
+        }
+        streamClosed = true;
+        controller.close();
+      };
+
+      const enqueueEvent = (event: string, data: any) => {
+        if (streamClosed) {
+          return;
+        }
+        controller.enqueue(
+          encoder.encode(
+            `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
+          )
+        );
+      };
+
+      enqueueEvent("infor", {
+        name: "deep-research",
+        version: "0.1.0",
+      });
 
       const deepResearch = new DeepResearch({
         language,
@@ -71,39 +88,42 @@ export async function POST(req: NextRequest) {
           maxResult,
         },
         onMessage: (event, data) => {
+          if (streamClosed) {
+            return;
+          }
           if (event === "progress") {
             logger.log(
               `[${data.step}]: ${data.name ? `"${data.name}" ` : ""}${
                 data.status
               }`
             );
+            enqueueEvent(event, data);
             if (data.step === "final-report" && data.status === "end") {
-              controller.close();
+              closeStream();
             }
+            return;
           } else if (event === "error") {
             console.error(data);
-            controller.close();
-          } else {
-            console.warn(`Unknown event: ${event}`);
+            enqueueEvent(event, data);
+            closeStream();
+            return;
           }
-          controller.enqueue(
-            encoder.encode(
-              `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
-            )
-          );
+          console.warn(`Unknown event: ${event}`);
+          enqueueEvent(event, data);
         },
       });
 
       req.signal.addEventListener("abort", () => {
-        controller.close();
+        closeStream();
       });
 
       try {
         await deepResearch.start(query, enableCitationImage, enableReferences);
       } catch (err) {
         throw new Error(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        closeStream();
       }
-      controller.close();
     },
   });
 
