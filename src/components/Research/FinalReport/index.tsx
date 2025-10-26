@@ -88,7 +88,7 @@ function FinalReport() {
     }
   }
 
-  function getFinakReportContent() {
+  function getFinalReportContent() {
     const { finalReport, resources, sources } = useTaskStore.getState();
 
     return [
@@ -128,7 +128,7 @@ function FinalReport() {
     save({
       id: generateId("knowledge"),
       title,
-      content: getFinakReportContent(),
+      content: getFinalReportContent(),
       type: "knowledge",
       createdAt: currentTime,
       updatedAt: currentTime,
@@ -138,7 +138,7 @@ function FinalReport() {
 
   function handleDownloadMarkdown() {
     downloadFile(
-      getFinakReportContent(),
+      getFinalReportContent(),
       `${taskStore.title}.md`,
       "text/markdown;charset=utf-8"
     );
@@ -146,7 +146,7 @@ function FinalReport() {
 
   function handleDownloadWord() {
     // markdownToDoc returns HTML that Word can read as a legacy .doc file
-    const docHtml = markdownToDoc(getFinakReportContent());
+    const docHtml = markdownToDoc(getFinalReportContent());
     downloadFile(
       docHtml,
       `${taskStore.title}.doc`,
