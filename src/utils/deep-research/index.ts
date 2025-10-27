@@ -339,10 +339,10 @@ class DeepResearch {
           sources = result.sources;
           images = result.images;
         } catch (err) {
-          const errorMessage = `[${provider}]: ${
-            err instanceof Error ? err.message : "Search Failed"
-          }`;
-          throw new Error(errorMessage);
+          if (err instanceof Error) {
+            throw err;
+          }
+          throw new Error(`[${provider}] Search failed`);
         }
         searchResult = streamText({
           model: await this.getTaskModel(),

@@ -125,6 +125,71 @@ export interface SearchProviderOptions {
   scope?: string;
 }
 
+type FetchWithTimeoutOptions = RequestInit & { timeoutMs?: number };
+
+async function fetchWithTimeout(
+  provider: string,
+  input: RequestInfo | URL,
+  options: FetchWithTimeoutOptions = {}
+) {
+  const { timeoutMs = 30_000, signal, ...init } = options;
+  const controller = new AbortController();
+  let timedOut = false;
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+
+  let abortHandler: (() => void) | undefined;
+  if (signal) {
+    if (signal.aborted) {
+      controller.abort(signal.reason);
+    } else {
+      abortHandler = () => controller.abort(signal.reason);
+      signal.addEventListener("abort", abortHandler);
+    }
+  }
+
+  try {
+    const response = await fetch(input, {
+      ...init,
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const bodyText = await response.text().catch(() => "");
+      const snippetRaw = bodyText.replace(/\s+/g, " ").trim();
+      const snippet = snippetRaw.slice(0, 200);
+      const suffix = snippetRaw.length > snippet.length ? "…" : "";
+      throw new Error(
+        `[${provider}] Request failed with status ${response.status}: ${
+          snippet ? `${snippet}${suffix}` : "No response body"
+        }`
+      );
+    }
+
+    return response;
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      if (timedOut) {
+        throw new Error(
+          `[${provider}] Request timed out after ${timeoutMs}ms`
+        );
+      }
+      throw new Error(`[${provider}] Request was aborted: ${error.message}`);
+    }
+    if (error instanceof Error) {
+      throw new Error(`[${provider}] ${error.message}`);
+    }
+    throw new Error(`[${provider}] Unknown error occurred`);
+  } finally {
+    clearTimeout(timeoutId);
+    if (abortHandler && signal) {
+      signal.removeEventListener("abort", abortHandler);
+    }
+  }
+}
+
 export async function createSearchProvider({
   provider,
   baseURL,
@@ -139,7 +204,8 @@ export async function createSearchProvider({
   if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
 
   if (provider === "tavily") {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
+      provider,
       `${completePath(baseURL || TAVILY_BASE_URL)}/search`,
       {
         method: "POST",
@@ -155,6 +221,7 @@ export async function createSearchProvider({
           include_answer: false,
           include_raw_content: "markdown",
         }),
+        timeoutMs: 30_000,
       }
     );
     const { results = [], images = [] } = await response.json();
@@ -171,15 +238,13 @@ export async function createSearchProvider({
       images: images as ImageSource[],
     };
   } else if (provider === "firecrawl") {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60_000);
-    const response = await fetch(
+    const response = await fetchWithTimeout(
+      provider,
       `${completePath(baseURL || FIRECRAWL_BASE_URL, "/v1")}/search`,
       {
         method: "POST",
         headers,
         credentials: "omit",
-        signal: controller.signal,
         body: JSON.stringify({
           query,
           limit: maxResult,
@@ -190,9 +255,9 @@ export async function createSearchProvider({
           },
           timeout: 60000,
         }),
+        timeoutMs: 60_000,
       }
     );
-    clearTimeout(timeoutId);
     const { data = [] } = await response.json();
     return {
       sources: (data as FirecrawlDocument[])
@@ -205,7 +270,8 @@ export async function createSearchProvider({
       images: [],
     };
   } else if (provider === "exa") {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
+      provider,
       `${completePath(baseURL || EXA_BASE_URL)}/search`,
       {
         method: "POST",
@@ -226,6 +292,7 @@ export async function createSearchProvider({
             },
           },
         }),
+        timeoutMs: 45_000,
       }
     );
     const { results = [] } = await response.json();
@@ -251,7 +318,8 @@ export async function createSearchProvider({
       images,
     };
   } else if (provider === "bocha") {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
+      provider,
       `${completePath(baseURL || BOCHA_BASE_URL, "/v1")}/web-search`,
       {
         method: "POST",
@@ -263,6 +331,7 @@ export async function createSearchProvider({
           summary: true,
           count: maxResult,
         }),
+        timeoutMs: 30_000,
       }
     );
     const { data = {} } = await response.json();
@@ -323,13 +392,19 @@ export async function createSearchProvider({
         : typeof globalThis.location !== "undefined"
           ? globalThis.location.origin
           : undefined;
-    const response = await fetch(
+    const response = await fetchWithTimeout(
+      provider,
       `${completePath(
         baseURL || SEARXNG_BASE_URL
       )}/search?${searchQuery.toString()}`,
       origin && baseURL?.startsWith(origin)
-        ? { method: "POST", credentials: "omit", headers }
-        : { method: "GET", credentials: "omit" }
+        ? {
+            method: "POST",
+            credentials: "omit",
+            headers,
+            timeoutMs: 30_000,
+          }
+        : { method: "GET", credentials: "omit", timeoutMs: 30_000 }
     );
     const { results = [] } = await response.json();
     const rearrangedResults = sort(
