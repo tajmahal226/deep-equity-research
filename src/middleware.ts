@@ -114,7 +114,7 @@ export async function middleware(request: NextRequest) {
     } else {
       const apiKey = multiApiKeyPolling(GOOGLE_GENERATIVE_AI_API_KEY);
       if (apiKey) {
-        const requestHeaders = new Headers();
+        const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
           "Content-Type",
           request.headers.get("Content-Type") || "application/json"
@@ -158,7 +158,7 @@ export async function middleware(request: NextRequest) {
     } else {
       const apiKey = multiApiKeyPolling(OPENROUTER_API_KEY);
       if (apiKey) {
-        const requestHeaders = new Headers();
+        const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
           "Content-Type",
           request.headers.get("Content-Type") || "application/json"
@@ -198,7 +198,7 @@ export async function middleware(request: NextRequest) {
     } else {
       const apiKey = multiApiKeyPolling(OPENAI_API_KEY);
       if (apiKey) {
-        const requestHeaders = new Headers();
+        const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
           "Content-Type",
           request.headers.get("Content-Type") || "application/json"
@@ -234,7 +234,7 @@ export async function middleware(request: NextRequest) {
     } else {
       const apiKey = multiApiKeyPolling(ANTHROPIC_API_KEY);
       if (apiKey) {
-        const requestHeaders = new Headers();
+        const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
           "Content-Type",
           request.headers.get("Content-Type") || "application/json"
@@ -278,7 +278,7 @@ export async function middleware(request: NextRequest) {
     } else {
       const apiKey = multiApiKeyPolling(DEEPSEEK_API_KEY);
       if (apiKey) {
-        const requestHeaders = new Headers();
+        const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
           "Content-Type",
           request.headers.get("Content-Type") || "application/json"
@@ -318,7 +318,7 @@ export async function middleware(request: NextRequest) {
     } else {
       const apiKey = multiApiKeyPolling(XAI_API_KEY);
       if (apiKey) {
-        const requestHeaders = new Headers();
+        const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
           "Content-Type",
           request.headers.get("Content-Type") || "application/json"
@@ -358,7 +358,7 @@ export async function middleware(request: NextRequest) {
     } else {
       const apiKey = multiApiKeyPolling(MISTRAL_API_KEY);
       if (apiKey) {
-        const requestHeaders = new Headers();
+        const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
           "Content-Type",
           request.headers.get("Content-Type") || "application/json"
@@ -397,7 +397,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const requestHeaders = new Headers();
+      const requestHeaders = new Headers(request.headers);
       requestHeaders.set(
         "Content-Type",
         request.headers.get("Content-Type") || "application/json"
@@ -427,7 +427,7 @@ export async function middleware(request: NextRequest) {
     } else {
       const apiKey = multiApiKeyPolling(TAVILY_API_KEY);
       if (apiKey) {
-        const requestHeaders = new Headers();
+        const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
           "Content-Type",
           request.headers.get("Content-Type") || "application/json"
@@ -466,7 +466,7 @@ export async function middleware(request: NextRequest) {
     } else {
       const apiKey = multiApiKeyPolling(FIRECRAWL_API_KEY);
       if (apiKey) {
-        const requestHeaders = new Headers();
+        const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
           "Content-Type",
           request.headers.get("Content-Type") || "application/json"
@@ -505,7 +505,7 @@ export async function middleware(request: NextRequest) {
     } else {
       const apiKey = multiApiKeyPolling(EXA_API_KEY);
       if (apiKey) {
-        const requestHeaders = new Headers();
+        const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
           "Content-Type",
           request.headers.get("Content-Type") || "application/json"
@@ -544,7 +544,7 @@ export async function middleware(request: NextRequest) {
     } else {
       const apiKey = multiApiKeyPolling(BOCHA_API_KEY);
       if (apiKey) {
-        const requestHeaders = new Headers();
+        const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
           "Content-Type",
           request.headers.get("Content-Type") || "application/json"
@@ -581,7 +581,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const requestHeaders = new Headers();
+      const requestHeaders = new Headers(request.headers);
       requestHeaders.set(
         "Content-Type",
         request.headers.get("Content-Type") || "application/json"
@@ -605,7 +605,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const requestHeaders = new Headers();
+      const requestHeaders = new Headers(request.headers);
       requestHeaders.set(
         "Content-Type",
         request.headers.get("Content-Type") || "application/json"
@@ -631,7 +631,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const requestHeaders = new Headers();
+      const requestHeaders = new Headers(request.headers);
       requestHeaders.set(
         "Content-Type",
         request.headers.get("Content-Type") || "application/json"
@@ -658,7 +658,7 @@ export async function middleware(request: NextRequest) {
         { headers: responseHeaders, status: 401 }
       );
     } else {
-      const requestHeaders = new Headers();
+      const requestHeaders = new Headers(request.headers);
       requestHeaders.set(
         "Content-Type",
         request.headers.get("Content-Type") || "application/json"
