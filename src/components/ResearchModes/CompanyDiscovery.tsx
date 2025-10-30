@@ -172,13 +172,8 @@ export default function CompanyDiscovery() {
           discoveredAt: new Date(),
         }));
 
-        const filteredCompanies = filterCompanies(enrichedWithIds, {
-          industries: selectedIndustries,
-          locations: selectedLocations,
-          fundingStages: selectedFundingStages,
-          keywords,
-          excludeKeywords,
-        });
+        // Don't re-filter - search API already handles filtering
+        const filteredCompanies = enrichedWithIds;
 
         setSearchResults(filteredCompanies);
 
