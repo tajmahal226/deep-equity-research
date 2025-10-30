@@ -22,7 +22,7 @@ data: JSON_String
 - `data`: A string containing a JSON object relevant to the event type.
 - A double newline (`\n\n`) signifies the end of an event block.
 
-## API config
+## API Config
 
 Recommended to use the API via `@microsoft/fetch-event-source`.
 
@@ -30,37 +30,82 @@ Endpoint: `/api/sse`
 
 Method: `POST`
 
-Body:
+### Request Body
 
 ```typescript
 interface Config {
   // Research topic
   query: string;
-  // AI provider, Possible values ​​include: google, openai, anthropic, deepseek, xai, mistral, openrouter, ollama
+  
+  // AI provider - Possible values: google, openai, anthropic, deepseek, xai, mistral, openrouter, ollama
   provider: string;
+  
   // Thinking model id
   thinkingModel: string;
+  
   // Task model id
   taskModel: string;
-  // Search provider, Possible values ​​include: model, tavily, firecrawl, exa, bocha, searxng
+  
+  // Search provider - Possible values: model, tavily, firecrawl, exa, bocha, searxng
   searchProvider: string;
-  // Response Language, also affects the search language. (optional)
+  
+  // **REQUIRED** User's AI provider API key
+  // This is the user's personal API key for the selected AI provider
+  aiApiKey: string;
+  
+  // **REQUIRED** User's search provider API key
+  // This is the user's personal API key for the selected search provider
+  // Not required if searchProvider is "model" or "searxng"
+  searchApiKey: string;
+  
+  // Response Language, also affects the search language (optional)
   language?: string;
-  // Maximum number of search results. Default, `5` (optional)
+  
+  // Maximum number of search results. Default: 5 (optional)
   maxResult?: number;
-  // Whether to include content-related images in the final report. Default, `true`. (optional)
+  
+  // Whether to include content-related images in the final report. Default: true (optional)
   enableCitationImage?: boolean;
-  // Whether to include citation links in search results and final reports. Default, `true`. (optional)
+  
+  // Whether to include citation links in search results and final reports. Default: true (optional)
   enableReferences?: boolean;
+  
+  // Model temperature for generation. Default: 0.7 (optional)
+  temperature?: number;
 }
 ```
 
-Headers:
+**Required Fields:**
+| Field | Type | Description |
+|-------|------|-------------|
+| `query` | string | Research topic or question |
+| `provider` | string | AI provider (openai, anthropic, google, etc.) |
+| `thinkingModel` | string | Model for reasoning/planning tasks |
+| `taskModel` | string | Model for execution/search tasks |
+| `searchProvider` | string | Search provider (tavily, exa, model, etc.) |
+| **`aiApiKey`** | **string** | **User's AI provider API key** |
+| **`searchApiKey`** | **string** | **User's search provider API key** |
+
+**Optional Fields:**
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `language` | string | "en-US" | Output and search language |
+| `maxResult` | number | 5 | Maximum search results |
+| `enableCitationImage` | boolean | true | Include images in report |
+| `enableReferences` | boolean | true | Include citation links |
+| `temperature` | number | 0.7 | Model temperature (if supported) |
+
+> **Important:** `aiApiKey` and `searchApiKey` are **required** fields. The application uses a "bring your own key" model where users provide their own API keys. Server-side fallback keys have been removed for security.
+>
+> Exception: `searchApiKey` is not required if `searchProvider` is `"model"` (uses AI provider's built-in search) or `"searxng"` (no API key required).
+
+### Request Headers
 
 ```typescript
 interface Headers {
   "Content-Type": "application/json";
-  // If you set an access password
+  
+  // Optional: If ACCESS_PASSWORD is configured on the server
   // Authorization: "Bearer YOUR_ACCESS_PASSWORD";
 }
 ```
@@ -265,11 +310,16 @@ interface ErrorEvent {
 }
 ```
 
+**Common Error Messages:**
+- `"API key required for {provider}. Please configure your API key in Settings."` - User needs to add their API key
+- `"Rate limit exceeded. Try again in {seconds} seconds."` - Rate limit hit, wait and retry
+- `"Unauthorized"` - ACCESS_PASSWORD required but not provided
+
 **Example:**
 
 ```text
 event: error
-data: {"message":"Invalid query parameters."}
+data: {"message":"API key required for openai. Please configure your API key in Settings."}
 
 ```
 
@@ -279,33 +329,50 @@ data: {"message":"Invalid query parameters."}
 
 Clients should always listen for the `error` event. Upon receiving an `error` event, the client should typically display the error message to the user and may consider the current research task terminated unless otherwise specified by the API's behavior.
 
+**Common error scenarios:**
+1. **Missing API Keys** - User hasn't configured their API keys in Settings UI
+2. **Invalid API Keys** - Provided key is incorrect or expired
+3. **Rate Limiting** - Too many requests from the same IP address
+4. **Model Errors** - Selected model not available or doesn't support requested features
+
 ## Client Code Example
 
-This example demonstrates how to connect to the SSE endpoint using `EventSource` API and listen for the defined event types, specifically focusing on displaying `message` events.
+This example demonstrates how to connect to the SSE endpoint using `@microsoft/fetch-event-source` and listen for the defined event types, specifically focusing on displaying `message` events.
 
 ```typescript
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 
 const ctrl = new AbortController();
 
+// Get user's API keys from your settings/storage
+const userOpenAIKey = getUserSetting("openAIApiKey"); // User's personal OpenAI key
+const userTavilyKey = getUserSetting("tavilyApiKey"); // User's personal Tavily key
+
 let report = "";
 fetchEventSource("/api/sse", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    // If you set an access password
+    // Optional: If server has ACCESS_PASSWORD configured
     // Authorization: "Bearer YOUR_ACCESS_PASSWORD",
   },
   body: JSON.stringify({
     query: "AI trends for this year",
-    provider: "google",
-    thinkingModel: "gemini-2.0-flash-thinking-exp",
-    taskModel: "gemini-2.0-flash-exp",
-    searchProvider: "model",
+    provider: "openai",
+    thinkingModel: "gpt-4o",
+    taskModel: "gpt-4o-mini",
+    searchProvider: "tavily",
+    
+    // REQUIRED: Pass user's API keys
+    aiApiKey: userOpenAIKey,
+    searchApiKey: userTavilyKey,
+    
+    // Optional parameters
     language: "en-US",
     maxResult: 5,
     enableCitationImage: true,
     enableReferences: true,
+    temperature: 0.7,
   }),
   signal: ctrl.signal,
   onmessage(msg) {
@@ -316,12 +383,12 @@ fetchEventSource("/api/sse", {
       }
     } else if (msg.event === "progress") {
       if (process.env.NODE_ENV !== "production") {
-        logger.log(
-          `[${data.step}]: ${msgData.name ? `${msgData.name} ` : ""}${
+        console.log(
+          `[${msgData.step}]: ${msgData.name ? `${msgData.name} ` : ""}${
             msgData.status
           }`
         );
-        if (msgData.data) logger.log(msgData.data);
+        if (msgData.data) console.log(msgData.data);
       }
     } else if (msg.event === "error") {
       throw new Error(msgData.message);
@@ -329,8 +396,51 @@ fetchEventSource("/api/sse", {
   },
   onclose() {
     if (process.env.NODE_ENV !== "production") {
-      logger.log(report);
+      console.log(report);
     }
   },
+  onerror(err) {
+    console.error("SSE connection error:", err);
+    throw err;
+  },
 });
+
+// To cancel the request
+// ctrl.abort();
 ```
+
+## Security Model
+
+This API uses a **"bring your own key"** model:
+
+- **Users provide API keys** - Each user supplies their own AI and search provider keys via the Settings UI
+- **No server-side fallbacks** - Server-side API keys have been removed for security and cost control
+- **Client-side storage** - User keys are stored in browser localStorage (client-side only)
+- **Cost isolation** - Each user pays for their own API usage
+
+**Benefits:**
+- ✅ Zero server-side API costs for deployment owner
+- ✅ Better security (no shared keys to protect)
+- ✅ Scalable to unlimited users
+- ✅ Users control their own spending
+
+## Rate Limiting
+
+The API implements rate limiting to prevent abuse:
+
+| Endpoint | Default Limit | Per |
+|----------|---------------|-----|
+| AI Proxies | 100 requests/hour | IP address |
+| Search Proxies | 200 requests/hour | IP address |
+| Research Endpoints | 50 requests/hour | IP address |
+
+Rate limit exceeded responses return HTTP 429 with:
+```json
+{
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded. Try again in {seconds} seconds.",
+  "retryAfter": 3600
+}
+```
+
+Clients should respect the `Retry-After` header and implement exponential backoff.

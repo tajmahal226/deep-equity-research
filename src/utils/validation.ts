@@ -2,96 +2,67 @@
  * Validation utilities for API keys, model names, and other critical inputs
  */
 
-// Known valid models for each provider
+import { 
+  MODEL_RELEASE_DATES, 
+  getActiveModels,
+  isModelStale 
+} from './model-metadata';
+
+// Base model catalog (includes all models, even legacy ones)
+const ALL_MODELS: Record<string, Set<string>> = {
+  openai: new Set(Object.keys(MODEL_RELEASE_DATES.openai)),
+  anthropic: new Set(Object.keys(MODEL_RELEASE_DATES.anthropic)),
+  google: new Set(Object.keys(MODEL_RELEASE_DATES.google)),
+  xai: new Set(Object.keys(MODEL_RELEASE_DATES.xai)),
+  deepseek: new Set(Object.keys(MODEL_RELEASE_DATES.deepseek)),
+  mistral: new Set(Object.keys(MODEL_RELEASE_DATES.mistral)),
+  groq: new Set(Object.keys(MODEL_RELEASE_DATES.groq)),
+  together: new Set(Object.keys(MODEL_RELEASE_DATES.together)),
+  cohere: new Set(Object.keys(MODEL_RELEASE_DATES.cohere)),
+  perplexity: new Set(Object.keys(MODEL_RELEASE_DATES.perplexity)),
+};
+
+// Get stale model exclusion setting from environment
+const EXCLUDE_STALE_MODELS = process.env.NEXT_PUBLIC_EXCLUDE_STALE_MODELS !== 'false';
+const MAX_MODEL_AGE_MONTHS = parseInt(process.env.NEXT_PUBLIC_MAX_MODEL_AGE_MONTHS || '12', 10);
+
+/**
+ * Get valid models for a provider, optionally filtering stale models
+ * @param provider - Provider name
+ * @param excludeStale - Whether to exclude stale models (defaults to env setting)
+ * @returns Set of valid model names
+ */
+export function getValidModels(
+  provider: string, 
+  excludeStale: boolean = EXCLUDE_STALE_MODELS
+): Set<string> {
+  const allModels = ALL_MODELS[provider];
+  if (!allModels) {
+    return new Set();
+  }
+  
+  if (!excludeStale) {
+    return new Set(allModels);
+  }
+  
+  return getActiveModels(provider, MAX_MODEL_AGE_MONTHS);
+}
+
+/**
+ * Public export for UI components
+ * By default, this returns filtered models (excluding stale ones)
+ */
 export const VALID_MODELS: Record<string, Set<string>> = {
-  openai: new Set([
-    // GPT-5 Series (Bleeding Edge)
-    'gpt-5', 'gpt-5-turbo', 'gpt-5-32k',
-    // O3 Series (Advanced Reasoning)
-    'o3', 'o3-mini',
-    // O1 Series
-    'o1', 'o1-preview', 'o1-mini',
-    // GPT-4 Series
-    'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-4-32k',
-    'gpt-4-turbo-2024-04-09', 'gpt-4-0125-preview', 'gpt-4-1106-preview',
-    // GPT-3.5 Series
-    'gpt-3.5-turbo', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-1106',
-  ]),
-  
-  anthropic: new Set([
-    // Claude 4.x Series (Bleeding Edge)
-    'claude-opus-4-1-20250805', 'claude-sonnet-4-0-20250805',
-    // Claude 3.5 Series
-    'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022',
-    'claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307',
-    // Legacy
-    'claude-instant-1.2', 'claude-2.1', 'claude-2.0',
-  ]),
-  
-  google: new Set([
-    // Gemini 2.5 Series (Bleeding Edge)
-    'gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-thinking',
-    // Gemini 2.0 Series
-    'gemini-2.0-flash-exp', 'gemini-2.0-flash-thinking-exp', 
-    'gemini-2.0-flash-thinking-exp-1219',
-    // Gemini 1.5 Series
-    'gemini-1.5-pro', 'gemini-1.5-pro-latest', 'gemini-1.5-pro-002',
-    'gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-flash-8b',
-    // Legacy
-    'gemini-pro', 'gemini-pro-vision',
-  ]),
-  
-  xai: new Set([
-    // Grok-3 Series (Bleeding Edge)
-    'grok-3', 'grok-3-mini',
-    // Grok-2 Series
-    'grok-2-1212', 'grok-2-mini-1212',
-    // Grok Beta
-    'grok-beta', 'grok-2-beta',
-  ]),
-  
-  deepseek: new Set([
-    'deepseek-reasoner', 'deepseek-chat', 'deepseek-coder',
-    'deepseek-v2', 'deepseek-v2.5',
-  ]),
-  
-  mistral: new Set([
-    'mistral-large-2411', 'mistral-large-latest', 'mistral-large',
-    'mistral-medium-latest', 'mistral-medium',
-    'mistral-small-latest', 'mistral-small',
-    'codestral-latest', 'codestral-2405',
-    'mistral-7b', 'mixtral-8x7b', 'mixtral-8x22b',
-  ]),
-  
-  groq: new Set([
-    'llama-3.3-70b-versatile', 'llama-3.2-90b-text-preview',
-    'llama-3.1-70b-versatile', 'llama-3.1-8b-instant',
-    'mixtral-8x7b-32768', 'gemma2-9b-it', 'gemma-7b-it',
-  ]),
-  
-  together: new Set([
-    'Qwen/QwQ-32B-Preview',
-    'meta-llama/Llama-3.3-70B-Instruct-Turbo',
-    'meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo',
-    'meta-llama/Llama-3.2-3B-Instruct-Turbo',
-    'meta-llama/Llama-3.1-70B-Instruct-Turbo',
-    'mistralai/Mixtral-8x7B-Instruct-v0.1',
-    'Qwen/Qwen2.5-72B-Instruct-Turbo',
-  ]),
-  
-  cohere: new Set([
-    'command-r-plus-08-2024', 'command-r-plus',
-    'command-r-08-2024', 'command-r',
-    'command', 'command-light',
-  ]),
-  
-  perplexity: new Set([
-    'llama-3.1-sonar-huge-128k-online',
-    'llama-3.1-sonar-large-128k-online',
-    'llama-3.1-sonar-small-128k-online',
-    'llama-3.1-sonar-large-128k-chat',
-    'llama-3.1-sonar-small-128k-chat',
-  ]),
+  openai: getValidModels('openai'),
+  anthropic: getValidModels('anthropic'),
+  google: getValidModels('google'),
+  xai: getValidModels('xai'),
+  deepseek: getValidModels('deepseek'),
+  mistral: getValidModels('mistral'),
+  groq: getValidModels('groq'),
+  together: getValidModels('together'),
+  cohere: getValidModels('cohere'),
+  perplexity: getValidModels('perplexity'),
 };
 
 // API key format patterns
@@ -114,29 +85,62 @@ const API_KEY_PATTERNS: Record<string, RegExp> = {
 
 /**
  * Validate if a model name is valid for a given provider
+ * 
+ * This function accepts both active and legacy models for API compatibility,
+ * but may log warnings for stale models.
+ * 
+ * @param provider - Provider name
+ * @param model - Model name to validate
+ * @param strict - If true, reject stale models entirely
  */
-export function isValidModel(provider: string, model: string): boolean {
-  const validModels = VALID_MODELS[provider];
-  if (!validModels) {
+export function isValidModel(
+  provider: string, 
+  model: string,
+  strict: boolean = false
+): boolean {
+  // Check against all models (including legacy)
+  const allModels = ALL_MODELS[provider];
+  if (!allModels) {
     // Unknown provider, allow any model
     console.warn(`Unknown provider: ${provider}, allowing model: ${model}`);
     return true;
   }
   
-  // Check if model is in the valid set
-  const isValid = validModels.has(model);
+  // Check if model exists at all
+  const modelExists = allModels.has(model);
   
-  if (!isValid) {
+  if (!modelExists) {
     console.warn(`Invalid model "${model}" for provider "${provider}"`);
     
-    // Suggest similar models
+    // Suggest similar models from active set
+    const validModels = getValidModels(provider);
     const suggestions = findSimilarModels(model, validModels);
     if (suggestions.length > 0) {
       console.info(`Did you mean: ${suggestions.join(', ')}?`);
     }
+    
+    return false;
   }
   
-  return isValid;
+  // Check if model is stale
+  const stale = isModelStale(provider, model, MAX_MODEL_AGE_MONTHS);
+  
+  if (stale) {
+    if (strict) {
+      console.warn(
+        `Stale model "${model}" rejected (>${MAX_MODEL_AGE_MONTHS} months old). ` +
+        `Use NEXT_PUBLIC_EXCLUDE_STALE_MODELS=false to allow.`
+      );
+      return false;
+    } else {
+      console.info(
+        `Warning: Model "${model}" is stale (>${MAX_MODEL_AGE_MONTHS} months old). ` +
+        `Consider using a newer model.`
+      );
+    }
+  }
+  
+  return true;
 }
 
 /**
@@ -146,7 +150,10 @@ function findSimilarModels(model: string, validModels: Set<string>): string[] {
   const modelLower = model.toLowerCase();
   const suggestions: string[] = [];
   
-  for (const validModel of validModels) {
+  // Convert Set to Array for iteration
+  const modelsArray = Array.from(validModels);
+  
+  for (const validModel of modelsArray) {
     const validLower = validModel.toLowerCase();
     
     // Check if the valid model contains the input or vice versa

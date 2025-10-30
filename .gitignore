@@ -54,3 +54,8 @@ public/swe-worker*
 # External repositories
 /poml
 /venv
+
+# Backup files
+*.backup
+*.bak
+*.bak2

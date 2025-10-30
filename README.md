@@ -11,6 +11,7 @@ TJ Deep Research orchestrates advanced "Thinking" and "Task" AI models with live
 ## Table of Contents
 - [Features](#features)
 - [Installation](#installation)
+- [Getting Started](#getting-started)
 - [Environment Setup](#environment-setup)
 - [Running Research Modes](#running-research-modes)
 - [Documentation](#documentation)
@@ -24,6 +25,7 @@ TJ Deep Research orchestrates advanced "Thinking" and "Task" AI models with live
 - Supports multiple AI and search providers (OpenAI and Tavily recommended)
 - UI modes for company deep dives, market research, document analysis, and more
 - All research runs locally in your browser
+- **User-provided API keys** - bring your own keys, no server-side costs
 
 ## Installation
 1. **Clone the repository**
@@ -36,13 +38,55 @@ TJ Deep Research orchestrates advanced "Thinking" and "Task" AI models with live
    pnpm install
    ```
 
+## Getting Started
+
+### For Users (Quickstart)
+
+This app requires you to provide your own API keys via the Settings UI. 
+
+1. **Start the dev server:**
+   ```bash
+   pnpm dev
+   ```
+   
+2. **Open the app:** Navigate to [http://localhost:3000](http://localhost:3000)
+
+3. **Configure your API keys:**
+   - Click the **Settings icon (⚙️)** in the top right
+   - Go to **AI Providers** tab
+   - Choose a provider (OpenAI recommended)
+   - Enter your API key
+   - Go to **Search Providers** tab
+   - Choose a search provider (Tavily recommended) 
+   - Enter your search API key
+
+4. **Start researching!** Choose a research mode and enter your query.
+
+**Don't have API keys?**
+- OpenAI: [Get API key](https://platform.openai.com/api-keys)
+- Tavily: [Get API key](https://tavily.com/)
+- See [AI_MODELS_GUIDE.md](./AI_MODELS_GUIDE.md) for all supported providers
+
 ## Environment Setup
-1. Copy the example environment file and fill in required keys:
+
+### For Regular Use
+**No `.env.local` file needed!** Users provide their API keys through the Settings UI.
+
+### For Deployment (Optional)
+Server-side API keys in `.env.local` are **optional** and only needed for:
+- **MCP server integration** with Claude Desktop (requires `MCP_*` environment variables)
+- **Demo/testing instances** where you want to provide fallback keys
+- **Single-user deployments** where you control all access
+
+**For multi-user deployments:** Do NOT set server-side API keys. Let each user provide their own.
+
+If you do want server-side keys:
+1. Copy the example environment file:
    ```bash
    cp .env.example .env.local
    ```
-2. Set API keys such as `OPENAI_API_KEY` and `TAVILY_API_KEY` in `.env.local` (or via project settings when deploying).
-3. Optionally configure LLM base URLs or additional provider keys.
+2. Configure optional API keys and settings in `.env.local`
+3. See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed configuration
 
 ## Running Research Modes
 Start the development server:
@@ -91,6 +135,7 @@ pnpm test
 - **Docker/Standalone**: build with `pnpm build:standalone` and run the resulting image.
 - **Static Hosting**: generate static export with `pnpm build:export`.
 
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions and security model.
+
 ## License
 This project is licensed under the [MIT License](./LICENSE).
-

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { MISTRAL_BASE_URL } from "@/constants/urls";
 import { buildUpstreamURL } from "../../helpers";
+import { rateLimit, RATE_LIMITS } from "@/app/api/middleware/rate-limit";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -24,6 +25,8 @@ async function handler(
   req: NextRequest,
   context: { params: Promise<RouteParams> },
 ) {
+  const __rl = rateLimit(req, RATE_LIMITS.AI_PROXY);
+  if (__rl) return __rl;
   let body;
   if (req.method.toUpperCase() !== "GET") {
     body = await req.json();

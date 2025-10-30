@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { rateLimit, RATE_LIMITS } from "../middleware/rate-limit";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -13,6 +14,12 @@ export const preferredRegion = [
 ];
 
 export async function POST(req: NextRequest) {
+  // Apply rate limiting
+  const rateLimitResult = rateLimit(req, RATE_LIMITS.CRAWLER);
+  if (rateLimitResult) {
+    return rateLimitResult;
+  }
+
   try {
     const { url } = await req.json();
     if (!url) throw new Error("Missing parameters!");

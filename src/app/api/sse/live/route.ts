@@ -3,9 +3,7 @@ import DeepResearch from "@/utils/deep-research";
 import { multiApiKeyPolling } from "@/utils/model";
 import {
   getAIProviderBaseURL,
-  getAIProviderApiKey,
   getSearchProviderBaseURL,
-  getSearchProviderApiKey,
 } from "../../utils";
 import { logger } from "@/utils/logger";
 
@@ -25,9 +23,11 @@ export const preferredRegion = [
 ];
 
 export async function GET(req: NextRequest) {
+  // Get parameters from query string
   function getValueFromSearchParams(key: string) {
     return req.nextUrl.searchParams.get(key);
   }
+  
   const query = getValueFromSearchParams("query") || "";
   const provider = getValueFromSearchParams("provider") || "";
   const thinkingModel = getValueFromSearchParams("thinkingModel") || "";
@@ -36,9 +36,34 @@ export async function GET(req: NextRequest) {
   const language = getValueFromSearchParams("language") || "";
   const maxResult = Number(getValueFromSearchParams("maxResult")) || 5;
   const enableCitationImage =
-    getValueFromSearchParams("enableCitationImage") === "false";
+    getValueFromSearchParams("enableCitationImage") !== "false";
   const enableReferences =
-    getValueFromSearchParams("enableReferences") === "false";
+    getValueFromSearchParams("enableReferences") !== "false";
+  
+  // Client-side API keys (required via query params)
+  const aiApiKey = getValueFromSearchParams("aiApiKey") || "";
+  const searchApiKey = getValueFromSearchParams("searchApiKey") || "";
+
+  // Step 3: Validate that user provided API keys
+  if (!aiApiKey && provider !== "ollama") {
+    return NextResponse.json(
+      { 
+        code: 400, 
+        message: `API key required for ${provider}. Please provide aiApiKey parameter.` 
+      },
+      { status: 400 }
+    );
+  }
+
+  if (!searchApiKey && searchProvider !== "model" && searchProvider !== "searxng") {
+    return NextResponse.json(
+      { 
+        code: 400, 
+        message: `Search API key required for ${searchProvider}. Please provide searchApiKey parameter.` 
+      },
+      { status: 400 }
+    );
+  }
 
   const encoder = new TextEncoder();
   const readableStream = new ReadableStream({
@@ -53,14 +78,14 @@ export async function GET(req: NextRequest) {
         language,
         AIProvider: {
           baseURL: getAIProviderBaseURL(provider),
-          apiKey: multiApiKeyPolling(getAIProviderApiKey(provider)),
+          apiKey: multiApiKeyPolling(aiApiKey),
           provider,
           thinkingModel,
           taskModel,
         },
         searchProvider: {
           baseURL: getSearchProviderBaseURL(searchProvider),
-          apiKey: multiApiKeyPolling(getSearchProviderApiKey(searchProvider)),
+          apiKey: multiApiKeyPolling(searchApiKey),
           provider: searchProvider,
           maxResult,
         },

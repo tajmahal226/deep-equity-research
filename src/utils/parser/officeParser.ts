@@ -116,7 +116,7 @@ function extractFiles(
     const extractedFiles: ExtractedFiles[] = [];
     const processZipfile = async (entry: Entry) => {
       if (filterFn(entry.filename)) {
-        if (entry.getData) {
+        if (!entry.directory && entry.getData) {
           const data = await entry.getData(new BlobWriter());
           extractedFiles.push({
             filename: entry.filename,

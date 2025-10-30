@@ -8,23 +8,73 @@ This repository is fully optimized and ready for deployment to Vercel with zero 
 
 - **Build Status**: ✅ Passing
 - **TypeScript**: ✅ No compilation errors
-- **ESLint**: ✅ Passing (1 non-blocking warning)
-- **Tests**: ✅ All 16 tests passing
+- **ESLint**: ✅ Passing
+- **Tests**: ✅ All tests passing
 - **Production Ready**: ✅ Verified
+- **Security Model**: ✅ User-provided API keys
 
-## 🔧 Recent Fixes Applied
+## 🔐 Security Model: User-Provided Keys
 
-### Critical Issues Resolved
-1. **Middleware Request Body Consumption** - Resolved runtime errors from multiple `request.json()` calls
-2. **ESLint Unused Variables** - Fixed all unused variable warnings in MCP server and financial API
-3. **React Unescaped Entities** - Fixed HTML entity encoding in Setting component
-4. **TypeScript Variable References** - Fixed all variable reference issues
+This application follows a **"bring your own key"** model for maximum security and cost control.
 
-### Build Optimizations
-- Proper environment variable handling with fallbacks
-- Optimized middleware for request body processing  
-- Clean ESLint configuration
-- Robust error handling throughout
+### User Keys (Primary Method)
+
+**How it works:**
+- Users enter API keys in the Settings UI (⚙️ icon)
+- Keys stored in browser localStorage (client-side only)
+- Each user pays for their own API usage
+- No server-side API costs for the deployment owner
+
+**Recommended for:**
+- ✅ Multi-user deployments
+- ✅ Public-facing instances
+- ✅ Production applications
+- ✅ Cost-conscious deployments
+
+### Server Keys (Optional)
+
+Server-side API keys in environment variables are **optional** and only recommended for:
+
+**Use cases:**
+- MCP server integration with Claude Desktop (`MCP_*` env vars)
+- Demo/testing instances with shared fallback keys
+- Single-user deployments where you control all access
+- Development environments
+
+**⚠️ Warning:** For multi-user deployments, **DO NOT** set server-side API keys. Each user should provide their own.
+
+### Access Control
+
+**`ACCESS_PASSWORD` (Optional but Recommended):**
+- Protects SSE research endpoints from unauthorized access
+- Prevents abuse of your deployment infrastructure
+- Validated by middleware for `/api/sse`, `/api/crawler`, `/api/mcp`
+- Does NOT protect AI/search proxies (they require user keys)
+
+Set in Vercel environment variables:
+```env
+ACCESS_PASSWORD=your_secure_password
+NEXT_PUBLIC_ACCESS_PASSWORD=your_secure_password  # Exposes to client
+```
+
+### Rate Limiting
+
+Built-in rate limiting protects proxy endpoints from abuse:
+
+| Endpoint | Default Limit | Configurable Via |
+|----------|---------------|------------------|
+| AI Proxies | 100 req/hour per IP | `RATE_LIMIT_AI_PROXY` |
+| Search Proxies | 200 req/hour per IP | `RATE_LIMIT_SEARCH_PROXY` |
+| Research Endpoints | 50 req/hour per IP | `RATE_LIMIT_RESEARCH` |
+| Crawler | 50 req/hour per IP | `RATE_LIMIT_CRAWLER` |
+
+Configure in environment variables:
+```env
+RATE_LIMIT_AI_PROXY=100
+RATE_LIMIT_SEARCH_PROXY=200
+RATE_LIMIT_RESEARCH=50
+RATE_LIMIT_CRAWLER=50
+```
 
 ## 🌐 Deployment Steps
 
@@ -48,17 +98,35 @@ vercel
 
 ## 🔑 Environment Variables
 
-### Required for Full Functionality
-Set these in Vercel Dashboard → Project Settings → Environment Variables:
+### For User-Key Model (Recommended)
 
-#### AI Providers (Choose one or more)
+**Minimal Configuration:**
+```env
+# Optional: Protect endpoints from abuse
+ACCESS_PASSWORD=your_secure_password
+NEXT_PUBLIC_ACCESS_PASSWORD=your_secure_password
+
+# Optional: Adjust rate limits
+RATE_LIMIT_AI_PROXY=100
+RATE_LIMIT_SEARCH_PROXY=200
+```
+
+Users will provide their own API keys via Settings UI. **No provider keys needed!**
+
+### For Server-Key Model (Optional)
+
+Only set these if you want server-side fallback keys:
+
+#### AI Providers (Optional)
 ```env
 OPENAI_API_KEY=your_openai_api_key
 ANTHROPIC_API_KEY=your_anthropic_api_key
 GOOGLE_GENERATIVE_AI_API_KEY=your_google_api_key
+DEEPSEEK_API_KEY=your_deepseek_api_key
+XAI_API_KEY=your_xai_api_key
 ```
 
-#### Search Providers (Choose one or more)
+#### Search Providers (Optional)
 ```env
 TAVILY_API_KEY=your_tavily_api_key
 FIRECRAWL_API_KEY=your_firecrawl_api_key
@@ -71,9 +139,16 @@ ALPHA_VANTAGE_API_KEY=your_alpha_vantage_key
 FINANCIAL_DATASETS_API_KEY=your_financial_datasets_key
 ```
 
-#### Optional Security
+### For MCP Server (Optional)
+
+If using Model Context Protocol with Claude Desktop:
 ```env
-ACCESS_PASSWORD=your_secure_password
+MCP_AI_PROVIDER=openai
+MCP_SEARCH_PROVIDER=tavily
+MCP_TASK_MODEL=gpt-4o
+MCP_THINKING_MODEL=gpt-4o
+OPENAI_API_KEY=your_openai_api_key  # Required for MCP
+TAVILY_API_KEY=your_tavily_api_key   # Required for MCP
 ```
 
 ## 🏗️ Build Information
@@ -97,32 +172,43 @@ ACCESS_PASSWORD=your_secure_password
 ### Health Checks
 After deployment, verify these endpoints:
 - `/` - Main application loads
-- `/api/sse` - Server-sent events working
-- `/api/ai/openai/v1/chat/completions` - AI provider integration
-- `/api/search/tavily/search` - Search provider integration
+- `/api/health` - Health check endpoint
+- `/api/sse` - Server-sent events working (requires ACCESS_PASSWORD if set)
 
-### Feature Testing
-1. **Research Modes**: Test all 8 research modes
-2. **AI Integration**: Verify AI providers work
-3. **Search Integration**: Verify search providers work
-4. **Document Upload**: Test PDF/Office document processing
-5. **Real-time Updates**: Verify SSE streaming works
+### User Flow Testing
+1. Open the deployed app
+2. Click Settings (⚙️) → AI Providers
+3. Add an OpenAI API key
+4. Go to Search Providers → Add Tavily key
+5. Try a research query in any mode
+6. Verify results stream correctly
 
 ## 🐛 Common Issues & Solutions
 
 ### Build Failures
-- **ESLint Errors**: All source code ESLint issues have been resolved
-- **TypeScript Errors**: All type issues have been fixed
+- **ESLint Errors**: All source code ESLint issues resolved
+- **TypeScript Errors**: All type issues fixed
 - **Missing Dependencies**: All imports properly resolved
 
 ### Runtime Issues
-- **API Key Errors**: Set environment variables in Vercel dashboard
-- **CORS Errors**: Use provided middleware configuration
-- **Memory Limits**: Application optimized for Vercel's limits
+
+**"API key required for openai"**
+- ✅ **Expected behavior** - User needs to add their API key in Settings
+- Not an error - this is the security model working correctly
+
+**"Rate limit exceeded"**
+- User or IP hit the rate limit (100 req/hour for AI proxies)
+- Wait for rate limit window to reset
+- Adjust `RATE_LIMIT_*` env vars if needed
+
+**"Unauthorized" (403)**
+- `ACCESS_PASSWORD` is set but not provided
+- Add `NEXT_PUBLIC_ACCESS_PASSWORD` to expose password to client
+- Or remove `ACCESS_PASSWORD` to disable protection
 
 ### Environment Variables
-- **Missing AZURE_RESOURCE_NAME**: Expected warning, doesn't affect deployment
-- **API Key Rotation**: Use comma-separated keys for redundancy
+- **Missing keys**: Not a problem with user-key model
+- **API Key Rotation**: Use comma-separated keys for redundancy (server-side only)
 
 ## 📊 Monitoring
 
@@ -152,22 +238,62 @@ After deployment, verify these endpoints:
 ## 🎯 Production Considerations
 
 ### Security
-- ACCESS_PASSWORD protects API endpoints
-- Client-side API key encryption
-- Proper CORS configuration
-- Input validation on all endpoints
+- ✅ User-provided API keys (no server-side key exposure)
+- ✅ ACCESS_PASSWORD protects endpoints from abuse
+- ✅ Rate limiting prevents proxy abuse
+- ✅ Input validation on all endpoints
+- ✅ CORS properly configured via middleware
 
 ### Scalability
 - Serverless functions auto-scale
 - Edge runtime for global performance
 - Optimized bundle splitting
 - Efficient state management
+- No shared API key pool to manage
+
+### Cost Control
+- **Zero API costs** for deployment owner (user-key model)
+- Users pay for their own AI/search usage
+- Serverless functions scale to zero when idle
+- No database or persistent storage costs
 
 ### Reliability
 - Comprehensive error handling
 - Graceful degradation for missing APIs
-- Fallback providers for redundancy
 - Client-side error boundaries
+- Rate limiting prevents service degradation
+
+## 🚨 Security Best Practices
+
+### For Public Deployments
+
+1. **Set ACCESS_PASSWORD:**
+   ```env
+   ACCESS_PASSWORD=strong_random_password
+   NEXT_PUBLIC_ACCESS_PASSWORD=strong_random_password
+   ```
+
+2. **Configure Rate Limits:**
+   - Start conservative (100/hr for AI, 200/hr for search)
+   - Monitor abuse patterns
+   - Adjust based on legitimate usage
+
+3. **DO NOT set provider API keys:**
+   - Let users provide their own
+   - Eliminates cost risk
+   - Improves security posture
+
+4. **Monitor logs:**
+   - Check for rate limit violations
+   - Track authentication failures
+   - Identify abuse patterns
+
+### For Private/Demo Deployments
+
+1. **Can set server-side keys** for convenience
+2. **Still set ACCESS_PASSWORD** to control access
+3. **Monitor API costs** - you're paying for all usage
+4. **Consider IP allowlisting** at Vercel level
 
 ---
 
@@ -176,8 +302,10 @@ After deployment, verify these endpoints:
 Your Deep Equity Research application is **fully deployment-ready** with:
 - ✅ Zero build errors
 - ✅ Production optimizations
+- ✅ User-key security model
+- ✅ Rate limiting protection
 - ✅ Comprehensive error handling
 - ✅ Scalable architecture
-- ✅ Security best practices
+- ✅ Zero server-side API costs (user-key model)
 
 Deploy with confidence! 🚀

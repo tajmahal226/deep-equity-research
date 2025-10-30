@@ -3,9 +3,7 @@ import DeepResearch from "@/utils/deep-research";
 import { multiApiKeyPolling } from "@/utils/model";
 import {
   getAIProviderBaseURL,
-  getAIProviderApiKey,
   getSearchProviderBaseURL,
-  getSearchProviderApiKey,
 } from "../utils";
 import { logger } from "@/utils/logger";
 
@@ -25,6 +23,7 @@ export const preferredRegion = [
 ];
 
 export async function POST(req: NextRequest) {
+  // Parse request body
   const {
     query,
     provider,
@@ -36,10 +35,31 @@ export async function POST(req: NextRequest) {
     enableCitationImage = true,
     enableReferences = true,
     temperature = 0.7,
-    // Client-side API keys
+    // Client-side API keys (required)
     aiApiKey,
     searchApiKey,
   } = await req.json();
+
+  // Validate that user provided API keys
+  if (!aiApiKey && provider !== "ollama") {
+    return NextResponse.json(
+      { 
+        code: 400, 
+        message: `API key required for ${provider}. Please configure your API key in Settings.` 
+      },
+      { status: 400 }
+    );
+  }
+
+  if (!searchApiKey && searchProvider !== "model" && searchProvider !== "searxng") {
+    return NextResponse.json(
+      { 
+        code: 400, 
+        message: `Search API key required for ${searchProvider}. Please configure your search provider API key in Settings.` 
+      },
+      { status: 400 }
+    );
+  }
 
   const encoder = new TextEncoder();
   const readableStream = new ReadableStream({
@@ -75,7 +95,7 @@ export async function POST(req: NextRequest) {
         language,
         AIProvider: {
           baseURL: getAIProviderBaseURL(provider),
-          apiKey: multiApiKeyPolling(aiApiKey || getAIProviderApiKey(provider)),
+          apiKey: multiApiKeyPolling(aiApiKey),
           provider,
           thinkingModel,
           taskModel,
@@ -83,7 +103,7 @@ export async function POST(req: NextRequest) {
         },
         searchProvider: {
           baseURL: getSearchProviderBaseURL(searchProvider),
-          apiKey: multiApiKeyPolling(searchApiKey || getSearchProviderApiKey(searchProvider)),
+          apiKey: multiApiKeyPolling(searchApiKey),
           provider: searchProvider,
           maxResult,
         },

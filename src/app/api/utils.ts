@@ -99,6 +99,16 @@ export function getAIProviderBaseURL(provider: string) {
   }
 }
 
+/**
+ * Get API key from server-side environment variables (optional)
+ * 
+ * NOTE: Server-side API keys are OPTIONAL. This function is primarily used by
+ * the MCP server endpoint which requires server configuration. For normal research
+ * operations, users should provide their own API keys via the Settings UI.
+ * 
+ * If you're deploying this app for multiple users, DO NOT set these environment
+ * variables - let users provide their own keys to avoid cost and security risks.
+ */
 export function getAIProviderApiKey(provider: string) {
   const providersWithoutKeys = ["ollama"];
   if (providersWithoutKeys.includes(provider)) return "";
@@ -110,15 +120,9 @@ export function getAIProviderApiKey(provider: string) {
 
   const apiKey = envVarNames.map(name => process.env[name]).find(Boolean) || "";
 
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === "development" && apiKey) {
     console.log(
-      `[API Key Debug] Provider: ${provider}, Key available: ${!!apiKey}, Key length: ${apiKey?.length || 0}`
-    );
-  }
-
-  if (!apiKey) {
-    console.warn(
-      `[API Key Warning] No API key found for provider: ${provider}. Set ${envVarNames.join(" or ")} environment variable.`
+      `[API Key Debug] Provider: ${provider}, Server-side key available: ${!!apiKey}, Key length: ${apiKey?.length || 0}`
     );
   }
 
@@ -127,28 +131,24 @@ export function getAIProviderApiKey(provider: string) {
 
 /**
  * Get API key with fallback for development/demo purposes
- * This allows the app to work even without API keys configured
+ * 
+ * DEPRECATED: This function is kept for backward compatibility with MCP server.
+ * New code should NOT use server-side keys as fallbacks.
  */
 export function getAIProviderApiKeyWithFallback(provider: string): string {
   const apiKey = getAIProviderApiKey(provider);
 
-  // If no API key is found and we're in development, provide guidance
   if (!apiKey && process.env.NODE_ENV === 'development') {
     const envVarNames = getAIProviderEnvVarNames(provider);
-
     if (envVarNames.length === 0) {
-      // Providers like Ollama do not require API keys, so skip noisy guidance.
       return '';
     }
-
-    console.warn(`\n🔑 [Setup Required] No API key found for ${provider}.`);
-    console.warn(`   To fix this, add your API key to .env.local:`);
+    console.warn(`\n🔑 [MCP Server] No server-side API key found for ${provider}.`);
+    console.warn(`   MCP server requires server-side keys. Add to .env.local:`);
     envVarNames.forEach(name => {
       console.warn(`   ${name}=your-key-here`);
     });
     console.warn('');
-
-    // Return empty string - the error handling in the calling code will handle this gracefully
     return '';
   }
 
@@ -174,6 +174,13 @@ export function getSearchProviderBaseURL(provider: string) {
   }
 }
 
+/**
+ * Get search provider API key from server-side environment variables (optional)
+ * 
+ * NOTE: Server-side search API keys are OPTIONAL. Users should provide their
+ * own search provider keys via the Settings UI. Server-side keys are only for
+ * MCP server or specific deployment scenarios.
+ */
 export function getSearchProviderApiKey(provider: string) {
   const envVarMap: Record<string, string | undefined> = {
     tavily: process.env.TAVILY_API_KEY,

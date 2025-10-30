@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GEMINI_BASE_URL } from "@/constants/urls";
 import { buildUpstreamURL } from "../../helpers";
+import { rateLimit, RATE_LIMITS } from "@/app/api/middleware/rate-limit";
 
 const API_PROXY_BASE_URL =
   process.env.API_PROXY_BASE_URL ||
@@ -15,6 +16,8 @@ export async function proxyHandler(
   req: NextRequest,
   context: { params: Promise<RouteParams> },
 ) {
+  const __rl = rateLimit(req, RATE_LIMITS.AI_PROXY);
+  if (__rl) return __rl;
   let body;
   if (req.method.toUpperCase() !== "GET") {
     body = await req.json();
