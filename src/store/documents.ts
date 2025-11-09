@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 import { nanoid } from "nanoid";
+import { createSafeJSONStorage } from "@/utils/storage";
 
 export interface Document {
   id: string;
@@ -130,7 +131,7 @@ export const useDocumentsStore = create<DocumentsState>()(
     }),
     {
       name: "documents-storage",
-      storage: createJSONStorage(() => localStorage),
+      storage: createSafeJSONStorage(),
     }
   )
 );

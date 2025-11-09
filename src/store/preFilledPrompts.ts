@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 import { nanoid } from "nanoid";
+import { createSafeJSONStorage } from "@/utils/storage";
 
 interface PreFilledPrompt {
   id: string;
@@ -332,7 +333,7 @@ export const usePreFilledPromptsStore = create<PreFilledPromptsState>()(
     }),
     {
       name: "pre-filled-prompts-storage",
-      storage: createJSONStorage(() => localStorage),
+      storage: createSafeJSONStorage(),
     }
   )
 );
