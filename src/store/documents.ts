@@ -13,8 +13,8 @@ export interface Document {
   description?: string;
   content?: string; // Extracted text content
   url?: string; // For external documents
-  uploadedAt: Date;
-  lastModified: Date;
+  uploadedAt: number;
+  lastModified: number;
   extractedMetadata?: {
     title?: string;
     author?: string;
@@ -64,10 +64,10 @@ export const useDocumentsStore = create<DocumentsState>()(
           const newDocument: Document = {
             ...document,
             id: nanoid(),
-            uploadedAt: new Date(),
-            lastModified: new Date(),
+            uploadedAt: Date.now(),
+            lastModified: Date.now(),
           };
-          
+
           return {
             documents: [...state.documents, newDocument],
             totalSize: state.totalSize + newDocument.size,
@@ -86,8 +86,8 @@ export const useDocumentsStore = create<DocumentsState>()(
       updateDocument: (id, updates) =>
         set((state) => ({
           documents: state.documents.map(d =>
-            d.id === id 
-              ? { ...d, ...updates, lastModified: new Date() }
+            d.id === id
+              ? { ...d, ...updates, lastModified: Date.now() }
               : d
           ),
         })),

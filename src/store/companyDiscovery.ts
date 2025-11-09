@@ -12,7 +12,7 @@ export interface CompanyResult {
   location: string;
   fundingStage: string;
   totalFunding?: string;
-  lastFundingDate?: Date;
+  lastFundingDate?: number;
   employeeCount?: string;
   revenue?: string;
   foundedYear?: number;
@@ -22,7 +22,7 @@ export interface CompanyResult {
   matchScore?: number;
   reasoning?: string;
   sources: string[];
-  discoveredAt: Date;
+  discoveredAt: number;
   // Financial data fields
   ticker?: string;
   marketCap?: string;
@@ -43,8 +43,8 @@ export interface SearchCriteria {
   keywords: string[];
   excludeKeywords: string[];
   similarCompanies: string[];
-  createdAt: Date;
-  lastUsed?: Date;
+  createdAt: number;
+  lastUsed?: number;
 }
 
 interface CompanyDiscoveryState {
@@ -131,7 +131,7 @@ export const useCompanyDiscoveryStore = create<CompanyDiscoveryState>()(
             {
               ...company,
               id: nanoid(),
-              discoveredAt: new Date(),
+              discoveredAt: Date.now(),
             },
             ...state.companies
           ],
@@ -160,7 +160,7 @@ export const useCompanyDiscoveryStore = create<CompanyDiscoveryState>()(
             {
               ...search,
               id: nanoid(),
-              createdAt: new Date(),
+              createdAt: Date.now(),
             },
             ...state.savedSearches
           ],
@@ -174,7 +174,7 @@ export const useCompanyDiscoveryStore = create<CompanyDiscoveryState>()(
       updateSavedSearch: (id, updates) =>
         set((state) => ({
           savedSearches: state.savedSearches.map(s =>
-            s.id === id ? { ...s, ...updates, lastUsed: new Date() } : s
+            s.id === id ? { ...s, ...updates, lastUsed: Date.now() } : s
           ),
         })),
       
