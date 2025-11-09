@@ -59,7 +59,8 @@ export async function middleware(request: NextRequest) {
         headers: request.headers,
         body: body || undefined,
       });
-    } catch {
+    } catch (error) {
+      console.error("Error parsing request body in middleware:", error);
       requestBody = {};
     }
   }

@@ -147,7 +147,7 @@ export default function CaseStudies() {
 
     const newCaseStudy = {
       ...caseStudyForm,
-      investmentDate: new Date(),
+      investmentDate: Date.now(),
       keyMilestones: [],
       collaborators: [],
       attachments: [],
