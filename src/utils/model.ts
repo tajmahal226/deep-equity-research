@@ -43,7 +43,7 @@ export function filterThinkingModelList(modelList: string[]) {
 export function filterNetworkingModelList(modelList: string[]) {
   const networkingModelList: string[] = [];
   const nonNetworkingModelList: string[] = [];
-  modelList.filter((model) => {
+  modelList.forEach((model) => {
     if (isNetworkingModel(model)) {
       networkingModelList.push(model);
     } else {
@@ -56,7 +56,7 @@ export function filterNetworkingModelList(modelList: string[]) {
 export function filterOpenRouterModelList(modelList: string[]) {
   const freeModelList: string[] = [];
   const paidModelList: string[] = [];
-  modelList.filter((model) => {
+  modelList.forEach((model) => {
     if (isOpenRouterFreeModel(model)) {
       freeModelList.push(model);
     } else {
@@ -69,7 +69,7 @@ export function filterOpenRouterModelList(modelList: string[]) {
 export function filterDeepSeekModelList(modelList: string[]) {
   const thinkingModelList: string[] = [];
   const nonThinkingModelList: string[] = [];
-  modelList.filter((model) => {
+  modelList.forEach((model) => {
     if (model.includes("reasoner")) {
       thinkingModelList.push(model);
     } else {
@@ -82,12 +82,12 @@ export function filterDeepSeekModelList(modelList: string[]) {
 export function filterOpenAIModelList(modelList: string[]) {
   const networkingModelList: string[] = [];
   const nonNetworkingModelList: string[] = [];
-  modelList.filter((model) => {
+  modelList.forEach((model) => {
     if (
-      model.startsWith("gpt-4o") ||
+      (model.startsWith("gpt-4o") ||
       model.startsWith("gpt-4.1") ||
       model.startsWith("gpt-5") ||
-      model.startsWith("o3") ||
+      model.startsWith("o3")) &&
       !model.includes("nano")
     ) {
       networkingModelList.push(model);
@@ -137,7 +137,7 @@ export function getAllowedTemperature(model: string, requestedTemp?: number) {
 export function filterMistralModelList(modelList: string[]) {
   const recommendModelList: string[] = [];
   const normalModelList: string[] = [];
-  modelList.filter((model) => {
+  modelList.forEach((model) => {
     if (model.includes("large-latest") || model.includes("medium-latest")) {
       recommendModelList.push(model);
     } else {

@@ -169,7 +169,7 @@ export default function CompanyDiscovery() {
         const enrichedWithIds: CompanyResult[] = enrichedCompanies.map((company) => ({
           ...company,
           id: nanoid(),
-          discoveredAt: new Date(),
+          discoveredAt: Date.now(),
         }));
 
         // Don't re-filter - search API already handles filtering
