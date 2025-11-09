@@ -81,14 +81,30 @@ export function processSearchResultPrompt(
     .replace("{context}", context.join("\n"));
 }
 
+function resolveLocationHost() {
+  if (typeof location !== "undefined" && location?.host) {
+    return location.host;
+  }
+
+  if (typeof globalThis !== "undefined") {
+    const globalLocation = (globalThis as { location?: { host?: string } }).location;
+    if (globalLocation?.host) {
+      return globalLocation.host;
+    }
+  }
+
+  return "knowledge-base";
+}
+
 export function processSearchKnowledgeResultPrompt(
   query: string,
   researchGoal: string,
   results: Knowledge[]
 ) {
+  const host = resolveLocationHost();
   const context = results.map(
     (result, idx) =>
-      `<content index="${idx + 1}" url="${location.host}">\n${
+      `<content index="${idx + 1}" url="${host}">\n${
         result.content
       }\n</content>`
   );
