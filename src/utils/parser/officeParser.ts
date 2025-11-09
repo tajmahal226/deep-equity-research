@@ -108,35 +108,55 @@ async function mergeXmlBlobs(blobs: Blob[]): Promise<Blob> {
   return stringToBlob(mergedXmlString);
 }
 
-function extractFiles(
+type ZipEntryWithData = Entry & {
+  getData: NonNullable<Entry["getData"]>;
+};
+
+function hasReadableData(entry: Entry): entry is ZipEntryWithData {
+  return typeof entry.getData === "function";
+}
+
+async function readEntryData(entry: ZipEntryWithData): Promise<Blob> {
+  const writer = new BlobWriter();
+  const result = await entry.getData(writer);
+  if (result instanceof Blob) {
+    return result;
+  }
+
+  if (typeof writer.getData === "function") {
+    return writer.getData();
+  }
+
+  throw new Error("Zip entry returned unsupported data type");
+}
+
+export async function extractFiles(
   zipInput: File,
   filterFn: (filename: string) => boolean
 ): Promise<ExtractedFiles[]> {
-  return new Promise(async (resolve, reject) => {
+  const reader = new ZipReader(new BlobReader(zipInput));
+  try {
+    const entries = await reader.getEntries();
     const extractedFiles: ExtractedFiles[] = [];
-    const processZipfile = async (entry: Entry) => {
-      if (filterFn(entry.filename)) {
-        if (!entry.directory && entry.getData) {
-          const data = await entry.getData(new BlobWriter());
-          extractedFiles.push({
-            filename: entry.filename,
-            data,
-          });
-        }
-      }
-    };
 
-    try {
-      // Process ZIP
-      const entrys = await new ZipReader(new BlobReader(zipInput)).getEntries();
-      for (const entry of entrys) {
-        await processZipfile(entry);
-      }
-      resolve(extractedFiles);
-    } catch (err) {
-      reject(err);
+    for (const entry of entries) {
+      if (!filterFn(entry.filename)) continue;
+      if (entry.directory) continue;
+      if (!hasReadableData(entry)) continue;
+
+      const data = await readEntryData(entry);
+      extractedFiles.push({
+        filename: entry.filename,
+        data,
+      });
     }
-  });
+
+    return extractedFiles;
+  } finally {
+    if (typeof reader.close === "function") {
+      await reader.close();
+    }
+  }
 }
 
 export function parseWord(
