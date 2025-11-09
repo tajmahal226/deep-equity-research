@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Search, Loader2, X, Globe, Factory, Users, Link, Zap, Gauge, Microscope, Download, FileText, Signature } from "lucide-react";
+import { Building2, Search, Loader2, X, Globe, Factory, Users, Link, Zap, Gauge, Microscope, Download, FileText, Signature, RefreshCw, Database } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -16,10 +16,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { downloadFile } from "@/utils/file";
 import { logger } from "@/utils/logger";
 import { useSettingStore } from "@/store/setting";
 import { getProviderStateKey, getProviderApiKey, resolveActiveProvider } from "@/utils/provider";
+import { useResearchCache } from "@/hooks/useResearchCache";
 
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
 
@@ -28,6 +35,9 @@ type SearchDepth = "fast" | "medium" | "deep";
 export default function CompanyDeepDive() {
   // Track active fetch controller for cleanup
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+
+  // Cache integration
+  const { getCachedResearch, setCachedResearch, getCacheMetadata, isCacheEnabled } = useResearchCache();
   
   // Cleanup on unmount
   useEffect(() => {
@@ -113,17 +123,17 @@ export default function CompanyDeepDive() {
     document.title = originalTitle;
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (forceRefresh = false) => {
     if (!companyName.trim()) return;
-    
+
     // Abort any existing request
     if (abortController) {
       abortController.abort();
     }
-    
+
     setIsSearching(true);
     setSearchResults(null); // Clear previous results
-    
+
     try {
       // Get current AI provider and model settings from user configuration
       const currentProvider = resolveActiveProvider(settingStore);
@@ -134,6 +144,29 @@ export default function CompanyDeepDive() {
       const taskModel = settingStore[
         `${providerKey}NetworkingModel` as keyof typeof settingStore
       ] as string;
+
+      // Check cache first (if enabled and not forcing refresh)
+      if (isCacheEnabled && !forceRefresh) {
+        const cachedResult = getCachedResearch({
+          type: "company-research",
+          companyName,
+          searchDepth,
+          provider: currentProvider,
+          model: thinkingModel,
+          additionalContext,
+          industry,
+          competitors,
+        });
+
+        if (cachedResult) {
+          logger.log("[Cache Hit] Using cached research for:", companyName);
+          setSearchResults(cachedResult);
+          setIsSearching(false);
+          return;
+        } else {
+          logger.log("[Cache Miss] Fetching fresh research for:", companyName);
+        }
+      }
 
       // Get API keys from user settings
       const thinkingApiKey = getProviderApiKey(settingStore, currentProvider);
@@ -240,6 +273,28 @@ export default function CompanyDeepDive() {
                   setSearchResults(data);
                   setIsSearching(false);
                   setAbortController(null); // Clear controller
+
+                  // Cache the successful result
+                  if (isCacheEnabled && data.report) {
+                    setCachedResearch({
+                      type: "company-research",
+                      companyName,
+                      searchDepth,
+                      provider: currentProvider,
+                      model: thinkingModel,
+                      additionalContext,
+                      industry,
+                      competitors,
+                      data: {
+                        report: data.report,
+                        sources: data.sources,
+                        images: data.images,
+                        metadata: data.metadata,
+                      },
+                    });
+                    logger.log("[Cache] Stored research result for:", companyName);
+                  }
+
                   await reader.cancel();
                   return;
 
@@ -463,23 +518,106 @@ export default function CompanyDeepDive() {
             </RadioGroup>
           </div>
 
-          <Button 
-            onClick={handleSearch} 
-            disabled={!companyName.trim() || isSearching}
-            className="w-full"
-          >
-            {isSearching ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t("companyDeepDive.searching", "Researching...")}
-              </>
-            ) : (
-              <>
-                <Search className="mr-2 h-4 w-4" />
-                {t("companyDeepDive.startResearch", "Start Deep Dive")}
-              </>
-            )}
-          </Button>
+          {/* Cache Status Indicator */}
+          {isCacheEnabled && companyName.trim() && (() => {
+            const currentProvider = resolveActiveProvider(settingStore);
+            const providerKey = getProviderStateKey(currentProvider);
+            const thinkingModel = settingStore[
+              `${providerKey}ThinkingModel` as keyof typeof settingStore
+            ] as string;
+            const cacheMetadata = getCacheMetadata({
+              type: "company-research",
+              companyName,
+              searchDepth,
+              provider: currentProvider,
+              model: thinkingModel,
+              additionalContext,
+              industry,
+              competitors,
+            });
+
+            if (cacheMetadata?.exists && cacheMetadata.isValid) {
+              return (
+                <div className="flex items-center gap-2 p-3 border rounded-lg bg-accent/50">
+                  <Database className={`h-4 w-4 ${
+                    cacheMetadata.statusColor === "green" ? "text-green-600" :
+                    cacheMetadata.statusColor === "yellow" ? "text-yellow-600" :
+                    "text-orange-600"
+                  }`} />
+                  <div className="flex-1 text-sm">
+                    <div className="font-medium">Cached research available</div>
+                    <div className="text-xs text-muted-foreground">
+                      Last updated {cacheMetadata.lastUpdated} • Expires in {cacheMetadata.expiresIn} • Used {cacheMetadata.hitCount}x
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
+
+          {/* Search/Refresh Buttons */}
+          <div className="flex gap-2">
+            <Button
+              onClick={() => handleSearch(false)}
+              disabled={!companyName.trim() || isSearching}
+              className="flex-1"
+            >
+              {isSearching ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("companyDeepDive.searching", "Researching...")}
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2 h-4 w-4" />
+                  {t("companyDeepDive.startResearch", "Start Deep Dive")}
+                </>
+              )}
+            </Button>
+
+            {/* Refresh button - only show if cache exists */}
+            {isCacheEnabled && companyName.trim() && (() => {
+              const currentProvider = resolveActiveProvider(settingStore);
+              const providerKey = getProviderStateKey(currentProvider);
+              const thinkingModel = settingStore[
+                `${providerKey}ThinkingModel` as keyof typeof settingStore
+              ] as string;
+              const cacheMetadata = getCacheMetadata({
+                type: "company-research",
+                companyName,
+                searchDepth,
+                provider: currentProvider,
+                model: thinkingModel,
+                additionalContext,
+                industry,
+                competitors,
+              });
+
+              if (cacheMetadata?.canRefresh) {
+                return (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => handleSearch(true)}
+                          disabled={!companyName.trim() || isSearching}
+                          variant="outline"
+                          size="icon"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Refresh (bypass cache)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              }
+              return null;
+            })()}
+          </div>
         </CardContent>
       </Card>
 
@@ -487,7 +625,28 @@ export default function CompanyDeepDive() {
         <Card className="print:border-none">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>{t("companyDeepDive.results", "Research Results")}</span>
+              <div className="flex items-center gap-2">
+                <span>{t("companyDeepDive.results", "Research Results")}</span>
+                {/* Show cache indicator if results are from cache */}
+                {searchResults.cacheMetadata && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge variant="secondary" className="text-xs">
+                          <Database className="h-3 w-3 mr-1" />
+                          Cached
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>From cache • Last updated {(() => {
+                          const date = new Date(searchResults.cacheMetadata.createdAt);
+                          return date.toLocaleString();
+                        })()}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
               {searchResults.report && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

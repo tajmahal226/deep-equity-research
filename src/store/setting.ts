@@ -87,6 +87,14 @@ export interface SettingStore {
   onlyUseLocalResource: "enable" | "disable";
   openAIReasoningEffort: "low" | "medium" | "high";
   temperature: number;
+  // Cache settings
+  cacheEnabled: "enable" | "disable";
+  cacheTTLCompanyResearch: number; // in hours
+  cacheTTLMarketResearch: number; // in hours
+  cacheTTLBulkResearch: number; // in hours
+  cacheTTLFreeForm: number; // in hours
+  cacheMaxEntries: number;
+  cacheAutoCleanup: "enable" | "disable";
 }
 
 export interface SettingFunction {
@@ -180,6 +188,14 @@ export const defaultValues: SettingStore = {
   onlyUseLocalResource: "disable",
   openAIReasoningEffort: "medium",
   temperature: 0.7,
+  // Cache defaults
+  cacheEnabled: "enable",
+  cacheTTLCompanyResearch: 24, // 24 hours
+  cacheTTLMarketResearch: 12, // 12 hours
+  cacheTTLBulkResearch: 24, // 24 hours
+  cacheTTLFreeForm: 6, // 6 hours
+  cacheMaxEntries: 500,
+  cacheAutoCleanup: "enable",
 };
 
 export const useSettingStore = create(
