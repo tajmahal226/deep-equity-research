@@ -10,50 +10,50 @@ export interface CaseStudy {
   industry: string;
   fundingStage: string;
   dealSize?: string;
-  investmentDate: Date;
+  investmentDate: number;
   status: "active" | "exited" | "write-off" | "monitoring";
   outcome?: "success" | "partial" | "failure";
-  
+
   // Investment Thesis
   investmentThesis: string;
   keyMetrics: string[];
   risks: string[];
   mitigationStrategies: string[];
-  
+
   // Deal Details
   valuation?: string;
   ownership?: string;
   leadInvestor?: string;
   coinvestors: string[];
   boardSeats?: number;
-  
+
   // Performance Tracking
   currentValuation?: string;
   multipleReturned?: string;
   irrReturned?: string;
   keyMilestones: Milestone[];
-  
+
   // Analysis
   lessonsLearned: string[];
   whatWorked: string[];
   whatDidntWork: string[];
   wouldInvestAgain?: boolean;
   recommendationScore?: number; // 1-10
-  
+
   // Metadata
   tags: string[];
   category: string;
   author: string;
   collaborators: string[];
   isPublic: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: number;
+  updatedAt: number;
   attachments: Attachment[];
 }
 
 export interface Milestone {
   id: string;
-  date: Date;
+  date: number;
   title: string;
   description: string;
   type: "funding" | "product" | "business" | "team" | "exit" | "other";
@@ -66,7 +66,7 @@ export interface Attachment {
   type: string;
   size: number;
   url?: string;
-  uploadedAt: Date;
+  uploadedAt: number;
 }
 
 export interface CaseStudyTemplate {
@@ -76,7 +76,7 @@ export interface CaseStudyTemplate {
   sections: TemplateSection[];
   tags: string[];
   isDefault: boolean;
-  createdAt: Date;
+  createdAt: number;
 }
 
 export interface TemplateSection {
@@ -167,7 +167,7 @@ const defaultTemplate: CaseStudyTemplate = {
   description: "Comprehensive template for documenting investment case studies",
   isDefault: true,
   tags: ["standard", "investment", "comprehensive"],
-  createdAt: new Date(),
+  createdAt: Date.now(),
   sections: [
     {
       id: "company-overview",
@@ -234,8 +234,8 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
             {
               ...caseStudy,
               id: nanoid(),
-              createdAt: new Date(),
-              updatedAt: new Date(),
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
             },
             ...state.caseStudies
           ],
@@ -244,8 +244,8 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
       updateCaseStudy: (id, updates) =>
         set((state) => ({
           caseStudies: state.caseStudies.map(cs =>
-            cs.id === id 
-              ? { ...cs, ...updates, updatedAt: new Date() } 
+            cs.id === id
+              ? { ...cs, ...updates, updatedAt: Date.now() }
               : cs
           ),
         })),
@@ -273,7 +273,7 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
             {
               ...template,
               id: nanoid(),
-              createdAt: new Date(),
+              createdAt: Date.now(),
             },
             ...state.templates
           ],
@@ -288,7 +288,7 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
       
       removeTemplate: (id) =>
         set((state) => ({
-          templates: state.templates.filter(t => t.id !== id && !t.isDefault),
+          templates: state.templates.filter(t => t.id !== id || t.isDefault),
         })),
       
       addMilestone: (caseStudyId, milestone) =>
@@ -301,7 +301,7 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
                     ...cs.keyMilestones,
                     { ...milestone, id: nanoid() }
                   ],
-                  updatedAt: new Date()
+                  updatedAt: Date.now()
                 }
               : cs
           ),
@@ -316,7 +316,7 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
                   keyMilestones: cs.keyMilestones.map(m =>
                     m.id === milestoneId ? { ...m, ...updates } : m
                   ),
-                  updatedAt: new Date()
+                  updatedAt: Date.now()
                 }
               : cs
           ),
@@ -329,7 +329,7 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
               ? {
                   ...cs,
                   keyMilestones: cs.keyMilestones.filter(m => m.id !== milestoneId),
-                  updatedAt: new Date()
+                  updatedAt: Date.now()
                 }
               : cs
           ),
@@ -343,9 +343,9 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
                   ...cs,
                   attachments: [
                     ...cs.attachments,
-                    { ...attachment, id: nanoid(), uploadedAt: new Date() }
+                    { ...attachment, id: nanoid(), uploadedAt: Date.now() }
                   ],
-                  updatedAt: new Date()
+                  updatedAt: Date.now()
                 }
               : cs
           ),
@@ -358,7 +358,7 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
               ? {
                   ...cs,
                   attachments: cs.attachments.filter(a => a.id !== attachmentId),
-                  updatedAt: new Date()
+                  updatedAt: Date.now()
                 }
               : cs
           ),

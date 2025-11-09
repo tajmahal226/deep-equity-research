@@ -10,9 +10,9 @@ interface PreFilledPrompt {
   tags: string[];
   description?: string;
   usageCount: number;
-  lastUsed?: Date;
+  lastUsed?: number;
   isTemplate: boolean;
-  createdAt: Date;
+  createdAt: number;
 }
 
 interface PreFilledPromptsState {
@@ -111,7 +111,7 @@ The report should be extremely well researched from a variety of web-sources, in
 <Success criteria>
 The user should be able to deeply understand the market context and the business overview.  The goal is not to try and do financial analysis necessarily, unless you are 100% confident about financials (3-4 sources confirm the same number), If you are unsure about certain areas – you must say so and not make broad inferences without discussing where you have information gaps.  It is absolutely critical that the user not be fed information that is not accurate, or at least has a perspective on relative level of certainty across all areas discussed above.  It is far more important that the user is accurately informed, than detail that is inaccurate or potentially inaccurate
 </Success criteria>.`,
-  createdAt: new Date(),
+  createdAt: Date.now(),
 };
 
 // Additional default prompts
@@ -156,7 +156,7 @@ Future Outlook:
 - Investment and funding trends
 
 Please provide quantitative data where available and cite all sources.`,
-  createdAt: new Date(),
+  createdAt: Date.now(),
 };
 
 const competitiveAnalysisPrompt: PreFilledPrompt = {
@@ -207,7 +207,7 @@ Strategic Implications:
 - Recommended strategic responses
 - Potential partnership or acquisition targets
 - Areas for defensive positioning`,
-  createdAt: new Date(),
+  createdAt: Date.now(),
 };
 
 const dueDiligencePrompt: PreFilledPrompt = {
@@ -273,7 +273,7 @@ Investment Thesis Validation:
 - Value creation opportunities
 - Exit strategy considerations
 - Deal structure and terms evaluation`,
-  createdAt: new Date(),
+  createdAt: Date.now(),
 };
 
 export const usePreFilledPromptsStore = create<PreFilledPromptsState>()(
@@ -288,7 +288,7 @@ export const usePreFilledPromptsStore = create<PreFilledPromptsState>()(
             {
               ...prompt,
               id: nanoid(),
-              createdAt: new Date(),
+              createdAt: Date.now(),
               usageCount: prompt.usageCount || 0,
             },
           ],
@@ -306,7 +306,7 @@ export const usePreFilledPromptsStore = create<PreFilledPromptsState>()(
       incrementUsage: (id) =>
         set((state) => ({
           prompts: state.prompts.map((p) =>
-            p.id === id ? { ...p, usageCount: p.usageCount + 1, lastUsed: new Date() } : p
+            p.id === id ? { ...p, usageCount: p.usageCount + 1, lastUsed: Date.now() } : p
           ),
         })),
       addCategory: (category) =>

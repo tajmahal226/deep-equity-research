@@ -23,6 +23,18 @@ export const preferredRegion = [
 ];
 
 export async function POST(req: NextRequest) {
+  // Check for ACCESS_PASSWORD if configured
+  const accessPassword = process.env.ACCESS_PASSWORD;
+  if (accessPassword) {
+    const authHeader = req.headers.get("Authorization");
+    const providedPassword = authHeader?.replace("Bearer ", "") ||
+                            new URL(req.url).searchParams.get("access_password");
+
+    if (providedPassword !== accessPassword) {
+      return new Response("Unauthorized", { status: 403 });
+    }
+  }
+
   // Parse request body
   const {
     query,
