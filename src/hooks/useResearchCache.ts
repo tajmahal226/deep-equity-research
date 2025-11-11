@@ -5,7 +5,7 @@
  * Automatically checks cache before making API calls and stores results.
  */
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useCacheStore, type CacheType } from "@/store/cache";
 import { useSettingStore } from "@/store/setting";
 import {
@@ -109,39 +109,87 @@ export interface CacheConfig {
  * Hook for managing research cache
  */
 export function useResearchCache(): ResearchCacheHookResult {
-  const cacheStore = useCacheStore();
-  const settings = useSettingStore();
+  const updateConfig = useCacheStore((state) => state.updateConfig);
+  const getCacheEntry = useCacheStore((state) => state.get);
+  const setCacheEntry = useCacheStore((state) => state.set);
+  const removeCacheEntry = useCacheStore((state) => state.remove);
+  const clearCacheEntries = useCacheStore((state) => state.clear);
+  const cleanupCacheEntries = useCacheStore((state) => state.cleanup);
+  const getTTL = useCacheStore((state) => state.getTTL);
+  const recordHit = useCacheStore((state) => state.recordHit);
+  const recordMiss = useCacheStore((state) => state.recordMiss);
+  const updateStats = useCacheStore((state) => state.updateStats);
+  const stats = useCacheStore((state) => state.stats);
+  const isEntryExpired = useCacheStore((state) => state.isExpired);
+  const config = useCacheStore((state) => state.config);
+
+  const cacheEnabledSetting = useSettingStore((state) => state.cacheEnabled);
+  const cacheTTLCompanyResearch = useSettingStore(
+    (state) => state.cacheTTLCompanyResearch
+  );
+  const cacheTTLMarketResearch = useSettingStore(
+    (state) => state.cacheTTLMarketResearch
+  );
+  const cacheTTLBulkResearch = useSettingStore(
+    (state) => state.cacheTTLBulkResearch
+  );
+  const cacheTTLFreeForm = useSettingStore((state) => state.cacheTTLFreeForm);
+  const cacheMaxEntries = useSettingStore((state) => state.cacheMaxEntries);
+  const cacheAutoCleanupSetting = useSettingStore(
+    (state) => state.cacheAutoCleanup
+  );
+  const updateSettings = useSettingStore((state) => state.update);
 
   // Check if cache is enabled
   const isCacheEnabled = useMemo(
-    () => settings.cacheEnabled === "enable",
-    [settings.cacheEnabled]
+    () => cacheEnabledSetting === "enable",
+    [cacheEnabledSetting]
   );
 
   // Sync cache config with settings
-  useMemo(() => {
-    if (isCacheEnabled) {
-      cacheStore.updateConfig({
+  useEffect(() => {
+    if (!isCacheEnabled) {
+      return;
+    }
+
+    const companyTTL = cacheTTLCompanyResearch * 60 * 60 * 1000;
+    const marketTTL = cacheTTLMarketResearch * 60 * 60 * 1000;
+    const bulkTTL = cacheTTLBulkResearch * 60 * 60 * 1000;
+    const freeFormTTL = cacheTTLFreeForm * 60 * 60 * 1000;
+    const autoCleanupEnabled = cacheAutoCleanupSetting === "enable";
+
+    const hasConfigChanged =
+      !config.enabled ||
+      config.maxEntries !== cacheMaxEntries ||
+      config.autoCleanup !== autoCleanupEnabled ||
+      config.ttl["company-research"] !== companyTTL ||
+      config.ttl["market-research"] !== marketTTL ||
+      config.ttl["bulk-company-research"] !== bulkTTL ||
+      config.ttl["free-form-research"] !== freeFormTTL;
+
+    if (hasConfigChanged) {
+      updateConfig({
         enabled: true,
         ttl: {
-          "company-research": settings.cacheTTLCompanyResearch * 60 * 60 * 1000,
-          "market-research": settings.cacheTTLMarketResearch * 60 * 60 * 1000,
-          "bulk-company-research": settings.cacheTTLBulkResearch * 60 * 60 * 1000,
-          "free-form-research": settings.cacheTTLFreeForm * 60 * 60 * 1000,
+          "company-research": companyTTL,
+          "market-research": marketTTL,
+          "bulk-company-research": bulkTTL,
+          "free-form-research": freeFormTTL,
         },
-        maxEntries: settings.cacheMaxEntries,
-        autoCleanup: settings.cacheAutoCleanup === "enable",
+        maxEntries: cacheMaxEntries,
+        autoCleanup: autoCleanupEnabled,
       });
     }
   }, [
     isCacheEnabled,
-    settings.cacheTTLCompanyResearch,
-    settings.cacheTTLMarketResearch,
-    settings.cacheTTLBulkResearch,
-    settings.cacheTTLFreeForm,
-    settings.cacheMaxEntries,
-    settings.cacheAutoCleanup,
-    cacheStore,
+    cacheTTLCompanyResearch,
+    cacheTTLMarketResearch,
+    cacheTTLBulkResearch,
+    cacheTTLFreeForm,
+    cacheMaxEntries,
+    cacheAutoCleanupSetting,
+    updateConfig,
+    config,
   ]);
 
   // Build cache key based on params
@@ -201,15 +249,15 @@ export function useResearchCache(): ResearchCacheHookResult {
       }
 
       const key = buildCacheKey(params);
-      const entry = cacheStore.get(key);
+      const entry = getCacheEntry(key);
 
       if (!entry) {
-        cacheStore.recordMiss();
+        recordMiss();
         return null;
       }
 
       // Record cache hit
-      cacheStore.recordHit(key);
+      recordHit(key);
 
       // Calculate cost/token savings
       const costSavings = estimateCostSavings({
@@ -224,9 +272,9 @@ export function useResearchCache(): ResearchCacheHookResult {
       });
 
       // Update analytics
-      cacheStore.updateStats({
-        estimatedCostSavings: cacheStore.stats.estimatedCostSavings + costSavings,
-        estimatedTokenSavings: cacheStore.stats.estimatedTokenSavings + tokenSavings,
+      updateStats({
+        estimatedCostSavings: stats.estimatedCostSavings + costSavings,
+        estimatedTokenSavings: stats.estimatedTokenSavings + tokenSavings,
       });
 
       return {
@@ -239,7 +287,15 @@ export function useResearchCache(): ResearchCacheHookResult {
         },
       };
     },
-    [isCacheEnabled, buildCacheKey, cacheStore]
+    [
+      isCacheEnabled,
+      buildCacheKey,
+      getCacheEntry,
+      recordMiss,
+      recordHit,
+      updateStats,
+      stats,
+    ]
   );
 
   // Set cached research
@@ -255,9 +311,9 @@ export function useResearchCache(): ResearchCacheHookResult {
       }
 
       const key = buildCacheKey(params);
-      const ttl = cacheStore.getTTL(params.type);
+      const ttl = getTTL(params.type);
 
-      cacheStore.set({
+      setCacheEntry({
         type: params.type,
         key,
         data: params.data,
@@ -273,16 +329,16 @@ export function useResearchCache(): ResearchCacheHookResult {
         },
       });
     },
-    [isCacheEnabled, buildCacheKey, cacheStore]
+    [isCacheEnabled, buildCacheKey, getTTL, setCacheEntry]
   );
 
   // Invalidate cache entry
   const invalidateCache = useCallback(
     (params: CacheKeyParams): void => {
       const key = buildCacheKey(params);
-      cacheStore.remove(key);
+      removeCacheEntry(key);
     },
-    [buildCacheKey, cacheStore]
+    [buildCacheKey, removeCacheEntry]
   );
 
   // Get cache metadata
@@ -293,7 +349,7 @@ export function useResearchCache(): ResearchCacheHookResult {
       }
 
       const key = buildCacheKey(params);
-      const entry = cacheStore.get(key);
+      const entry = getCacheEntry(key);
 
       if (!entry) {
         return {
@@ -307,7 +363,7 @@ export function useResearchCache(): ResearchCacheHookResult {
         };
       }
 
-      const isValid = !cacheStore.isExpired(entry);
+      const isValid = !isEntryExpired(entry);
 
       return {
         exists: true,
@@ -319,12 +375,17 @@ export function useResearchCache(): ResearchCacheHookResult {
         canRefresh: true,
       };
     },
-    [isCacheEnabled, buildCacheKey, cacheStore]
+    [isCacheEnabled, buildCacheKey, getCacheEntry, isEntryExpired]
   );
 
   // Cache statistics
   const cacheStats = useMemo(() => {
-    const { totalHits, totalMisses, estimatedCostSavings, estimatedTokenSavings } = cacheStore.stats;
+    const {
+      totalHits,
+      totalMisses,
+      estimatedCostSavings,
+      estimatedTokenSavings,
+    } = stats;
     const totalRequests = totalHits + totalMisses;
     const hitRate = totalRequests > 0 ? totalHits / totalRequests : 0;
 
@@ -335,17 +396,17 @@ export function useResearchCache(): ResearchCacheHookResult {
       estimatedSavings: `$${estimatedCostSavings.toFixed(2)}`,
       estimatedTokenSavings: `${(estimatedTokenSavings / 1000).toFixed(1)}K`,
     };
-  }, [cacheStore.stats]);
+  }, [stats]);
 
   // Update cache configuration
   const updateCacheConfig = useCallback(
     (config: Partial<CacheConfig>): void => {
       if (config.enabled !== undefined) {
-        settings.update({ cacheEnabled: config.enabled ? "enable" : "disable" });
+        updateSettings({ cacheEnabled: config.enabled ? "enable" : "disable" });
       }
 
       if (config.ttlHours) {
-        settings.update({
+        updateSettings({
           cacheTTLCompanyResearch: config.ttlHours.companyResearch,
           cacheTTLMarketResearch: config.ttlHours.marketResearch,
           cacheTTLBulkResearch: config.ttlHours.bulkResearch,
@@ -354,28 +415,30 @@ export function useResearchCache(): ResearchCacheHookResult {
       }
 
       if (config.maxEntries !== undefined) {
-        settings.update({ cacheMaxEntries: config.maxEntries });
+        updateSettings({ cacheMaxEntries: config.maxEntries });
       }
 
       if (config.autoCleanup !== undefined) {
-        settings.update({ cacheAutoCleanup: config.autoCleanup ? "enable" : "disable" });
+        updateSettings({
+          cacheAutoCleanup: config.autoCleanup ? "enable" : "disable",
+        });
       }
     },
-    [settings]
+    [updateSettings]
   );
 
   // Clear cache
   const clearCache = useCallback(
     (type?: CacheType): void => {
-      cacheStore.clear(type);
+      clearCacheEntries(type);
     },
-    [cacheStore]
+    [clearCacheEntries]
   );
 
   // Cleanup expired entries
   const cleanupCache = useCallback((): number => {
-    return cacheStore.cleanup();
-  }, [cacheStore]);
+    return cleanupCacheEntries();
+  }, [cleanupCacheEntries]);
 
   return {
     getCachedResearch,
