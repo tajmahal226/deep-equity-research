@@ -3,7 +3,6 @@ import {
   useLayoutEffect,
   useState,
   useCallback,
-  useMemo,
   type ReactNode,
 } from "react";
 import { useTranslation } from "react-i18next";
@@ -66,18 +65,8 @@ import {
   SEARXNG_BASE_URL,
 } from "@/constants/urls";
 import locales from "@/constants/locales";
-import {
-  filterThinkingModelList,
-  filterNetworkingModelList,
-  filterOpenRouterModelList,
-  filterDeepSeekModelList,
-  filterOpenAIModelList,
-  filterMistralModelList,
-  getCustomModelList,
-} from "@/utils/model";
 import { researchStore } from "@/utils/storage";
 import { cn } from "@/utils/style";
-import { hasTemperatureRestrictions } from "@/utils/model";
 import { omit, capitalize } from "radash";
 
 type SettingProps = {
@@ -212,33 +201,6 @@ function Setting({ open, onClose }: SettingProps) {
   const { modelList, modelTokenMap, refresh } = useModel();
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
-  const thinkingModelList = useMemo(() => {
-    const { provider } = useSettingStore.getState();
-    if (provider === "google") {
-      return filterThinkingModelList(modelList);
-    } else if (provider === "openrouter") {
-      return filterOpenRouterModelList(modelList);
-    } else if (provider === "deepseek") {
-      return filterDeepSeekModelList(modelList);
-    } else if (provider === "mistral") {
-      return filterMistralModelList(modelList);
-    }
-    return [[], modelList];
-  }, [modelList]);
-  const networkingModelList = useMemo(() => {
-    const { provider } = useSettingStore.getState();
-    if (provider === "google") {
-      return filterNetworkingModelList(modelList);
-    } else if (provider === "openrouter") {
-      return filterOpenRouterModelList(modelList);
-    } else if (provider === "openai") {
-      return filterOpenAIModelList(modelList);
-    } else if (provider === "mistral") {
-      return filterMistralModelList(modelList);
-    }
-    return [[], modelList];
-  }, [modelList]);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: async () => {
@@ -260,33 +222,16 @@ function Setting({ open, onClose }: SettingProps) {
     [mode]
   );
 
-  const isDisabledAIModel = useCallback(
-    (model: string) => {
-      if (mode === "local") return false;
-      const { availableModelList, disabledModelList } = getCustomModelList(
-        MODEL_LIST.length > 0 ? MODEL_LIST.split(",") : []
-      );
-      const isAvailableModel = availableModelList.some(
-        (availableModel) => availableModel === model
-      );
-      if (isAvailableModel) return false;
-      if (disabledModelList.includes("all")) return true;
-      return disabledModelList.some((disabledModel) => disabledModel === model);
-    },
-    [mode]
-  );
-
   const renderModelItem = useCallback(
-    (name: string) =>
-      !isDisabledAIModel(name) ? (
-        <SelectItem key={name} value={name}>
-          {convertModelName(name)}
-          {modelTokenMap[name]
-            ? ` (${modelTokenMap[name].toLocaleString()} tokens)`
-            : ""}
-        </SelectItem>
-      ) : null,
-    [isDisabledAIModel, modelTokenMap]
+    (name: string) => (
+      <SelectItem key={name} value={name}>
+        {convertModelName(name)}
+        {modelTokenMap[name]
+          ? ` (${modelTokenMap[name].toLocaleString()} tokens)`
+          : ""}
+      </SelectItem>
+    ),
+    [modelTokenMap]
   );
 
   const isDisabledSearchProvider = useCallback(
@@ -299,40 +244,6 @@ function Setting({ open, onClose }: SettingProps) {
     },
     [mode]
   );
-
-  const supportsReasoningEffort = useCallback((modelName: string) => {
-    // OpenAI models that support reasoning_effort parameter
-    return modelName.startsWith("o1") || 
-           modelName.includes("o1-") || 
-           hasTemperatureRestrictions(modelName);
-  }, []);
-
-  const supportsTemperature = useCallback((providerName: string, modelName: string) => {
-    // Check if provider and model combination supports temperature parameter
-    switch (providerName) {
-      case "openai":
-        // OpenAI reasoning models (o1, o3, gpt-5) don't support temperature
-        return !(modelName.startsWith("o1") || 
-                modelName.startsWith("o3") || 
-                modelName.includes("o3-") ||
-                hasTemperatureRestrictions(modelName));
-      
-      case "anthropic":
-      case "mistral":
-      case "deepseek":
-      case "xai":
-      case "google":
-      case "openrouter":
-      case "ollama":
-        // These providers generally support temperature
-        return true;
-        
-      default:
-        // Unknown providers - be conservative
-        return false;
-    }
-  }, []);
-
 
   function handleClose(open: boolean) {
     if (!open) onClose();
@@ -1019,20 +930,7 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {thinkingModelList[0].length > 0 ? (
-                                  <SelectGroup>
-                                    <SelectLabel>
-                                      {t("setting.recommendedModels")}
-                                    </SelectLabel>
-                                    {thinkingModelList[0].map(renderModelItem)}
-                                  </SelectGroup>
-                                ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {thinkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
+                                {modelList.map(renderModelItem)}
                               </SelectContent>
                             </Select>
                             <Button
@@ -1091,20 +989,7 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {networkingModelList[0].length > 0 ? (
-                                  <SelectGroup>
-                                    <SelectLabel>
-                                      {t("setting.recommendedModels")}
-                                    </SelectLabel>
-                                    {networkingModelList[0].map(renderModelItem)}
-                                  </SelectGroup>
-                                ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {networkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
+                                {modelList.map(renderModelItem)}
                               </SelectContent>
                             </Select>
                             <Button
@@ -1132,43 +1017,41 @@ function Setting({ open, onClose }: SettingProps) {
                       </FormItem>
                     )}
                   />
-                  {supportsTemperature("google", "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
-                              Temperature
-                            </HelpTip>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="form-field w-full">
-                              <div className="space-y-2">
-                                <Slider
-                                  value={[field.value || 0.7]}
-                                  onValueChange={(value) => {
-                                    field.onChange(value[0]);
-                                    updateSetting("temperature", value[0]);
-                                  }}
-                                  max={2}
-                                  min={0}
-                                  step={0.1}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>More focused (0)</span>
-                                  <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
-                                  <span>More creative (2)</span>
-                                </div>
+                  <FormField
+                    control={form.control}
+                    name="temperature"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
+                            Temperature
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <div className="space-y-2">
+                              <Slider
+                                value={[field.value || 0.7]}
+                                onValueChange={(value) => {
+                                  field.onChange(value[0]);
+                                  updateSetting("temperature", value[0]);
+                                }}
+                                max={2}
+                                min={0}
+                                step={0.1}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>More focused (0)</span>
+                                <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
+                                <span>More creative (2)</span>
                               </div>
                             </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <div
                   className={cn("space-y-4", {
@@ -1206,20 +1089,14 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {thinkingModelList[0].length > 0 ? (
+                                {modelList.length > 0 ? (
                                   <SelectGroup>
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {thinkingModelList[0].map(renderModelItem)}
+                                    {modelList.map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {thinkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
                               </SelectContent>
                             </Select>
                             <Button
@@ -1278,20 +1155,14 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {networkingModelList[0].length > 0 ? (
+                                {modelList.length > 0 ? (
                                   <SelectGroup>
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {networkingModelList[0].map(renderModelItem)}
+                                    {modelList.map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {networkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
                               </SelectContent>
                             </Select>
                             <Button
@@ -1319,43 +1190,41 @@ function Setting({ open, onClose }: SettingProps) {
                       </FormItem>
                     )}
                   />
-                  {supportsTemperature("openrouter", form.watch("openRouterThinkingModel") || "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
-                              Temperature
-                            </HelpTip>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="form-field w-full">
-                              <div className="space-y-2">
-                                <Slider
-                                  value={[field.value || 0.7]}
-                                  onValueChange={(value) => {
-                                    field.onChange(value[0]);
-                                    updateSetting("temperature", value[0]);
-                                  }}
-                                  max={2}
-                                  min={0}
-                                  step={0.1}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>More focused (0)</span>
-                                  <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
-                                  <span>More creative (2)</span>
-                                </div>
+                  <FormField
+                    control={form.control}
+                    name="temperature"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
+                            Temperature
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <div className="space-y-2">
+                              <Slider
+                                value={[field.value || 0.7]}
+                                onValueChange={(value) => {
+                                  field.onChange(value[0]);
+                                  updateSetting("temperature", value[0]);
+                                }}
+                                max={2}
+                                min={0}
+                                step={0.1}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>More focused (0)</span>
+                                <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
+                                <span>More creative (2)</span>
                               </div>
                             </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <div
                   className={cn("space-y-4", {
@@ -1393,20 +1262,14 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {thinkingModelList[0].length > 0 ? (
+                                {modelList.length > 0 ? (
                                   <SelectGroup>
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {thinkingModelList[0].map(renderModelItem)}
+                                    {modelList.map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {thinkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
                               </SelectContent>
                             </Select>
                             <Button
@@ -1465,20 +1328,14 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {networkingModelList[0].length > 0 ? (
+                                {modelList.length > 0 ? (
                                   <SelectGroup>
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {networkingModelList[0].map(renderModelItem)}
+                                    {modelList.map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {networkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
                               </SelectContent>
                             </Select>
                             <Button
@@ -1524,7 +1381,7 @@ function Setting({ open, onClose }: SettingProps) {
                                 field.onChange(value);
                                 updateSetting("openAIReasoningEffort", value);
                               }}
-                              disabled={!supportsReasoningEffort(form.watch("openAIThinkingModel") || "")}
+                              disabled={true}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Select reasoning effort" />
@@ -1535,53 +1392,49 @@ function Setting({ open, onClose }: SettingProps) {
                                 <SelectItem value="high">High - Best quality</SelectItem>
                               </SelectContent>
                             </Select>
-                            {!supportsReasoningEffort(form.watch("openAIThinkingModel") || "") && (
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Reasoning effort is only available for o1 and advanced GPT-5 models
-                              </p>
-                            )}
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Reasoning effort is only available for o1 and advanced GPT-5 models
+                            </p>
                           </div>
                         </FormControl>
                       </FormItem>
                     )}
                   />
-                  {supportsTemperature("openai", form.watch("openAIThinkingModel") || "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
-                              Temperature
-                            </HelpTip>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="form-field w-full">
-                              <div className="space-y-2">
-                                <Slider
-                                  value={[field.value || 0.7]}
-                                  onValueChange={(value) => {
-                                    field.onChange(value[0]);
-                                    updateSetting("temperature", value[0]);
-                                  }}
-                                  max={2}
-                                  min={0}
-                                  step={0.1}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>More focused (0)</span>
-                                  <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
-                                  <span>More creative (2)</span>
-                                </div>
+                  <FormField
+                    control={form.control}
+                    name="temperature"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
+                            Temperature
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <div className="space-y-2">
+                              <Slider
+                                value={[field.value || 0.7]}
+                                onValueChange={(value) => {
+                                  field.onChange(value[0]);
+                                  updateSetting("temperature", value[0]);
+                                }}
+                                max={2}
+                                min={0}
+                                step={0.1}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>More focused (0)</span>
+                                <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
+                                <span>More creative (2)</span>
                               </div>
                             </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <div
                   className={cn("space-y-4", {
@@ -1706,43 +1559,41 @@ function Setting({ open, onClose }: SettingProps) {
                       </FormItem>
                     )}
                   />
-                  {supportsTemperature("anthropic", form.watch("anthropicThinkingModel") || "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.0) make it more creative. Note: Anthropic models support temperature range 0-1">
-                              Temperature
-                            </HelpTip>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="form-field w-full">
-                              <div className="space-y-2">
-                                <Slider
-                                  value={[field.value || 0.7]}
-                                  onValueChange={(value) => {
-                                    field.onChange(value[0]);
-                                    updateSetting("temperature", value[0]);
-                                  }}
-                                  max={1}
-                                  min={0}
-                                  step={0.1}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>More focused (0)</span>
-                                  <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
-                                  <span>More creative (1)</span>
-                                </div>
+                  <FormField
+                    control={form.control}
+                    name="temperature"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.0) make it more creative. Note: Anthropic models support temperature range 0-1">
+                            Temperature
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <div className="space-y-2">
+                              <Slider
+                                value={[field.value || 0.7]}
+                                onValueChange={(value) => {
+                                  field.onChange(value[0]);
+                                  updateSetting("temperature", value[0]);
+                                }}
+                                max={1}
+                                min={0}
+                                step={0.1}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>More focused (0)</span>
+                                <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
+                                <span>More creative (1)</span>
                               </div>
                             </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <div
                   className={cn("space-y-4", {
@@ -1780,20 +1631,14 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {thinkingModelList[0].length > 0 ? (
+                                {modelList.length > 0 ? (
                                   <SelectGroup>
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {thinkingModelList[0].map(renderModelItem)}
+                                    {modelList.map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {thinkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
                               </SelectContent>
                             </Select>
                             <Button
@@ -1852,20 +1697,14 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {networkingModelList[0].length > 0 ? (
+                                {modelList.length > 0 ? (
                                   <SelectGroup>
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {networkingModelList[0].map(renderModelItem)}
+                                    {modelList.map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {networkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
                               </SelectContent>
                             </Select>
                             <Button
@@ -1893,43 +1732,41 @@ function Setting({ open, onClose }: SettingProps) {
                       </FormItem>
                     )}
                   />
-                  {supportsTemperature("deepseek", form.watch("deepseekThinkingModel") || "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
-                              Temperature
-                            </HelpTip>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="form-field w-full">
-                              <div className="space-y-2">
-                                <Slider
-                                  value={[field.value || 0.7]}
-                                  onValueChange={(value) => {
-                                    field.onChange(value[0]);
-                                    updateSetting("temperature", value[0]);
-                                  }}
-                                  max={2}
-                                  min={0}
-                                  step={0.1}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>More focused (0)</span>
-                                  <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
-                                  <span>More creative (2)</span>
-                                </div>
+                  <FormField
+                    control={form.control}
+                    name="temperature"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
+                            Temperature
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <div className="space-y-2">
+                              <Slider
+                                value={[field.value || 0.7]}
+                                onValueChange={(value) => {
+                                  field.onChange(value[0]);
+                                  updateSetting("temperature", value[0]);
+                                }}
+                                max={2}
+                                min={0}
+                                step={0.1}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>More focused (0)</span>
+                                <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
+                                <span>More creative (2)</span>
                               </div>
                             </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <div
                   className={cn("space-y-4", {
@@ -2054,43 +1891,41 @@ function Setting({ open, onClose }: SettingProps) {
                       </FormItem>
                     )}
                   />
-                  {supportsTemperature("xai", form.watch("xAIThinkingModel") || "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
-                              Temperature
-                            </HelpTip>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="form-field w-full">
-                              <div className="space-y-2">
-                                <Slider
-                                  value={[field.value || 0.7]}
-                                  onValueChange={(value) => {
-                                    field.onChange(value[0]);
-                                    updateSetting("temperature", value[0]);
-                                  }}
-                                  max={2}
-                                  min={0}
-                                  step={0.1}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>More focused (0)</span>
-                                  <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
-                                  <span>More creative (2)</span>
-                                </div>
+                  <FormField
+                    control={form.control}
+                    name="temperature"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
+                            Temperature
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <div className="space-y-2">
+                              <Slider
+                                value={[field.value || 0.7]}
+                                onValueChange={(value) => {
+                                  field.onChange(value[0]);
+                                  updateSetting("temperature", value[0]);
+                                }}
+                                max={2}
+                                min={0}
+                                step={0.1}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>More focused (0)</span>
+                                <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
+                                <span>More creative (2)</span>
                               </div>
                             </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <div
                   className={cn("space-y-4", {
@@ -2128,20 +1963,14 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {thinkingModelList[0].length > 0 ? (
+                                {modelList.length > 0 ? (
                                   <SelectGroup>
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {thinkingModelList[0].map(renderModelItem)}
+                                    {modelList.map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {thinkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
                               </SelectContent>
                             </Select>
                             <Button
@@ -2200,20 +2029,14 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {networkingModelList[0].length > 0 ? (
+                                {modelList.length > 0 ? (
                                   <SelectGroup>
                                     <SelectLabel>
                                       {t("setting.recommendedModels")}
                                     </SelectLabel>
-                                    {networkingModelList[0].map(renderModelItem)}
+                                    {modelList.map(renderModelItem)}
                                   </SelectGroup>
                                 ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {networkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
                               </SelectContent>
                             </Select>
                             <Button
@@ -2241,43 +2064,41 @@ function Setting({ open, onClose }: SettingProps) {
                       </FormItem>
                     )}
                   />
-                  {supportsTemperature("mistral", form.watch("mistralThinkingModel") || "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.0) make it more creative. Note: Mistral models support temperature range 0-1">
-                              Temperature
-                            </HelpTip>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="form-field w-full">
-                              <div className="space-y-2">
-                                <Slider
-                                  value={[field.value || 0.7]}
-                                  onValueChange={(value) => {
-                                    field.onChange(value[0]);
-                                    updateSetting("temperature", value[0]);
-                                  }}
-                                  max={1}
-                                  min={0}
-                                  step={0.1}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>More focused (0)</span>
-                                  <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
-                                  <span>More creative (1)</span>
-                                </div>
+                  <FormField
+                    control={form.control}
+                    name="temperature"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.0) make it more creative. Note: Mistral models support temperature range 0-1">
+                            Temperature
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <div className="space-y-2">
+                              <Slider
+                                value={[field.value || 0.7]}
+                                onValueChange={(value) => {
+                                  field.onChange(value[0]);
+                                  updateSetting("temperature", value[0]);
+                                }}
+                                max={1}
+                                min={0}
+                                step={0.1}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>More focused (0)</span>
+                                <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
+                                <span>More creative (1)</span>
                               </div>
                             </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 
                 <div
@@ -2403,43 +2224,41 @@ function Setting({ open, onClose }: SettingProps) {
                       </FormItem>
                     )}
                   />
-                  {supportsTemperature("ollama", form.watch("ollamaThinkingModel") || "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
-                      render={({ field }) => (
-                        <FormItem className="from-item">
-                          <FormLabel className="from-label">
-                            <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
-                              Temperature
-                            </HelpTip>
-                          </FormLabel>
-                          <FormControl>
-                            <div className="form-field w-full">
-                              <div className="space-y-2">
-                                <Slider
-                                  value={[field.value || 0.7]}
-                                  onValueChange={(value) => {
-                                    field.onChange(value[0]);
-                                    updateSetting("temperature", value[0]);
-                                  }}
-                                  max={2}
-                                  min={0}
-                                  step={0.1}
-                                  className="w-full"
-                                />
-                                <div className="flex justify-between text-xs text-muted-foreground">
-                                  <span>More focused (0)</span>
-                                  <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
-                                  <span>More creative (2)</span>
-                                </div>
+                  <FormField
+                    control={form.control}
+                    name="temperature"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
+                            Temperature
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <div className="space-y-2">
+                              <Slider
+                                value={[field.value || 0.7]}
+                                onValueChange={(value) => {
+                                  field.onChange(value[0]);
+                                  updateSetting("temperature", value[0]);
+                                }}
+                                max={2}
+                                min={0}
+                                step={0.1}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>More focused (0)</span>
+                                <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
+                                <span>More creative (2)</span>
                               </div>
                             </div>
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  )}
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </TabsContent>
               <TabsContent className="space-y-4  min-h-[250px]" value="search">

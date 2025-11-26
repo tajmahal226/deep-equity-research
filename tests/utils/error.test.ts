@@ -1,39 +1,25 @@
-import { describe, it, expect } from "vitest";
-import { parseError } from "../../src/utils/error";
+import { describe, it, expect, vi } from "vitest";
+import { handleError, AppError } from "@/utils/error";
+import toast from "react-hot-toast";
 
-describe("parseError", () => {
-  it("returns string errors directly", () => {
-    expect(parseError("my error")).toBe("my error");
+vi.mock("react-hot-toast");
+
+describe("handleError", () => {
+  it("should show a toast with the error message for AppError", () => {
+    const error = new AppError("This is an app error.");
+    handleError(error);
+    expect(toast.error).toHaveBeenCalledWith("This is an app error.");
   });
 
-  it("parses API errors with response body", () => {
-    const err = {
-      error: {
-        name: "APIError",
-        message: "ignored",
-        responseBody: JSON.stringify({
-          error: {
-            code: 400,
-            message: "Invalid",
-            status: "INVALID_ARGUMENT",
-          },
-        }),
-      },
-    };
-    expect(parseError(err)).toBe("[INVALID_ARGUMENT]: Invalid");
+  it("should show a toast with the error message for Error", () => {
+    const error = new Error("This is a generic error.");
+    handleError(error);
+    expect(toast.error).toHaveBeenCalledWith("This is a generic error.");
   });
 
-  it("parses API errors without response body", () => {
-    const err = {
-      error: {
-        name: "APIError",
-        message: "Something went wrong",
-      },
-    };
-    expect(parseError(err)).toBe("[APIError]: Something went wrong");
-  });
-
-  it("returns default message for unsupported input", () => {
-    expect(parseError(42)).toBe("Unknown Error");
+  it("should show a toast with a default message for unknown errors", () => {
+    const error = "This is an unknown error.";
+    handleError(error);
+    expect(toast.error).toHaveBeenCalledWith("An unknown error occurred.");
   });
 });

@@ -5,7 +5,6 @@ import { openai } from "@ai-sdk/openai";
 import { type GoogleGenerativeAIProviderMetadata } from "@ai-sdk/google";
 import { useTranslation } from "react-i18next";
 import Plimit from "p-limit";
-import { toast } from "sonner";
 import useModelProvider from "@/hooks/useAiProvider";
 import useWebSearch from "@/hooks/useWebSearch";
 import { useTaskStore } from "@/store/task";
@@ -27,7 +26,7 @@ import {
 } from "@/utils/deep-research/prompts";
 import { isNetworkingModel } from "@/utils/model";
 import { ThinkTagStreamProcessor, removeJsonMarkdown } from "@/utils/text";
-import { parseError } from "@/utils/error";
+import { handleError } from "@/utils/error";
 import { pick, flat, unique } from "radash";
 import { logger } from "@/utils/logger";
 
@@ -43,11 +42,6 @@ function smoothTextStream(type: "character" | "word" | "line") {
     chunking: type === "character" ? /./ : type,
     delayInMs: 0,
   });
-}
-
-function handleError(error: unknown) {
-  const errorMessage = parseError(error);
-  toast.error(errorMessage);
 }
 
 function useDeepResearch() {
@@ -71,7 +65,7 @@ function useDeepResearch() {
         getResponseLanguagePrompt(),
       ].join("\n\n"),
       experimental_transform: smoothTextStream(smoothTextStreamType),
-      onError: handleError,
+      onError: (error) => handleError(error),
     });
     let content = "";
     let reasoning = "";
@@ -107,7 +101,7 @@ function useDeepResearch() {
         "\n\n"
       ),
       experimental_transform: smoothTextStream(smoothTextStreamType),
-      onError: handleError,
+      onError: (error) => handleError(error),
     });
     let content = "";
     let reasoning = "";
@@ -155,7 +149,7 @@ function useDeepResearch() {
         getResponseLanguagePrompt(),
       ].join("\n\n"),
       experimental_transform: smoothTextStream(smoothTextStreamType),
-      onError: handleError,
+      onError: (error) => handleError(error),
     });
     let content = "";
     let reasoning = "";
@@ -320,7 +314,7 @@ function useDeepResearch() {
                     getResponseLanguagePrompt(),
                   ].join("\n\n"),
                   experimental_transform: smoothTextStream(smoothTextStreamType),
-                  onError: handleError,
+                  onError: (error) => handleError(error),
                 });
               } else {
                 // Fall back to model-generated search when no external results are found
@@ -334,7 +328,7 @@ function useDeepResearch() {
                   tools: getTools(networkingModel),
                   providerOptions: getProviderOptions(networkingModel),
                   experimental_transform: smoothTextStream(smoothTextStreamType),
-                  onError: handleError,
+                  onError: (error) => handleError(error),
                 });
               }
             } else {
@@ -348,7 +342,7 @@ function useDeepResearch() {
                 tools: getTools(networkingModel),
                 providerOptions: getProviderOptions(networkingModel),
                 experimental_transform: smoothTextStream(smoothTextStreamType),
-                onError: handleError,
+                onError: (error) => handleError(error),
               });
             }
           } else {

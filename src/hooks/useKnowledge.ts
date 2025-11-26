@@ -14,7 +14,7 @@ import {
   containsXmlHtmlTags,
   ThinkTagStreamProcessor,
 } from "@/utils/text";
-import { parseError } from "@/utils/error";
+import { handleError } from "@/utils/error";
 import { omit } from "radash";
 import { logger } from "@/utils/logger";
 
@@ -25,11 +25,6 @@ function smoothTextStream(type: "character" | "word" | "line") {
     chunking: type === "character" ? /./ : type,
     delayInMs: 0,
   });
-}
-
-function handleError(error: unknown) {
-  const errorMessage = parseError(error);
-  toast.error(errorMessage);
 }
 
 function useKnowledge() {

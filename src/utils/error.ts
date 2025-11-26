@@ -1,25 +1,22 @@
-import { type APICallError } from "ai";
-import { isString, isObject } from "radash";
+// src/utils/error.ts
 
-interface GeminiError {
-  error: {
-    code: number;
-    message: string;
-    status: string;
-  };
+import toast from "react-hot-toast";
+
+export class AppError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AppError";
+  }
 }
 
-export function parseError(err: unknown): string {
-  let errorMessage: string = "Unknown Error";
-  if (isString(err)) errorMessage = err;
-  if (isObject(err)) {
-    const { error } = err as { error: APICallError };
-    if (error.responseBody) {
-      const response = JSON.parse(error.responseBody) as GeminiError;
-      errorMessage = `[${response.error.status}]: ${response.error.message}`;
-    } else {
-      errorMessage = `[${error.name}]: ${error.message}`;
-    }
+export function handleError(error: unknown) {
+  if (error instanceof AppError) {
+    toast.error(error.message);
+  } else if (error instanceof Error) {
+    toast.error(error.message);
+  } else {
+    toast.error("An unknown error occurred.");
   }
-  return errorMessage;
+
+  console.error(error);
 }
