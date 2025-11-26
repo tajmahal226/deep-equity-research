@@ -144,30 +144,57 @@ export function isValidModel(
 }
 
 /**
- * Find similar model names (for suggestions)
+ * Calculate Levenshtein distance between two strings
  */
-function findSimilarModels(model: string, validModels: Set<string>): string[] {
-  const modelLower = model.toLowerCase();
-  const suggestions: string[] = [];
-  
-  // Convert Set to Array for iteration
-  const modelsArray = Array.from(validModels);
-  
-  for (const validModel of modelsArray) {
-    const validLower = validModel.toLowerCase();
-    
-    // Check if the valid model contains the input or vice versa
-    if (validLower.includes(modelLower) || modelLower.includes(validLower)) {
-      suggestions.push(validModel);
-    }
-    
-    // Check for similar prefixes
-    else if (validLower.startsWith(modelLower.slice(0, 3))) {
-      suggestions.push(validModel);
+function levenshtein(a: string, b: string): number {
+  const an = a ? a.length : 0;
+  const bn = b ? b.length : 0;
+  if (an === 0) {
+    return bn;
+  }
+  if (bn === 0) {
+    return an;
+  }
+  const matrix = new Array<number[]>(bn + 1);
+  for (let i = 0; i <= bn; ++i) {
+    let row = (matrix[i] = new Array<number>(an + 1));
+    row[0] = i;
+  }
+  const firstRow = matrix[0];
+  for (let j = 1; j <= an; ++j) {
+    firstRow[j] = j;
+  }
+  for (let i = 1; i <= bn; ++i) {
+    for (let j = 1; j <= an; ++j) {
+      if (b[i - 1] === a[j - 1]) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] =
+          Math.min(
+            matrix[i - 1][j - 1], // substitution
+            matrix[i][j - 1], // insertion
+            matrix[i - 1][j] // deletion
+          ) + 1;
+      }
     }
   }
+  return matrix[bn][an];
+}
+
+/**
+ * Find similar model names (for suggestions) using Levenshtein distance
+ */
+function findSimilarModels(model: string, validModels: Set<string>): string[] {
+  const modelsArray = Array.from(validModels);
   
-  return suggestions.slice(0, 3); // Return top 3 suggestions
+  const distances = modelsArray.map(validModel => ({
+    model: validModel,
+    distance: levenshtein(model.toLowerCase(), validModel.toLowerCase()),
+  }));
+
+  distances.sort((a, b) => a.distance - b.distance);
+  
+  return distances.slice(0, 3).map(d => d.model);
 }
 
 /**
