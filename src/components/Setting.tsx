@@ -66,18 +66,9 @@ import {
   SEARXNG_BASE_URL,
 } from "@/constants/urls";
 import locales from "@/constants/locales";
-import {
-  filterThinkingModelList,
-  filterNetworkingModelList,
-  filterOpenRouterModelList,
-  filterDeepSeekModelList,
-  filterOpenAIModelList,
-  filterMistralModelList,
-  getCustomModelList,
-} from "@/utils/model";
+import { getCustomModelList } from "@/utils/model";
 import { researchStore } from "@/utils/storage";
 import { cn } from "@/utils/style";
-import { hasTemperatureRestrictions } from "@/utils/model";
 import { omit, capitalize } from "radash";
 
 type SettingProps = {
@@ -212,33 +203,6 @@ function Setting({ open, onClose }: SettingProps) {
   const { modelList, modelTokenMap, refresh } = useModel();
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
-  const thinkingModelList = useMemo(() => {
-    const { provider } = useSettingStore.getState();
-    if (provider === "google") {
-      return filterThinkingModelList(modelList);
-    } else if (provider === "openrouter") {
-      return filterOpenRouterModelList(modelList);
-    } else if (provider === "deepseek") {
-      return filterDeepSeekModelList(modelList);
-    } else if (provider === "mistral") {
-      return filterMistralModelList(modelList);
-    }
-    return [[], modelList];
-  }, [modelList]);
-  const networkingModelList = useMemo(() => {
-    const { provider } = useSettingStore.getState();
-    if (provider === "google") {
-      return filterNetworkingModelList(modelList);
-    } else if (provider === "openrouter") {
-      return filterOpenRouterModelList(modelList);
-    } else if (provider === "openai") {
-      return filterOpenAIModelList(modelList);
-    } else if (provider === "mistral") {
-      return filterMistralModelList(modelList);
-    }
-    return [[], modelList];
-  }, [modelList]);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: async () => {
@@ -299,40 +263,6 @@ function Setting({ open, onClose }: SettingProps) {
     },
     [mode]
   );
-
-  const supportsReasoningEffort = useCallback((modelName: string) => {
-    // OpenAI models that support reasoning_effort parameter
-    return modelName.startsWith("o1") || 
-           modelName.includes("o1-") || 
-           hasTemperatureRestrictions(modelName);
-  }, []);
-
-  const supportsTemperature = useCallback((providerName: string, modelName: string) => {
-    // Check if provider and model combination supports temperature parameter
-    switch (providerName) {
-      case "openai":
-        // OpenAI reasoning models (o1, o3, gpt-5) don't support temperature
-        return !(modelName.startsWith("o1") || 
-                modelName.startsWith("o3") || 
-                modelName.includes("o3-") ||
-                hasTemperatureRestrictions(modelName));
-      
-      case "anthropic":
-      case "mistral":
-      case "deepseek":
-      case "xai":
-      case "google":
-      case "openrouter":
-      case "ollama":
-        // These providers generally support temperature
-        return true;
-        
-      default:
-        // Unknown providers - be conservative
-        return false;
-    }
-  }, []);
-
 
   function handleClose(open: boolean) {
     if (!open) onClose();
@@ -1019,20 +949,7 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {thinkingModelList[0].length > 0 ? (
-                                  <SelectGroup>
-                                    <SelectLabel>
-                                      {t("setting.recommendedModels")}
-                                    </SelectLabel>
-                                    {thinkingModelList[0].map(renderModelItem)}
-                                  </SelectGroup>
-                                ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {thinkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
+                                {modelList.map(renderModelItem)}
                               </SelectContent>
                             </Select>
                             <Button
@@ -1091,20 +1008,7 @@ function Setting({ open, onClose }: SettingProps) {
                                 />
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
-                                {networkingModelList[0].length > 0 ? (
-                                  <SelectGroup>
-                                    <SelectLabel>
-                                      {t("setting.recommendedModels")}
-                                    </SelectLabel>
-                                    {networkingModelList[0].map(renderModelItem)}
-                                  </SelectGroup>
-                                ) : null}
-                                <SelectGroup>
-                                  <SelectLabel>
-                                    {t("setting.basicModels")}
-                                  </SelectLabel>
-                                  {networkingModelList[1].map(renderModelItem)}
-                                </SelectGroup>
+                                {modelList.map(renderModelItem)}
                               </SelectContent>
                             </Select>
                             <Button
@@ -1132,10 +1036,9 @@ function Setting({ open, onClose }: SettingProps) {
                       </FormItem>
                     )}
                   />
-                  {supportsTemperature("google", "") && (
-                    <FormField
-                      control={form.control}
-                      name="temperature"
+                  <FormField
+                    control={form.control}
+                    name="temperature"
                       render={({ field }) => (
                         <FormItem className="from-item">
                           <FormLabel className="from-label">

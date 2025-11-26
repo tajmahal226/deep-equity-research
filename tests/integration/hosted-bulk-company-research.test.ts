@@ -19,7 +19,7 @@ const hostedProviders: ProviderCase[] = [
     envVars: ["OPENAI_API_KEY"],
     thinkingModelId: "gpt-5",
     taskModelId: "gpt-5-turbo",
-    expectedMessage: /No OpenAI API key/i,
+    expectedMessage: /No API key found for openai/i,
   },
   {
     name: "Google",
@@ -31,7 +31,7 @@ const hostedProviders: ProviderCase[] = [
     ],
     thinkingModelId: "gemini-2.5-flash-thinking",
     taskModelId: "gemini-2.5-pro",
-    expectedMessage: /No Google API key/i,
+    expectedMessage: /No API key found for google/i,
   },
   {
     name: "xAI",
@@ -39,7 +39,7 @@ const hostedProviders: ProviderCase[] = [
     envVars: ["XAI_API_KEY"],
     thinkingModelId: "grok-3",
     taskModelId: "grok-3",
-    expectedMessage: /No xAI API key/i,
+    expectedMessage: /No API key found for xai/i,
   },
   {
     name: "Mistral",
@@ -47,7 +47,7 @@ const hostedProviders: ProviderCase[] = [
     envVars: ["MISTRAL_API_KEY"],
     thinkingModelId: "mistral-large-2411",
     taskModelId: "mistral-large-latest",
-    expectedMessage: /No Mistral API key/i,
+    expectedMessage: /No API key found for mistral/i,
   },
   {
     name: "OpenRouter",
@@ -55,7 +55,7 @@ const hostedProviders: ProviderCase[] = [
     envVars: ["OPENROUTER_API_KEY"],
     thinkingModelId: "anthropic/claude-3.5-sonnet",
     taskModelId: "anthropic/claude-3.5-sonnet",
-    expectedMessage: /No OpenRouter API key/i,
+    expectedMessage: /No API key found for openrouter/i,
   },
 ];
 

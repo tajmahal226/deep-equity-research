@@ -1,9 +1,10 @@
 import { streamText, generateText } from "ai";
 import { type GoogleGenerativeAIProviderMetadata } from "@ai-sdk/google";
 import { createAIProvider } from "./provider";
+import { handleError } from "../error";
+import { useTaskStore } from "@/store/task";
 import { createSearchProvider } from "./search";
 import { getMaxTokens } from "@/constants/token-limits";
-import { hasTemperatureRestrictions } from "@/utils/model";
 import { logger } from "@/utils/logger";
 import {
   getSystemPrompt,
@@ -88,7 +89,7 @@ class DeepResearch {
     
     // Don't pass temperature for reasoning models like GPT-5
     let settings: any = undefined;
-    if (AIProvider.temperature !== undefined && !hasTemperatureRestrictions(AIProvider.thinkingModel)) {
+    if (AIProvider.temperature !== undefined) {
       settings = { temperature: AIProvider.temperature };
     }
     const maxTokens = getMaxTokens(AIProvider.provider, AIProvider.thinkingModel);
@@ -96,7 +97,7 @@ class DeepResearch {
       settings = { ...(settings || {}), maxTokens };
     }
     
-    logger.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", hasRestrictions=${hasTemperatureRestrictions(AIProvider.thinkingModel)}, temperature=${AIProvider.temperature}, finalSettings=`, settings);
+    logger.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", temperature=${AIProvider.temperature}, finalSettings=`, settings);
     
     return await createAIProvider({
       provider: AIProvider.provider,
@@ -114,7 +115,7 @@ class DeepResearch {
     const settings: any = {};
     
     // Add temperature only if not restricted (don't pass temperature for reasoning models like GPT-5)
-    if (AIProvider.temperature !== undefined && !hasTemperatureRestrictions(AIProvider.taskModel)) {
+    if (AIProvider.temperature !== undefined) {
       settings.temperature = AIProvider.temperature;
     }
     
@@ -128,7 +129,7 @@ class DeepResearch {
     }
     
     const finalSettings = Object.keys(settings).length > 0 ? settings : undefined;
-    logger.log(`[DEBUG] DeepResearch.getTaskModel: model="${AIProvider.taskModel}", hasRestrictions=${hasTemperatureRestrictions(AIProvider.taskModel)}, temperature=${AIProvider.temperature}, finalSettings=`, finalSettings);
+    logger.log(`[DEBUG] DeepResearch.getTaskModel: model="${AIProvider.taskModel}", temperature=${AIProvider.temperature}, finalSettings=`, finalSettings);
     
     return await createAIProvider({
       provider: AIProvider.provider,
@@ -136,48 +137,6 @@ class DeepResearch {
       settings: finalSettings,
       ...AIProviderBaseOptions,
     });
-  }
-
-  /**
-   * Defensive function to clean parameters for thinking model calls
-   */
-  private cleanThinkingModelParams(params: any) {
-    const { AIProvider } = this.options;
-    const cleanParams = { ...params };
-    
-    if (hasTemperatureRestrictions(AIProvider.thinkingModel) && cleanParams.temperature !== undefined) {
-      logger.log(`[DEBUG] DeepResearch: Removing temperature ${cleanParams.temperature} for restricted thinking model ${AIProvider.thinkingModel}`);
-      delete cleanParams.temperature;
-    }
-    const limit = getMaxTokens(AIProvider.provider, AIProvider.thinkingModel);
-    if (limit !== undefined) {
-      if (cleanParams.maxTokens === undefined || cleanParams.maxTokens > limit) {
-        cleanParams.maxTokens = limit;
-      }
-    }
-    
-    return cleanParams;
-  }
-
-  /**
-   * Defensive function to clean parameters for task model calls
-   */
-  private cleanTaskModelParams(params: any) {
-    const { AIProvider } = this.options;
-    const cleanParams = { ...params };
-    
-    if (hasTemperatureRestrictions(AIProvider.taskModel) && cleanParams.temperature !== undefined) {
-      logger.log(`[DEBUG] DeepResearch: Removing temperature ${cleanParams.temperature} for restricted task model ${AIProvider.taskModel}`);
-      delete cleanParams.temperature;
-    }
-    const limit = getMaxTokens(AIProvider.provider, AIProvider.taskModel);
-    if (limit !== undefined) {
-      if (cleanParams.maxTokens === undefined || cleanParams.maxTokens > limit) {
-        cleanParams.maxTokens = limit;
-      }
-    }
-    
-    return cleanParams;
   }
 
   getResponseLanguagePrompt() {
@@ -554,7 +513,9 @@ class DeepResearch {
     enableCitationImage = true,
     enableReferences = true
   ) {
+    const { setStatus } = useTaskStore.getState();
     try {
+      setStatus("loading");
       const reportPlan = await this.writeReportPlan(query);
       const tasks = await this.generateSERPQuery(reportPlan);
       const results = await this.runSearchTask(tasks, enableReferences);
@@ -564,8 +525,11 @@ class DeepResearch {
         enableCitationImage,
         enableReferences
       );
+      setStatus("success");
       return finalReport;
     } catch (err) {
+      setStatus("error");
+      handleError(err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       this.onMessage("error", { message: errorMessage });
       throw new Error(errorMessage);

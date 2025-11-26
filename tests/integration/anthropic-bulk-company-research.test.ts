@@ -34,7 +34,7 @@ describe('Bulk Company Research Module - Anthropic Provider', () => {
         },
       });
 
-      await expect(researcher.runFastResearch()).rejects.toThrow(/No Anthropic API key/i);
+      await expect(researcher.runFastResearch()).rejects.toThrow(/No API key found for anthropic/i);
     });
   });
 });

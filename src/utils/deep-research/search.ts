@@ -156,8 +156,8 @@ async function fetchWithTimeout(
       signal: controller.signal,
     });
 
-    if (!response.ok) {
-      const bodyText = await response.text().catch(() => "");
+    if (response.status && !response.ok) {
+      const bodyText = typeof response.text === "function" ? await response.text().catch(() => "") : "";
       const snippetRaw = bodyText.replace(/\s+/g, " ").trim();
       const snippet = snippetRaw.slice(0, 200);
       const suffix = snippetRaw.length > snippet.length ? "…" : "";

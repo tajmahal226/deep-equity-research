@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { pick } from "radash";
 
 export interface TaskStore {
+  status: "idle" | "loading" | "success" | "error";
   id: string;
   question: string;
   resources: Resource[];
@@ -21,6 +22,7 @@ export interface TaskStore {
 }
 
 interface TaskFunction {
+  setStatus: (status: "idle" | "loading" | "success" | "error") => void;
   update: (tasks: SearchTask[]) => void;
   setId: (id: string) => void;
   setTitle: (title: string) => void;
@@ -47,6 +49,7 @@ interface TaskFunction {
 }
 
 const defaultValues: TaskStore = {
+  status: "idle",
   id: "",
   question: "",
   resources: [],
@@ -68,6 +71,7 @@ export const useTaskStore = create(
   persist<TaskStore & TaskFunction>(
     (set, get) => ({
       ...defaultValues,
+      setStatus: (status) => set(() => ({ status })),
       update: (tasks) => set(() => ({ tasks: [...tasks] })),
       setId: (id) => set(() => ({ id })),
       setTitle: (title) => set(() => ({ title })),

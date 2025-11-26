@@ -25,6 +25,7 @@ import {
 import { downloadFile } from "@/utils/file";
 import { logger } from "@/utils/logger";
 import { useSettingStore } from "@/store/setting";
+import { useTaskStore } from "@/store/task";
 import { getProviderStateKey, getProviderApiKey, resolveActiveProvider } from "@/utils/provider";
 import { useResearchCache } from "@/hooks/useResearchCache";
 
@@ -51,6 +52,8 @@ export default function CompanyDeepDive() {
 
   const { t } = useTranslation();
   const settingStore = useSettingStore();
+  const { status } = useTaskStore();
+  const isSearching = status === "loading";
   const [companyName, setCompanyName] = useState("");
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [industry, setIndustry] = useState("");
@@ -62,7 +65,6 @@ export default function CompanyDeepDive() {
   const [researchSourceInput, setResearchSourceInput] = useState("");
   const [additionalContext, setAdditionalContext] = useState("");
   const [searchDepth, setSearchDepth] = useState<SearchDepth>("medium");
-  const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any>(null);
 
   const handleAddTag = (
@@ -131,7 +133,6 @@ export default function CompanyDeepDive() {
       abortController.abort();
     }
 
-    setIsSearching(true);
     setSearchResults(null); // Clear previous results
 
     try {
@@ -271,7 +272,6 @@ export default function CompanyDeepDive() {
                 case "complete":
                   logger.log("Research complete:", data);
                   setSearchResults(data);
-                  setIsSearching(false);
                   setAbortController(null); // Clear controller
 
                   // Cache the successful result
@@ -314,7 +314,6 @@ export default function CompanyDeepDive() {
       if (error?.name !== 'AbortError') {
         console.error("Company research error:", error);
       }
-      setIsSearching(false);
       setAbortController(null); // Clear controller
       setSearchResults({
         error: error instanceof Error ? error.message : "Research failed",
@@ -347,6 +346,7 @@ export default function CompanyDeepDive() {
                 placeholder="Silverfort"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
+                disabled={isSearching}
               />
             </div>
 
@@ -360,6 +360,7 @@ export default function CompanyDeepDive() {
                 placeholder="www.silverfort.com"
                 value={companyWebsite}
                 onChange={(e) => setCompanyWebsite(e.target.value)}
+                disabled={isSearching}
               />
             </div>
           </div>
@@ -374,6 +375,7 @@ export default function CompanyDeepDive() {
               placeholder="Cyber Security"
               value={industry}
               onChange={(e) => setIndustry(e.target.value)}
+              disabled={isSearching}
             />
           </div>
 
@@ -389,6 +391,7 @@ export default function CompanyDeepDive() {
               onChange={(e) => setSubIndustryInput(e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, subIndustryInput, setSubIndustryInput, subIndustries, setSubIndustries)}
               onBlur={() => handleAddTag(subIndustryInput, setSubIndustryInput, subIndustries, setSubIndustries)}
+              disabled={isSearching}
             />
             {subIndustries.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
@@ -417,6 +420,7 @@ export default function CompanyDeepDive() {
               onChange={(e) => setCompetitorInput(e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, competitorInput, setCompetitorInput, competitors, setCompetitors)}
               onBlur={() => handleAddTag(competitorInput, setCompetitorInput, competitors, setCompetitors)}
+              disabled={isSearching}
             />
             {competitors.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
@@ -445,6 +449,7 @@ export default function CompanyDeepDive() {
               onChange={(e) => setResearchSourceInput(e.target.value)}
               onKeyDown={(e) => handleKeyDown(e, researchSourceInput, setResearchSourceInput, researchSources, setResearchSources)}
               onBlur={() => handleAddTag(researchSourceInput, setResearchSourceInput, researchSources, setResearchSources)}
+              disabled={isSearching}
             />
             {researchSources.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
@@ -471,12 +476,13 @@ export default function CompanyDeepDive() {
               value={additionalContext}
               onChange={(e) => setAdditionalContext(e.target.value)}
               rows={3}
+              disabled={isSearching}
             />
           </div>
 
           <div className="space-y-2">
             <Label>{t("companyDeepDive.searchDepth", "Search Depth")}</Label>
-            <RadioGroup value={searchDepth} onValueChange={(value) => setSearchDepth(value as SearchDepth)}>
+            <RadioGroup value={searchDepth} onValueChange={(value) => setSearchDepth(value as SearchDepth)} disabled={isSearching}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="flex items-start space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-accent">
                   <RadioGroupItem value="fast" id="fast" className="mt-1" />

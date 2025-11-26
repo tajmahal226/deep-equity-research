@@ -34,7 +34,7 @@ describe('Bulk Company Research Module - DeepSeek Provider', () => {
         },
       });
 
-      await expect(researcher.runFastResearch()).rejects.toThrow(/No DeepSeek API key/i);
+      await expect(researcher.runFastResearch()).rejects.toThrow(/No API key found for deepseek/i);
     });
   });
 });

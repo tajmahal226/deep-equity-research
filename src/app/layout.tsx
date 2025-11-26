@@ -3,7 +3,7 @@ import Script from "next/script";
 import ThemeProvider from "@/components/Provider/Theme";
 import I18Provider from "@/components/Provider/I18n";
 import Debugger from "@/components/Internal/Debugger";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "react-hot-toast";
 
 import "./globals.css";
 
@@ -85,6 +85,7 @@ export default function RootLayout({
         >
           <I18Provider>{children}</I18Provider>
         </ThemeProvider>
+        <Toaster />
         <Toaster richColors toastOptions={{ duration: 3000 }} />
       </body>
     </html>

@@ -28,7 +28,7 @@ import {
   guidelinesPrompt,
   INVESTMENT_RESEARCH_SECTIONS 
 } from "@/constants/companyDivePrompts";
-import { multiApiKeyPolling, hasTemperatureRestrictions, isNetworkingModel } from "@/utils/model";
+import { multiApiKeyPolling, isNetworkingModel } from "@/utils/model";
 import {
   getAIProviderBaseURL,
   getAIProviderApiKeyWithFallback,
@@ -37,86 +37,13 @@ import {
   getAIProviderEnvVarNames
 } from "@/app/api/utils";
 import { streamText, generateText } from "ai";
-import { createAIProvider, filterModelSettings } from "@/utils/deep-research/provider";
+import { createAIProvider } from "@/utils/deep-research/provider";
 import { createSearchProvider } from "@/utils/deep-research/search";
 import { getMaxTokens } from "@/constants/token-limits";
 import { logger } from "@/utils/logger";
 import { ThinkTagStreamProcessor } from "@/utils/text";
 // Removed unused import: pick from radash
 
-// Helper to ensure API keys are present for a given provider/model pair
-function validateApiKey(provider: string, model: string, apiKey?: string): string {
-  if (apiKey) return apiKey;
-
-  if (provider === "ollama") {
-    return "";
-  }
-
-  const envVarNames = getAIProviderEnvVarNames(provider);
-  const envVarList = envVarNames.length > 0 ? envVarNames.join(" or ") : `${provider.toUpperCase()}_API_KEY`;
-  const envVarLabel = envVarNames.length > 1 ? "environment variables" : "environment variable";
-
-  if (provider === "openai" && (model.includes("o3") || model.startsWith("gpt-5"))) {
-    throw new Error(
-      `No OpenAI API key found for ${model}. Advanced OpenAI models (GPT-5, o3 series) require a valid API key. Please click the settings gear icon in the top-right corner to enter your OpenAI API key, or set the ${envVarList} ${envVarLabel}.`
-    );
-  }
-  if (provider === "anthropic") {
-    throw new Error(
-      `No Anthropic API key found for Claude ${model}. Please click the settings gear icon in the top-right corner to enter your Anthropic API key, or set the ${envVarList} ${envVarLabel}.`
-    );
-  }
-  if (provider === "deepseek") {
-    const modelLabel = model.includes("reasoner") ? `reasoning model ${model}` : model;
-    throw new Error(
-      `No DeepSeek API key found for ${modelLabel}. Please click the settings gear icon in the top-right corner to enter your DeepSeek API key, or set the ${envVarList} ${envVarLabel}.`
-    );
-  }
-  if (provider === "xai") {
-    throw new Error(
-      `No xAI API key found for Grok ${model}. Please click the settings gear icon in the top-right corner to enter your xAI API key, or set the ${envVarList} ${envVarLabel}.`
-    );
-  }
-  if (provider === "google") {
-    throw new Error(
-      `No Google API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Google API key, or set the ${envVarList} ${envVarLabel}.`
-    );
-  }
-  if (provider === "mistral") {
-    throw new Error(
-      `No Mistral API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Mistral API key, or set the ${envVarList} ${envVarLabel}.`
-    );
-  }
-  if (provider === "openrouter") {
-    throw new Error(
-      `No OpenRouter API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your OpenRouter API key, or set the ${envVarList} ${envVarLabel}.`
-    );
-  }
-  if (provider === "cohere") {
-    throw new Error(
-      `No Cohere API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Cohere API key, or set the ${envVarList} ${envVarLabel}.`
-    );
-  }
-  if (provider === "groq") {
-    throw new Error(
-      `No Groq API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Groq API key, or set the ${envVarList} ${envVarLabel}.`
-    );
-  }
-  if (provider === "perplexity") {
-    throw new Error(
-      `No Perplexity API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Perplexity API key, or set the ${envVarList} ${envVarLabel}.`
-    );
-  }
-  if (provider === "together") {
-    throw new Error(
-      `No Together AI API key found for ${model}. Please click the settings gear icon in the top-right corner to enter your Together AI API key, or set the ${envVarList} ${envVarLabel}.`
-    );
-  }
-
-  throw new Error(
-    `No API key found for ${provider}. Please click the settings gear icon in the top-right corner to enter your ${provider.toUpperCase()} API key, or set the ${envVarList} ${envVarLabel}.`
-  );
-}
 
 // Import types we'll need
 interface CompanyResearchConfig {
@@ -245,11 +172,15 @@ export class CompanyDeepResearch {
       try {
         const clientApiKey = this.config.thinkingModelConfig?.apiKey;
         const serverApiKey = getAIProviderApiKeyWithFallback(thinkingProvider);
-        const apiKey = validateApiKey(
-          thinkingProvider,
-          thinkingModel,
-          clientApiKey || serverApiKey
-        );
+        const apiKey = clientApiKey || serverApiKey;
+        if (!apiKey && thinkingProvider !== "ollama") {
+          const envVarNames = getAIProviderEnvVarNames(thinkingProvider);
+          const envVarList = envVarNames.length > 0 ? envVarNames.join(" or ") : `${thinkingProvider.toUpperCase()}_API_KEY`;
+          const envVarLabel = envVarNames.length > 1 ? "environment variables" : "environment variable";
+          throw new Error(
+            `No API key found for ${thinkingProvider}. Please click the settings gear icon in the top-right corner to enter your ${thinkingProvider.toUpperCase()} API key, or set the ${envVarList} ${envVarLabel}.`
+          );
+        }
 
         this.thinkingModel = await createAIProvider({
           provider: thinkingProvider,
@@ -266,11 +197,15 @@ export class CompanyDeepResearch {
       try {
         const clientApiKey = this.config.taskModelConfig?.apiKey;
         const serverApiKey = getAIProviderApiKeyWithFallback(taskProvider);
-        const apiKey = validateApiKey(
-          taskProvider,
-          taskModel,
-          clientApiKey || serverApiKey
-        );
+        const apiKey = clientApiKey || serverApiKey;
+        if (!apiKey && taskProvider !== "ollama") {
+          const envVarNames = getAIProviderEnvVarNames(taskProvider);
+          const envVarList = envVarNames.length > 0 ? envVarNames.join(" or ") : `${taskProvider.toUpperCase()}_API_KEY`;
+          const envVarLabel = envVarNames.length > 1 ? "environment variables" : "environment variable";
+          throw new Error(
+            `No API key found for ${taskProvider}. Please click the settings gear icon in the top-right corner to enter your ${taskProvider.toUpperCase()} API key, or set the ${envVarList} ${envVarLabel}.`
+          );
+        }
 
         this.taskModel = await createAIProvider({
           provider: taskProvider,
@@ -328,58 +263,6 @@ export class CompanyDeepResearch {
   }
 
   /**
-   * Defensive function to ensure no temperature for reasoning models at AI SDK call level
-   */
-  private cleanThinkingModelParameters(params: any) {
-    const cleanParams = { ...params };
-    const modelName = this.config.thinkingModelConfig?.modelId || 'unknown';
-    const providerId = this.config.thinkingModelConfig?.providerId || 'openai';
-
-    if (hasTemperatureRestrictions(modelName)) {
-      if (cleanParams.temperature !== undefined) {
-        logger.log(`[DEBUG] cleanThinkingModelParameters: REMOVING temperature ${cleanParams.temperature} for reasoning model ${modelName}`);
-        delete cleanParams.temperature;
-      }
-    }
-
-    const limit = getMaxTokens(providerId, modelName);
-    if (limit !== undefined) {
-      if (cleanParams.maxTokens === undefined || cleanParams.maxTokens > limit) {
-        cleanParams.maxTokens = limit;
-      }
-    }
-
-    logger.log(`[DEBUG] cleanThinkingModelParameters: model=${modelName}, finalParams=`, cleanParams);
-    return cleanParams;
-  }
-
-  /**
-   * Defensive function to ensure no temperature for reasoning models at AI SDK call level
-   */
-  private cleanTaskModelParameters(params: any) {
-    const cleanParams = { ...params };
-    const modelName = this.config.taskModelConfig?.modelId || 'unknown';
-    const providerId = this.config.taskModelConfig?.providerId || 'openai';
-
-    if (hasTemperatureRestrictions(modelName)) {
-      if (cleanParams.temperature !== undefined) {
-        logger.log(`[DEBUG] cleanTaskModelParameters: REMOVING temperature ${cleanParams.temperature} for reasoning model ${modelName}`);
-        delete cleanParams.temperature;
-      }
-    }
-
-    const limit = getMaxTokens(providerId, modelName);
-    if (limit !== undefined) {
-      if (cleanParams.maxTokens === undefined || cleanParams.maxTokens > limit) {
-        cleanParams.maxTokens = limit;
-      }
-    }
-
-    logger.log(`[DEBUG] cleanTaskModelParameters: model=${modelName}, finalParams=`, cleanParams);
-    return cleanParams;
-  }
-  
-  /**
    * Get safe parameters for the thinking model
    */
   private getThinkingModelSettings(baseSettings: any) {
@@ -399,9 +282,8 @@ export class CompanyDeepResearch {
       settingsWithReasoning.maxTokens = maxTokens;
     }
 
-    const filteredSettings = filterModelSettings(providerId, modelId, settingsWithReasoning);
-    logger.log(`[DEBUG] getThinkingModelSettings: provider="${providerId}", model="${modelId}", filtered=`, filteredSettings);
-    return filteredSettings;
+    logger.log(`[DEBUG] getThinkingModelSettings: provider="${providerId}", model="${modelId}", settings=`, settingsWithReasoning);
+    return settingsWithReasoning;
   }
 
   /**
@@ -429,9 +311,8 @@ export class CompanyDeepResearch {
       (settingsWithReasoning as any).useSearchGrounding = true;
     }
 
-    const filteredSettings = filterModelSettings(providerId, modelId, settingsWithReasoning);
-    logger.log(`[DEBUG] getTaskModelSettings: provider="${providerId}", model="${modelId}", filtered=`, filteredSettings);
-    return filteredSettings;
+    logger.log(`[DEBUG] getTaskModelSettings: provider="${providerId}", model="${modelId}", settings=`, settingsWithReasoning);
+    return settingsWithReasoning;
   }
   
   /**
@@ -705,12 +586,11 @@ ${Object.entries(INVESTMENT_RESEARCH_SECTIONS)
 Provide a brief rationale for which sections should be prioritized and any company-specific focus areas.`;
 
       const taskSettings = this.getTaskModelSettings({ temperature: 0.3, maxTokens: 1000 });
-      const cleanedTaskSettings = this.cleanTaskModelParameters(taskSettings);
       
       const { text: planRationale } = await generateText({
         model: this.taskModel,
         prompt: planPrompt,
-        ...cleanedTaskSettings,
+        ...taskSettings,
       });
       
       // Log the plan rationale for debugging
@@ -937,12 +817,11 @@ Focus on factual information that would be valuable for an investment analyst.
 Be specific and include data points, dates, and concrete details when available.`;
 
         const learningTaskSettings = this.getTaskModelSettings({ temperature: 0.3, maxTokens: 1000 });
-        const cleanedLearningSettings = this.cleanTaskModelParameters(learningTaskSettings);
         
         const { text: learning } = await generateText({
           model: this.taskModel,
           prompt: learningPrompt,
-          ...cleanedLearningSettings, // Low temperature for factual synthesis
+          ...learningTaskSettings, // Low temperature for factual synthesis
         });
         
         // Step 3: Collect sources and format them
@@ -1000,12 +879,11 @@ Be specific and include data points, dates, and concrete details when available.
       
       // Use generateText for fast, non-streaming response
       const fastTaskSettings = this.getTaskModelSettings({ temperature: 0.7, maxTokens: 4000 });
-      const cleanedFastSettings = this.cleanTaskModelParameters(fastTaskSettings);
       
       const { text } = await generateText({
         model: this.taskModel,
         prompt: prompt,
-        ...cleanedFastSettings, // Some creativity but mostly factual
+        ...fastTaskSettings, // Some creativity but mostly factual
       });
       
       // Send the complete report
@@ -1079,12 +957,11 @@ Keep the analysis concise but insightful, focusing on the most important investm
       
       // Use streamText for medium report
       const mediumThinkingSettings = this.getThinkingModelSettings({ temperature: 0.5, maxTokens: 5000 });
-      const cleanedMediumSettings = this.cleanThinkingModelParameters(mediumThinkingSettings);
       
       const result = streamText({
         model: this.thinkingModel,
         prompt: mediumPrompt,
-        ...cleanedMediumSettings, // Smaller than deep report
+        ...mediumThinkingSettings, // Smaller than deep report
       });
       
       // Stream the report
@@ -1192,12 +1069,11 @@ IMPORTANT: Create a thorough, professional investment analysis that would prepar
       
       // Use streamText for real-time updates
       const thinkingSettings = this.getThinkingModelSettings({ temperature: 0.5, maxTokens: 8000 });
-      const cleanedSettings = this.cleanThinkingModelParameters(thinkingSettings);
       
       const result = streamText({
         model: this.thinkingModel,
         prompt: reportPrompt,
-        ...cleanedSettings, // Defensive cleaning applied
+        ...thinkingSettings, // Defensive cleaning applied
       });
       
       const textStream = result.textStream;

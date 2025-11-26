@@ -62,22 +62,22 @@ describe("Company Research Initialization Integration Test", () => {
       {
         provider: "anthropic",
         envVar: "ANTHROPIC_API_KEY",
-        expectedMessage: /Anthropic API key.*Claude/i
+        expectedMessage: /No API key found for anthropic/i
       },
       {
         provider: "deepseek",
         envVar: "DEEPSEEK_API_KEY",
-        expectedMessage: /DeepSeek API key/i
+        expectedMessage: /No API key found for deepseek/i
       },
       {
         provider: "xai",
         envVar: "XAI_API_KEY",
-        expectedMessage: /xAI API key.*Grok/i
+        expectedMessage: /No API key found for xai/i
       },
       {
         provider: "google",
         envVar: "GOOGLE_GENERATIVE_AI_API_KEY",
-        expectedMessage: /Google API key/i
+        expectedMessage: /No API key found for google/i
       }
     ];
 

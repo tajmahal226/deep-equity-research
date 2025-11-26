@@ -16,7 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import useModelProvider from "@/hooks/useAiProvider";
 import { useTaskStore } from "@/store/task";
 import { knowledgeGraphPrompt } from "@/constants/prompts";
-import { parseError } from "@/utils/error";
+import { handleError } from "@/utils/error";
 import { cn } from "@/utils/style";
 
 const MagicDownView = dynamic(() => import("@/components/MagicDown/View"));
@@ -26,11 +26,6 @@ type Props = {
   open: boolean;
   onClose: () => void;
 };
-
-function handleError(error: unknown) {
-  const errorMessage = parseError(error);
-  toast.error(errorMessage);
-}
 
 function KnowledgeGraph({ open, onClose }: Props) {
   const { t } = useTranslation();
@@ -49,7 +44,7 @@ function KnowledgeGraph({ open, onClose }: Props) {
         knowledgeGraphPrompt +
         `\n\n**The node text uses the same language as the article**`,
       prompt: finalReport,
-      onError: handleError,
+      onError: (error) => handleError(error),
     });
     let text = "";
     for await (const textPart of result.textStream) {
