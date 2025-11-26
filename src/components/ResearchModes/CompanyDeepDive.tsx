@@ -52,7 +52,7 @@ export default function CompanyDeepDive() {
 
   const { t } = useTranslation();
   const settingStore = useSettingStore();
-  const { status } = useTaskStore();
+  const { status, setStatus, setError } = useTaskStore();
   const isSearching = status === "loading";
   const [companyName, setCompanyName] = useState("");
   const [companyWebsite, setCompanyWebsite] = useState("");
@@ -133,6 +133,7 @@ export default function CompanyDeepDive() {
       abortController.abort();
     }
 
+    setStatus("loading");
     setSearchResults(null); // Clear previous results
 
     try {
@@ -162,7 +163,7 @@ export default function CompanyDeepDive() {
         if (cachedResult) {
           logger.log("[Cache Hit] Using cached research for:", companyName);
           setSearchResults(cachedResult);
-          setIsSearching(false);
+          setStatus("success");
           return;
         } else {
           logger.log("[Cache Miss] Fetching fresh research for:", companyName);
@@ -271,6 +272,7 @@ export default function CompanyDeepDive() {
 
                 case "complete":
                   logger.log("Research complete:", data);
+                  setStatus("success");
                   setSearchResults(data);
                   setAbortController(null); // Clear controller
 
@@ -300,6 +302,7 @@ export default function CompanyDeepDive() {
 
                 case "error":
                   console.error("Research error:", data);
+                  setError(data.message || "Research failed");
                   setAbortController(null); // Clear controller
                   await reader.cancel();
                   throw new Error(data.message || "Research failed");
@@ -313,6 +316,9 @@ export default function CompanyDeepDive() {
       // Don't log abort errors (they're intentional)
       if (error?.name !== 'AbortError') {
         console.error("Company research error:", error);
+        setError(error.message);
+      } else {
+        setStatus("idle");
       }
       setAbortController(null); // Clear controller
       setSearchResults({

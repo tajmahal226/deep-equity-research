@@ -85,8 +85,7 @@ export default function RootLayout({
         >
           <I18Provider>{children}</I18Provider>
         </ThemeProvider>
-        <Toaster />
-        <Toaster richColors toastOptions={{ duration: 3000 }} />
+        <Toaster toastOptions={{ duration: 3000 }} />
       </body>
     </html>
   );

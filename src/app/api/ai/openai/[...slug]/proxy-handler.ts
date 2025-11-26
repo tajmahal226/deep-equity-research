@@ -26,15 +26,11 @@ export async function proxyHandler(
   const isDev = process.env.NODE_ENV !== "production";
 
   try {
-    let url = buildUpstreamURL(API_PROXY_BASE_URL, slugSegments, searchParams);
+    const url = buildUpstreamURL(API_PROXY_BASE_URL, slugSegments, searchParams);
 
     // Handle endpoint routing based on model type
     if (body && body.model) {
       const model = body.model;
-      const currentEndpoint = slugSegments.join("/");
-
-      // Normalize model name for consistent checking
-      const normalizedModel = model.toLowerCase().replace(/\s+/g, "-");
 
       // Handle undefined or missing model names
       if (!model || model === "undefined" || model === "") {
