@@ -15,7 +15,7 @@ export class AnthropicProvider implements Provider {
 
   async generateReport(prompt: string, options: any): Promise<string> {
     try {
-      const response = await retryWithBackoff(() =>
+      const response: any = await retryWithBackoff(() =>
         withTimeout(
           this.anthropic.completion(prompt, options),
           options.timeout
@@ -35,7 +35,7 @@ export class AnthropicProvider implements Provider {
         prompt,
       });
 
-      return result.stream;
+      return result.textStream;
     } catch (error) {
       handleError(error);
       throw new AppError("Failed to stream report from Anthropic.");

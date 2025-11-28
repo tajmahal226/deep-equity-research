@@ -24,7 +24,7 @@ export async function createAIProvider({
   const apiProvider = createProvider(provider, apiKey || "");
 
   return {
-    async doStream(options) {
+    async doStream(options: any) {
       const stream = await apiProvider.streamReport(options.prompt, {
         ...settings,
         model,
@@ -34,7 +34,7 @@ export async function createAIProvider({
         stream,
       } as any;
     },
-    async doGenerate(options) {
+    async doGenerate(options: any) {
       const report = await apiProvider.generateReport(options.prompt, {
         ...settings,
         model,

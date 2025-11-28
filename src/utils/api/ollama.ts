@@ -9,13 +9,15 @@ import { streamText } from "ai";
 export class OllamaProvider implements Provider {
   private ollama: any;
 
-  constructor(apiKey: string) {
-    this.ollama = createOllama({ apiKey });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor(_apiKey: string) {
+    // Ollama doesn't require an API key, but we accept it for consistency
+    this.ollama = createOllama();
   }
 
   async generateReport(prompt: string, options: any): Promise<string> {
     try {
-      const response = await retryWithBackoff(() =>
+      const response: any = await retryWithBackoff(() =>
         withTimeout(
           this.ollama.completion(prompt, options),
           options.timeout
@@ -35,7 +37,7 @@ export class OllamaProvider implements Provider {
         prompt,
       });
 
-      return result.stream;
+      return result.textStream;
     } catch (error) {
       handleError(error);
       throw new AppError("Failed to stream report from Ollama.");

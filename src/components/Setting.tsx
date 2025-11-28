@@ -79,7 +79,6 @@ const VERSION = process.env.NEXT_PUBLIC_VERSION;
 const DISABLED_AI_PROVIDER = process.env.NEXT_PUBLIC_DISABLED_AI_PROVIDER || "";
 const DISABLED_SEARCH_PROVIDER =
   process.env.NEXT_PUBLIC_DISABLED_SEARCH_PROVIDER || "";
-const MODEL_LIST = process.env.NEXT_PUBLIC_MODEL_LIST || "";
 
 const formSchema = z.object({
   provider: z.string(),

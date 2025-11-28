@@ -15,7 +15,7 @@ export class OpenAIProvider implements Provider {
 
   async generateReport(prompt: string, options: any): Promise<string> {
     try {
-      const response = await retryWithBackoff(() =>
+      const response: any = await retryWithBackoff(() =>
         withTimeout(
           this.openai.completion(prompt, options),
           options.timeout
@@ -35,7 +35,7 @@ export class OpenAIProvider implements Provider {
         prompt,
       });
 
-      return result.stream;
+      return result.textStream;
     } catch (error) {
       handleError(error);
       throw new AppError("Failed to stream report from OpenAI.");
@@ -44,7 +44,7 @@ export class OpenAIProvider implements Provider {
 
   async getModels(): Promise<string[]> {
     try {
-      const response = await retryWithBackoff(() =>
+      const response: any = await retryWithBackoff(() =>
         withTimeout(
           this.openai.models(),
           10000 // 10 seconds timeout
