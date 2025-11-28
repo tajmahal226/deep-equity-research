@@ -71,4 +71,30 @@ describe("createAIProvider", () => {
       model: "gpt-4o",
     });
   });
+
+  it("should throw a clear error when prompt is missing or not a string", async () => {
+    const provider = {
+      generateReport: vi.fn(),
+      streamReport: vi.fn(),
+      getModels: vi.fn(),
+    };
+    (createProvider as any).mockReturnValue(provider);
+
+    const model = await createAIProvider({
+      provider: "openai",
+      apiKey: "test-key",
+      model: "gpt-4o",
+      baseURL: "https://example.com",
+    });
+
+    await expect(model.doStream({ prompt: "   " } as any)).rejects.toThrow(
+      "Prompt must be a non-empty string."
+    );
+    await expect(model.doGenerate({ prompt: 123 } as any)).rejects.toThrow(
+      "Prompt must be a non-empty string."
+    );
+
+    expect(provider.streamReport).not.toHaveBeenCalled();
+    expect(provider.generateReport).not.toHaveBeenCalled();
+  });
 });

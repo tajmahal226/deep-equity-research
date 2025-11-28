@@ -23,9 +23,17 @@ export async function createAIProvider({
 
   const apiProvider = createProvider(provider, apiKey || "");
 
+  const validatePrompt = (prompt: unknown) => {
+    if (typeof prompt !== "string" || prompt.trim().length === 0) {
+      throw new Error("Prompt must be a non-empty string.");
+    }
+
+    return prompt;
+  };
+
   return {
     async doStream(options: any) {
-      const stream = await apiProvider.streamReport(options.prompt, {
+      const stream = await apiProvider.streamReport(validatePrompt(options.prompt), {
         ...settings,
         model,
       });
@@ -35,10 +43,13 @@ export async function createAIProvider({
       } as any;
     },
     async doGenerate(options: any) {
-      const report = await apiProvider.generateReport(options.prompt, {
-        ...settings,
-        model,
-      });
+      const report = await apiProvider.generateReport(
+        validatePrompt(options.prompt),
+        {
+          ...settings,
+          model,
+        }
+      );
 
       return {
         text: report,
