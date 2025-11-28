@@ -58,7 +58,7 @@ async function checkProvider(
         return health;
       }
     } else {
-      health.status = "unhealthy";
+      health.status = "unknown";
       health.error = "No API key configured";
       return health;
     }
@@ -242,13 +242,18 @@ export async function GET() {
       providers.map(({ id, key }) => checkProvider(id, key))
     );
 
-    // Determine overall health
-    const healthyCount = providerChecks.filter(p => p.status === "healthy").length;
-    
+    // Determine overall health using only configured providers
+    const configuredProviders = providerChecks.filter(p => p.hasApiKey);
+    const healthyCount = configuredProviders.filter(
+      provider => provider.status === "healthy"
+    ).length;
+
+    const configuredTotal = configuredProviders.length || 1; // avoid divide-by-zero
+
     let overallStatus: "healthy" | "degraded" | "unhealthy";
-    if (healthyCount >= providers.length * 0.7) {
+    if (healthyCount >= configuredTotal * 0.7) {
       overallStatus = "healthy";
-    } else if (healthyCount >= providers.length * 0.3) {
+    } else if (healthyCount >= configuredTotal * 0.3) {
       overallStatus = "degraded";
     } else {
       overallStatus = "unhealthy";
@@ -264,7 +269,11 @@ export async function GET() {
 
     // System information
     const system = {
-      memory: process.memoryUsage?.()?.heapUsed || 0,
+      memory:
+        typeof process !== "undefined" &&
+        typeof process.memoryUsage === "function"
+          ? process.memoryUsage().heapUsed
+          : 0,
       uptime: Date.now() - startTime,
       version: process.env.NEXT_PUBLIC_VERSION || "0.0.1",
     };
