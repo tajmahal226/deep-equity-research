@@ -49,7 +49,10 @@ export const useHistoryStore = create(
         const newHistory = get().history.map((item) => {
           if (item.id === id) {
             return {
+              ...clone(item),
               ...clone(taskStore),
+              id: item.id,
+              createdAt: item.createdAt,
               updatedAt: Date.now(),
             } as ResearchHistory;
           } else {
