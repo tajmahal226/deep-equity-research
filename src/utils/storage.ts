@@ -1,5 +1,5 @@
 import localforage from "localforage";
-import { createJSONStorage, type StateStorage } from "zustand/middleware";
+import { createJSONStorage, type StateStorage, type PersistStorage } from "zustand/middleware";
 
 export const researchStore = localforage.createInstance({
   name: "DeepResearch",
@@ -19,23 +19,23 @@ const noopStorage: StateStorage = {
   removeItem: () => undefined,
 };
 
-export const createSafeJSONStorage = (): StateStorage => {
+export const createSafeJSONStorage = <S = unknown>(): PersistStorage<S> | undefined => {
   if (typeof window === "undefined") {
-    return noopStorage;
+    return createJSONStorage<S>(() => noopStorage);
   }
 
   try {
     const storage = window.localStorage;
     if (!storage) {
-      return noopStorage;
+      return createJSONStorage<S>(() => noopStorage);
     }
 
     const testKey = "__safe_json_storage_test__";
     storage.setItem(testKey, testKey);
     storage.removeItem(testKey);
 
-    return createJSONStorage(() => storage);
+    return createJSONStorage<S>(() => storage);
   } catch {
-    return noopStorage;
+    return createJSONStorage<S>(() => noopStorage);
   }
 };
