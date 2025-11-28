@@ -125,6 +125,8 @@ describe('History Store', () => {
     const taskStore = createMockTaskStore();
     const id = useHistoryStore.getState().save(taskStore);
 
+    const original = useHistoryStore.getState().history.find(h => h.id === id);
+
     const updatedTaskStore = createMockTaskStore({
       title: 'Updated Title',
       finalReport: '# Updated Report',
@@ -137,6 +139,8 @@ describe('History Store', () => {
     const history = useHistoryStore.getState().history;
     const updated = history.find(h => h.id === id);
 
+    expect(updated?.id).toBe(id);
+    expect(updated?.createdAt).toBe(original?.createdAt);
     expect(updated?.title).toBe('Updated Title');
     expect(updated?.finalReport).toBe('# Updated Report');
     expect(updated?.updatedAt).toBeTruthy();
