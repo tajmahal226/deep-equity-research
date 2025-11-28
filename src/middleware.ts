@@ -4,26 +4,24 @@ import { getCustomModelList, multiApiKeyPolling } from "@/utils/model";
 import { verifySignature } from "@/utils/signature";
 
 const NODE_ENV = process.env.NODE_ENV;
-const accessPassword = process.env.ACCESS_PASSWORD || "";
-// AI provider API key
-const GOOGLE_GENERATIVE_AI_API_KEY =
-  process.env.GOOGLE_GENERATIVE_AI_API_KEY || "";
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || "";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
-const XAI_API_KEY = process.env.XAI_API_KEY || "";
-const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY || "";
-// Search provider API key
-const TAVILY_API_KEY = process.env.TAVILY_API_KEY || "";
-const FIRECRAWL_API_KEY = process.env.FIRECRAWL_API_KEY || "";
-const EXA_API_KEY = process.env.EXA_API_KEY || "";
-const BOCHA_API_KEY = process.env.BOCHA_API_KEY || "";
-// Disabled Provider
-const DISABLED_AI_PROVIDER = process.env.NEXT_PUBLIC_DISABLED_AI_PROVIDER || "";
-const DISABLED_SEARCH_PROVIDER =
-  process.env.NEXT_PUBLIC_DISABLED_SEARCH_PROVIDER || "";
-const MODEL_LIST = process.env.NEXT_PUBLIC_MODEL_LIST || "";
+
+const getEnvConfig = () => ({
+  accessPassword: process.env.ACCESS_PASSWORD || "",
+  googleGenerativeAIKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || "",
+  openRouterApiKey: process.env.OPENROUTER_API_KEY || "",
+  openaiApiKey: process.env.OPENAI_API_KEY || "",
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY || "",
+  deepSeekApiKey: process.env.DEEPSEEK_API_KEY || "",
+  xaiApiKey: process.env.XAI_API_KEY || "",
+  mistralApiKey: process.env.MISTRAL_API_KEY || "",
+  tavilyApiKey: process.env.TAVILY_API_KEY || "",
+  firecrawlApiKey: process.env.FIRECRAWL_API_KEY || "",
+  exaApiKey: process.env.EXA_API_KEY || "",
+  bochaApiKey: process.env.BOCHA_API_KEY || "",
+  disabledAIProvider: process.env.NEXT_PUBLIC_DISABLED_AI_PROVIDER || "",
+  disabledSearchProvider: process.env.NEXT_PUBLIC_DISABLED_SEARCH_PROVIDER || "",
+  modelList: process.env.NEXT_PUBLIC_MODEL_LIST || "",
+});
 
 // Limit the middleware to paths starting with `/api/`
 export const config = {
@@ -45,6 +43,24 @@ const ERRORS = {
 
 export async function middleware(request: NextRequest) {
   if (NODE_ENV === "production") console.debug(request);
+
+  const {
+    accessPassword,
+    anthropicApiKey,
+    bochaApiKey,
+    deepSeekApiKey,
+    disabledAIProvider,
+    disabledSearchProvider,
+    exaApiKey,
+    firecrawlApiKey,
+    googleGenerativeAIKey,
+    mistralApiKey,
+    modelList,
+    openRouterApiKey,
+    openaiApiKey,
+    tavilyApiKey,
+    xaiApiKey,
+  } = getEnvConfig();
   
   // Read request body once to avoid multiple consumption issues
   let requestBody = null;
@@ -66,16 +82,16 @@ export async function middleware(request: NextRequest) {
   }
 
   const disabledAIProviders =
-    DISABLED_AI_PROVIDER.length > 0 ? DISABLED_AI_PROVIDER.split(",") : [];
+    disabledAIProvider.length > 0 ? disabledAIProvider.split(",") : [];
   const disabledSearchProviders =
-    DISABLED_SEARCH_PROVIDER.length > 0
-      ? DISABLED_SEARCH_PROVIDER.split(",")
+    disabledSearchProvider.length > 0
+      ? disabledSearchProvider.split(",")
       : [];
 
   const hasDisabledGeminiModel = () => {
     if (request.method.toUpperCase() === "GET") return false;
     const { availableModelList, disabledModelList } = getCustomModelList(
-      MODEL_LIST.length > 0 ? MODEL_LIST.split(",") : []
+      modelList.length > 0 ? modelList.split(",") : []
     );
     const isAvailableModel = availableModelList.some((availableModel) =>
       request.nextUrl.pathname.includes(`models/${availableModel}:`)
@@ -90,7 +106,7 @@ export async function middleware(request: NextRequest) {
     if (request.method.toUpperCase() === "GET") return false;
     const { model = "" } = body;
     const { availableModelList, disabledModelList } = getCustomModelList(
-      MODEL_LIST.length > 0 ? MODEL_LIST.split(",") : []
+      modelList.length > 0 ? modelList.split(",") : []
     );
     const isAvailableModel = availableModelList.some(
       (availableModel) => availableModel === model
@@ -113,7 +129,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(GOOGLE_GENERATIVE_AI_API_KEY);
+      const apiKey = multiApiKeyPolling(googleGenerativeAIKey);
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -157,7 +173,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(OPENROUTER_API_KEY);
+      const apiKey = multiApiKeyPolling(openRouterApiKey);
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -197,7 +213,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(OPENAI_API_KEY);
+      const apiKey = multiApiKeyPolling(openaiApiKey);
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -233,7 +249,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(ANTHROPIC_API_KEY);
+      const apiKey = multiApiKeyPolling(anthropicApiKey);
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -277,7 +293,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(DEEPSEEK_API_KEY);
+      const apiKey = multiApiKeyPolling(deepSeekApiKey);
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -317,7 +333,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(XAI_API_KEY);
+      const apiKey = multiApiKeyPolling(xaiApiKey);
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -357,7 +373,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(MISTRAL_API_KEY);
+      const apiKey = multiApiKeyPolling(mistralApiKey);
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -426,7 +442,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(TAVILY_API_KEY);
+      const apiKey = multiApiKeyPolling(tavilyApiKey);
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -465,7 +481,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(FIRECRAWL_API_KEY);
+      const apiKey = multiApiKeyPolling(firecrawlApiKey);
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -504,7 +520,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(EXA_API_KEY);
+      const apiKey = multiApiKeyPolling(exaApiKey);
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -543,7 +559,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(BOCHA_API_KEY);
+      const apiKey = multiApiKeyPolling(bochaApiKey);
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
