@@ -109,7 +109,7 @@ async function mergeXmlBlobs(blobs: Blob[]): Promise<Blob> {
 }
 
 type ZipEntryWithData = Entry & {
-  getData: NonNullable<Entry["getData"]>;
+  getData?: Entry["getData"];
 };
 
 function hasReadableData(entry: Entry): entry is ZipEntryWithData {
@@ -118,13 +118,18 @@ function hasReadableData(entry: Entry): entry is ZipEntryWithData {
 
 async function readEntryData(entry: ZipEntryWithData): Promise<Blob> {
   const writer = new BlobWriter();
-  const result = await entry.getData(writer);
+  const result = await entry.getData?.(writer);
+
   if (result instanceof Blob) {
     return result;
   }
 
   if (typeof writer.getData === "function") {
-    return writer.getData();
+    const writerResult = await writer.getData();
+
+    if (writerResult instanceof Blob) {
+      return writerResult;
+    }
   }
 
   throw new Error("Zip entry returned unsupported data type");
