@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, vi } from 'vitest';
 
 // Setup global test environment
 beforeEach(() => {
