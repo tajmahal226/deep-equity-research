@@ -117,7 +117,7 @@ describe("RequestManager", () => {
     vi.useFakeTimers();
 
     const abortedFn = vi.fn((signal: AbortSignal) => {
-      return new Promise<string>((_resolve, reject) => {
+      return new Promise<string>((resolve, reject) => {
         const timeoutId = setTimeout(() => reject(new Error("should have aborted")), 50);
         signal.addEventListener("abort", () => {
           clearTimeout(timeoutId);
