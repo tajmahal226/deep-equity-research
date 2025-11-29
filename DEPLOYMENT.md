@@ -51,11 +51,12 @@ Server-side API keys in environment variables are **optional** and only recommen
 - Validated by middleware for `/api/sse`, `/api/crawler`, `/api/mcp`
 - Does NOT protect AI/search proxies (they require user keys)
 
-Set in Vercel environment variables:
+Set in Vercel environment variables (server-side only):
 ```env
 ACCESS_PASSWORD=your_secure_password
-NEXT_PUBLIC_ACCESS_PASSWORD=your_secure_password  # Exposes to client
 ```
+Share the password with trusted users so they can enter it in the app settings.
+Do **not** expose it via `NEXT_PUBLIC_*` variables.
 
 ### Rate Limiting
 
@@ -102,9 +103,8 @@ vercel
 
 **Minimal Configuration:**
 ```env
-# Optional: Protect endpoints from abuse
+# Optional: Protect endpoints from abuse (users must input this in Settings)
 ACCESS_PASSWORD=your_secure_password
-NEXT_PUBLIC_ACCESS_PASSWORD=your_secure_password
 
 # Optional: Adjust rate limits
 RATE_LIMIT_AI_PROXY=100
@@ -203,7 +203,7 @@ After deployment, verify these endpoints:
 
 **"Unauthorized" (403)**
 - `ACCESS_PASSWORD` is set but not provided
-- Add `NEXT_PUBLIC_ACCESS_PASSWORD` to expose password to client
+- Ensure trusted users enter the password in Settings so requests include the header
 - Or remove `ACCESS_PASSWORD` to disable protection
 
 ### Environment Variables
@@ -270,7 +270,6 @@ After deployment, verify these endpoints:
 1. **Set ACCESS_PASSWORD:**
    ```env
    ACCESS_PASSWORD=strong_random_password
-   NEXT_PUBLIC_ACCESS_PASSWORD=strong_random_password
    ```
 
 2. **Configure Rate Limits:**
