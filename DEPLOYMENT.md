@@ -57,6 +57,7 @@ ACCESS_PASSWORD=your_secure_password
 ```
 Share the password with trusted users so they can enter it in the app settings.
 Do **not** expose it via `NEXT_PUBLIC_*` variables.
+The app's environment validation will emit a warning at startup if `NEXT_PUBLIC_ACCESS_PASSWORD` is present to help prevent accidental exposure.
 
 ### Rate Limiting
 
