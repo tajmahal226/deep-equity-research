@@ -66,7 +66,10 @@ export interface DeepResearchSearchResult {
   }[];
 }
 
-function addQuoteBeforeAllLine(text: string = "") {
+export function addQuoteBeforeAllLine(text: string = "") {
+  if (!text) {
+    return "";
+  }
   return text
     .split("\n")
     .map((line) => `> ${line}`)
