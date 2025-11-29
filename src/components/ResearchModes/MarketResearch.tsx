@@ -210,6 +210,13 @@ export default function MarketResearch() {
           const data = parsedData as Record<string, any>;
 
           switch (eventType) {
+            case "info":
+              if (data && typeof data === "object" && data.name) {
+                setProgressMessage(
+                  `Connected to ${data.name}${data.version ? ` (${data.version})` : ""}`,
+                );
+              }
+              break;
             case "progress": {
               // Map known steps to rough completion percentages
               const stepProgress: Record<string, number> = {
