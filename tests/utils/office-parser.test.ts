@@ -1,18 +1,27 @@
+import { Blob as NodeBlob, File as NodeFile } from "node-fetch";
 import { describe, expect, it, beforeEach, vi } from "vitest";
 
+const BlobPolyfill = typeof Blob === "undefined" ? NodeBlob : Blob;
+
+if (typeof Blob === "undefined") {
+  (globalThis as any).Blob = BlobPolyfill;
+}
+
 if (typeof File === "undefined") {
-  class TestFile extends Blob {
-    name: string;
-    lastModified: number;
+  const FilePolyfill =
+    NodeFile ??
+    class TestFile extends BlobPolyfill {
+      name: string;
+      lastModified: number;
 
-    constructor(parts: BlobPart[], name: string, options?: FilePropertyBag) {
-      super(parts, options);
-      this.name = name;
-      this.lastModified = options?.lastModified ?? Date.now();
-    }
-  }
+      constructor(parts: BlobPart[], name: string, options?: FilePropertyBag) {
+        super(parts, options);
+        this.name = name;
+        this.lastModified = options?.lastModified ?? Date.now();
+      }
+    };
 
-  (globalThis as any).File = TestFile;
+  (globalThis as any).File = FilePolyfill;
 }
 
 import { extractFiles } from "@/utils/parser/officeParser";
