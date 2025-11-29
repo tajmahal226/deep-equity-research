@@ -132,7 +132,9 @@ describe("RequestManager", () => {
       return new Promise<string>(resolve => {
         setTimeout(() => resolve("finished"), 50);
         signal.addEventListener("abort", () => {
-          resolve("aborted unexpectedly");
+          const abortError = new Error("Aborted");
+          abortError.name = "AbortError";
+          reject(abortError);
         });
       });
     });
