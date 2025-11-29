@@ -118,13 +118,13 @@ describe("RequestManager", () => {
 
     const abortedFn = vi.fn((signal: AbortSignal) => {
       return new Promise<string>((_resolve, reject) => {
+        const timeoutId = setTimeout(() => reject(new Error("should have aborted")), 50);
         signal.addEventListener("abort", () => {
+          clearTimeout(timeoutId);
           const abortError = new Error("Aborted");
           abortError.name = "AbortError";
           reject(abortError);
         });
-
-        setTimeout(() => reject(new Error("should have aborted")), 50);
       });
     });
 
