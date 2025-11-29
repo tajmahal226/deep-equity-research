@@ -40,7 +40,8 @@ export default async function Config(phase: string) {
       NEXT_PUBLIC_VERSION: pkg.version,
     },
     transpilePackages: ["pdfjs-dist", "mermaid"],
-    output: 'standalone', // Enable standalone output for Docker
+    // Only use standalone output for Docker builds, not for Vercel
+    ...(process.env.DOCKER_BUILD === 'true' && { output: 'standalone' }),
   };
 
   nextConfig.rewrites = async () => {
