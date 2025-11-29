@@ -43,7 +43,7 @@ class RequestManager {
   async deduplicateRequest<T>(
     endpoint: string,
     params: any,
-    requestFn: () => Promise<T>
+    requestFn: (signal: AbortSignal) => Promise<T>
   ): Promise<T> {
     const key = this.generateKey(endpoint, params);
 
@@ -56,7 +56,7 @@ class RequestManager {
 
     // Create new request
     const abortController = new AbortController();
-    const promise = requestFn();
+    const promise = requestFn(abortController.signal);
     
     this.pendingRequests.set(key, {
       promise,
