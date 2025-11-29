@@ -1,5 +1,20 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
 
+if (typeof File === "undefined") {
+  class TestFile extends Blob {
+    name: string;
+    lastModified: number;
+
+    constructor(parts: BlobPart[], name: string, options?: FilePropertyBag) {
+      super(parts, options);
+      this.name = name;
+      this.lastModified = options?.lastModified ?? Date.now();
+    }
+  }
+
+  (globalThis as any).File = TestFile;
+}
+
 import { extractFiles } from "@/utils/parser/officeParser";
 
 vi.mock("@zip.js/zip.js", () => {
