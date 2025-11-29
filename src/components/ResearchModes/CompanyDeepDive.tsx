@@ -214,13 +214,15 @@ export default function CompanyDeepDive() {
       setAbortController(controller); // Track for cleanup
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       
+      const accessPassword = settingStore.accessPassword?.trim();
+
       const response = await fetch("/api/company-research", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           // Add authorization header if ACCESS_PASSWORD is configured
-          ...(process.env.NEXT_PUBLIC_ACCESS_PASSWORD && {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_PASSWORD}`
+          ...(accessPassword && {
+            Authorization: `Bearer ${accessPassword}`
           })
         },
         body: JSON.stringify(requestBody),
