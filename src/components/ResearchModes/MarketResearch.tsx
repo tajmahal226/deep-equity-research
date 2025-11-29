@@ -141,12 +141,14 @@ export default function MarketResearch() {
         searchApiKey: searchApiKey,
       };
 
+      const accessPassword = settingStore.accessPassword?.trim();
+
       const response = await fetch("/api/sse", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(process.env.NEXT_PUBLIC_ACCESS_PASSWORD && {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_ACCESS_PASSWORD}`,
+          ...(accessPassword && {
+            Authorization: `Bearer ${accessPassword}`,
           }),
         },
         body: JSON.stringify(requestBody),

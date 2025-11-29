@@ -67,7 +67,6 @@ const ENV_CONFIG: EnvironmentConfig = {
     'NEXT_PUBLIC_DISABLED_AI_PROVIDER',
     'NEXT_PUBLIC_DISABLED_SEARCH_PROVIDER',
     'NEXT_PUBLIC_MODEL_LIST',
-    'NEXT_PUBLIC_ACCESS_PASSWORD',
   ],
 };
 
@@ -144,12 +143,14 @@ function validateSpecificConfig(
   // Access password validation
   const accessPassword = config.ACCESS_PASSWORD;
   const publicAccessPassword = config.NEXT_PUBLIC_ACCESS_PASSWORD;
-  
-  if (accessPassword && !publicAccessPassword) {
-    warnings.push('ACCESS_PASSWORD is set but NEXT_PUBLIC_ACCESS_PASSWORD is missing');
+
+  if (publicAccessPassword) {
+    warnings.push(
+      'NEXT_PUBLIC_ACCESS_PASSWORD is set; remove this client-exposed secret and keep ACCESS_PASSWORD server-side only. Users should enter the password in the app settings when required.',
+    );
   }
-  if (publicAccessPassword && !accessPassword) {
-    warnings.push('NEXT_PUBLIC_ACCESS_PASSWORD is set but ACCESS_PASSWORD is missing');
+  if (accessPassword && accessPassword.length < 8) {
+    warnings.push('ACCESS_PASSWORD should be at least 8 characters to protect private routes.');
   }
   
   // AI Provider validation - warn if no AI providers are configured

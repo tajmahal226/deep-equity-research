@@ -89,7 +89,6 @@ FINANCIAL_DATASETS_API_KEY=your_financial_datasets_key
 ### **🔒 Security (Optional)**
 ```bash
 ACCESS_PASSWORD=your_secure_password
-NEXT_PUBLIC_ACCESS_PASSWORD=your_secure_password
 ```
 
 ---
