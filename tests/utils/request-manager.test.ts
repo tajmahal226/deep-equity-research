@@ -6,7 +6,7 @@ describe("RequestManager", () => {
     requestManager.reset();
   });
 
-  it("passes the abort signal to deduplicated requests", async () => {
+  it("deduplicates identical requests and shares results", async () => {
     const requestFn = vi.fn((signal: AbortSignal) => {
       expect(signal.aborted).toBe(false);
       return new Promise<string>(resolve => {
