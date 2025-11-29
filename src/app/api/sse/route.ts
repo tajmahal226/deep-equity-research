@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
         );
       };
 
-      enqueueEvent("infor", {
+      enqueueEvent("info", {
         name: "deep-research",
         version: "0.1.0",
       });

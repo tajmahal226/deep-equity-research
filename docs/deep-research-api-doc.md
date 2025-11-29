@@ -18,7 +18,7 @@ data: JSON_String
 
 ```
 
-- `event`: Specifies the type of event being sent (e.g., `infor`, `message`, `reasoning`, `progress`, `error`).
+- `event`: Specifies the type of event being sent (e.g., `info`, `message`, `reasoning`, `progress`, `error`).
 - `data`: A string containing a JSON object relevant to the event type.
 - A double newline (`\n\n`) signifies the end of an event block.
 
@@ -128,7 +128,7 @@ data: [JSON_payload]
 
 The following event types are supported:
 
-- `infor`
+- `info`
 - `message`
 - `reasoning`
 - `progress`
@@ -136,7 +136,7 @@ The following event types are supported:
 
 ---
 
-### `infor` Event
+### `info` Event
 
 Sent at the beginning of the stream (or upon specific requests) to provide initial information about the API instance or the research session.
 
@@ -150,7 +150,7 @@ Sent at the beginning of the stream (or upon specific requests) to provide initi
 | `version` | string | Current API version |
 
 ```typescript
-interface InforEvent {
+interface InfoEvent {
   // Project name
   name: string;
   // Current API version
@@ -161,7 +161,7 @@ interface InforEvent {
 **Example:**
 
 ```text
-event: infor
+event: info
 data: {"name":"deep-research","version":"0.1.0"}
 
 ```
