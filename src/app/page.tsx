@@ -20,6 +20,12 @@ const PromptLibrary = dynamic(() => import("@/components/ResearchModes/PromptLib
 const History = dynamic(() => import("@/components/History"));
 const Knowledge = dynamic(() => import("@/components/Knowledge"));
 
+/**
+ * Main application page.
+ * Renders the research interface with tabs and side panels.
+ *
+ * @returns The main page component.
+ */
 function Home() {
   const { t } = useTranslation();
   const {

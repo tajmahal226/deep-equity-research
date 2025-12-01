@@ -65,6 +65,13 @@ export const viewport: Viewport = {
   themeColor: "#FFFFFF",
 };
 
+/**
+ * Root Layout component.
+ * Sets up global providers (Theme, I18n) and metadata.
+ *
+ * @param children - The child components.
+ * @returns The HTML structure.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

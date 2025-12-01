@@ -3,6 +3,9 @@ import { persist } from "zustand/middleware";
 import { nanoid } from "nanoid";
 import { createSafeJSONStorage } from "@/utils/storage";
 
+/**
+ * Company result interface.
+ */
 export interface CompanyResult {
   id: string;
   name: string;
@@ -32,6 +35,9 @@ export interface CompanyResult {
   priceChangePercent?: string;
 }
 
+/**
+ * Search criteria interface.
+ */
 export interface SearchCriteria {
   id: string;
   name: string;
@@ -118,6 +124,10 @@ const defaultFundingStages = [
   "Public"
 ];
 
+/**
+ * Company Discovery Store.
+ * Manages company lists, saved searches, and discovery state.
+ */
 export const useCompanyDiscoveryStore = create<CompanyDiscoveryState>()(
   persist(
     (set, get) => ({
@@ -224,4 +234,3 @@ export const useCompanyDiscoveryStore = create<CompanyDiscoveryState>()(
   )
 );
 export { defaultIndustries, defaultLocations, defaultFundingStages };
-

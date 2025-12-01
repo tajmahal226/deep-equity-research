@@ -1,5 +1,12 @@
 import { saveAs } from "file-saver";
 
+/**
+ * Triggers a file download in the browser.
+ *
+ * @param content - The content of the file.
+ * @param filename - The name of the file to download.
+ * @param fileType - The MIME type of the file.
+ */
 export function downloadFile(
   content: string,
   filename: string,
@@ -11,6 +18,14 @@ export function downloadFile(
   saveAs(file);
 }
 
+/**
+ * Formats a byte size into a human-readable string (e.g., "1.5 MB").
+ *
+ * @param size - The size in bytes.
+ * @param pointLength - Number of decimal places (default: 2).
+ * @param units - Optional array of unit strings.
+ * @returns The formatted string.
+ */
 export function formatSize(
   size: number,
   pointLength = 2,
@@ -32,6 +47,12 @@ export function formatSize(
   );
 }
 
+/**
+ * Calculates the byte size of a UTF-8 string.
+ *
+ * @param str - The input string.
+ * @returns The size in bytes.
+ */
 export function getTextByteSize(str: string): number {
   return new TextEncoder().encode(str).length;
 }

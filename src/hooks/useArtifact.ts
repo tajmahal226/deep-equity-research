@@ -24,6 +24,13 @@ function smoothTextStream(type: "character" | "word" | "line") {
   });
 }
 
+/**
+ * Hook for managing AI artifact generation/modification operations.
+ * Provides methods for writing, translating, adjusting level/length, and continuing text.
+ *
+ * @param props - Artifact properties (current value and onChange handler).
+ * @returns Object with loading state and action methods.
+ */
 function useArtifact({ value, onChange }: ArtifactProps) {
   const { smoothTextStreamType } = useSettingStore();
   const { createModelProvider, getModel } = useModelProvider();

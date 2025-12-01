@@ -41,6 +41,13 @@ const ERRORS = {
   },
 };
 
+/**
+ * Middleware for handling API request authentication and proxying.
+ * Verifies signatures, checks permissions, and injects API keys.
+ *
+ * @param request - The incoming Next.js request.
+ * @returns The Next.js response.
+ */
 export async function middleware(request: NextRequest) {
   if (NODE_ENV === "production") console.debug(request);
 

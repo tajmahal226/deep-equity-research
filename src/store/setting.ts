@@ -1,6 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+/**
+ * Settings store for application configuration.
+ * Stores API keys, model preferences, and UI settings.
+ */
 export interface SettingStore {
   provider: string;
   mode: string;
@@ -198,6 +202,9 @@ export const defaultValues: SettingStore = {
   cacheAutoCleanup: "enable",
 };
 
+/**
+ * Hook to access and manipulate the settings store.
+ */
 export const useSettingStore = create(
   persist<SettingStore & SettingFunction>(
     (set) => ({

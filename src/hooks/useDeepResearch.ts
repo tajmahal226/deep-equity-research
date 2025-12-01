@@ -44,6 +44,12 @@ function smoothTextStream(type: "character" | "word" | "line") {
   });
 }
 
+/**
+ * Hook for managing the deep research workflow.
+ * Handles planning, search execution, review, and report generation.
+ *
+ * @returns Object with research status and action methods.
+ */
 function useDeepResearch() {
   const { t } = useTranslation();
   const taskStore = useTaskStore();
@@ -52,6 +58,9 @@ function useDeepResearch() {
   const { search } = useWebSearch();
   const [status, setStatus] = useState<string>("");
 
+  /**
+   * Generates clarifying questions for the research topic.
+   */
   async function askQuestions() {
     const { question } = useTaskStore.getState();
     const { thinkingModel } = getModel();
@@ -89,6 +98,11 @@ function useDeepResearch() {
     if (reasoning) logger.log(reasoning);
   }
 
+  /**
+   * Generates a plan for the research report.
+   *
+   * @returns The generated plan content.
+   */
   async function writeReportPlan() {
     const { query } = useTaskStore.getState();
     const { thinkingModel } = getModel();
@@ -125,6 +139,13 @@ function useDeepResearch() {
     return content;
   }
 
+  /**
+   * Searches local knowledge base.
+   *
+   * @param query - Search query.
+   * @param researchGoal - Goal of the research.
+   * @returns Search results from local knowledge.
+   */
   async function searchLocalKnowledges(query: string, researchGoal: string) {
     const { resources } = useTaskStore.getState();
     const knowledgeStore = useKnowledgeStore.getState();
@@ -173,6 +194,11 @@ function useDeepResearch() {
     return content;
   }
 
+  /**
+   * Executes a list of search tasks.
+   *
+   * @param queries - List of search tasks to execute.
+   */
   async function runSearchTask(queries: SearchTask[]) {
     const {
       provider,
@@ -440,6 +466,9 @@ function useDeepResearch() {
     plimit.clearQueue();
   }
 
+  /**
+   * Reviews search results and generates further queries if needed.
+   */
   async function reviewSearchResult() {
     const { reportPlan, tasks, suggestion } = useTaskStore.getState();
     const { thinkingModel } = getModel();
@@ -496,6 +525,11 @@ function useDeepResearch() {
     }
   }
 
+  /**
+   * Writes the final research report.
+   *
+   * @returns The final report content.
+   */
   async function writeFinalReport() {
     const { citationImage, references } = useSettingStore.getState();
     const {
@@ -593,6 +627,10 @@ function useDeepResearch() {
     }
   }
 
+  /**
+   * Main function to start deep research.
+   * Generates plan, creates queries, and runs tasks.
+   */
   async function deepResearch() {
     const { reportPlan } = useTaskStore.getState();
     const { thinkingModel } = getModel();

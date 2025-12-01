@@ -1,5 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 
+/**
+ * Hook for an accurate timer using requestAnimationFrame.
+ *
+ * @returns Object with time, formattedTime, isRunning, start, and stop.
+ */
 function useAccurateTimer() {
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);

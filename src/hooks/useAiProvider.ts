@@ -12,7 +12,19 @@ import { multiApiKeyPolling } from "@/utils/model";
 import { generateSignature } from "@/utils/signature";
 import { completePath } from "@/utils/url";
 
+/**
+ * Hook to manage AI provider settings and instances.
+ *
+ * @returns Object containing methods to create providers and access settings.
+ */
 function useModelProvider() {
+  /**
+   * Creates an AI provider instance based on current settings.
+   *
+   * @param model - The model identifier to use.
+   * @param settings - Optional additional settings.
+   * @returns A configured AI provider instance.
+   */
   async function createModelProvider(model: string, settings?: any) {
     const { mode, provider, accessPassword } = useSettingStore.getState();
     const options: AIProviderOptions = {
@@ -75,6 +87,11 @@ function useModelProvider() {
     return await createAIProvider(options);
   }
 
+  /**
+   * Retrieves the current thinking and networking models based on the active provider.
+   *
+   * @returns An object with thinkingModel and networkingModel.
+   */
   function getModel() {
     const { provider } = useSettingStore.getState();
 
@@ -101,6 +118,11 @@ function useModelProvider() {
     }
   }
 
+  /**
+   * Checks if the API key for the current provider is set.
+   *
+   * @returns True if the API key is present, false otherwise.
+   */
   function hasApiKey(): boolean {
     const { provider } = useSettingStore.getState();
 

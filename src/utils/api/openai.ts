@@ -6,13 +6,28 @@ import { withTimeout, retryWithBackoff } from "../timeout-config";
 import { AppError, handleError } from "../error";
 import { streamText } from "ai";
 
+/**
+ * OpenAI Provider implementation.
+ */
 export class OpenAIProvider implements Provider {
   private openai: any;
 
+  /**
+   * Initializes the OpenAI provider.
+   *
+   * @param apiKey - The OpenAI API key.
+   */
   constructor(apiKey: string) {
     this.openai = createOpenAI({ apiKey });
   }
 
+  /**
+   * Generates a report using OpenAI.
+   *
+   * @param prompt - The input prompt.
+   * @param options - Generation options.
+   * @returns The generated report.
+   */
   async generateReport(prompt: string, options: any): Promise<string> {
     try {
       const response: any = await retryWithBackoff(() =>
@@ -28,6 +43,13 @@ export class OpenAIProvider implements Provider {
     }
   }
 
+  /**
+   * Streams a report generation using OpenAI.
+   *
+   * @param prompt - The input prompt.
+   * @param options - Generation options.
+   * @returns A readable stream of the generated report.
+   */
   async streamReport(prompt: string, options: any): Promise<ReadableStream> {
     try {
       const result = await streamText({
@@ -42,6 +64,11 @@ export class OpenAIProvider implements Provider {
     }
   }
 
+  /**
+   * Retrieves available models from OpenAI.
+   *
+   * @returns List of model IDs.
+   */
   async getModels(): Promise<string[]> {
     try {
       const response: any = await retryWithBackoff(() =>

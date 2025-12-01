@@ -6,15 +6,30 @@ import { withTimeout, retryWithBackoff } from "../timeout-config";
 import { AppError, handleError } from "../error";
 import { streamText } from "ai";
 
+/**
+ * Ollama Provider implementation.
+ */
 export class OllamaProvider implements Provider {
   private ollama: any;
 
+  /**
+   * Initializes the Ollama provider.
+   *
+   * @param _apiKey - Unused, as Ollama is local.
+   */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(_apiKey: string) {
     // Ollama doesn't require an API key, but we accept it for consistency
     this.ollama = createOllama();
   }
 
+  /**
+   * Generates a report using Ollama.
+   *
+   * @param prompt - The input prompt.
+   * @param options - Generation options.
+   * @returns The generated report.
+   */
   async generateReport(prompt: string, options: any): Promise<string> {
     try {
       const response: any = await retryWithBackoff(() =>
@@ -30,6 +45,13 @@ export class OllamaProvider implements Provider {
     }
   }
 
+  /**
+   * Streams a report generation using Ollama.
+   *
+   * @param prompt - The input prompt.
+   * @param options - Generation options.
+   * @returns A readable stream of the generated report.
+   */
   async streamReport(prompt: string, options: any): Promise<ReadableStream> {
     try {
       const result = await streamText({
@@ -44,6 +66,11 @@ export class OllamaProvider implements Provider {
     }
   }
 
+  /**
+   * Retrieves available models from Ollama.
+   *
+   * @returns List of model IDs.
+   */
   async getModels(): Promise<string[]> {
     try {
       // The Ollama SDK does not have a models() method.

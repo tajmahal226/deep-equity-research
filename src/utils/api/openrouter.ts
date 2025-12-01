@@ -6,13 +6,28 @@ import { withTimeout, retryWithBackoff } from "../timeout-config";
 import { AppError, handleError } from "../error";
 import { streamText } from "ai";
 
+/**
+ * OpenRouter Provider implementation.
+ */
 export class OpenRouterProvider implements Provider {
   private openrouter: any;
 
+  /**
+   * Initializes the OpenRouter provider.
+   *
+   * @param apiKey - The OpenRouter API key.
+   */
   constructor(apiKey: string) {
     this.openrouter = createOpenRouter({ apiKey });
   }
 
+  /**
+   * Generates a report using OpenRouter.
+   *
+   * @param prompt - The input prompt.
+   * @param options - Generation options.
+   * @returns The generated report.
+   */
   async generateReport(prompt: string, options: any): Promise<string> {
     try {
       const response: any = await retryWithBackoff(() =>
@@ -28,6 +43,13 @@ export class OpenRouterProvider implements Provider {
     }
   }
 
+  /**
+   * Streams a report generation using OpenRouter.
+   *
+   * @param prompt - The input prompt.
+   * @param options - Generation options.
+   * @returns A readable stream of the generated report.
+   */
   async streamReport(prompt: string, options: any): Promise<ReadableStream> {
     try {
       const result = await streamText({
@@ -42,6 +64,11 @@ export class OpenRouterProvider implements Provider {
     }
   }
 
+  /**
+   * Retrieves available models from OpenRouter.
+   *
+   * @returns List of model IDs.
+   */
   async getModels(): Promise<string[]> {
     try {
       // The OpenRouter SDK does not have a models() method.

@@ -19,6 +19,13 @@ interface FilterableCompany {
   tags?: string[];
 }
 
+/**
+ * Filter a list of companies based on various criteria.
+ *
+ * @param companies - The list of companies to filter.
+ * @param options - Filtering options (industries, locations, etc.).
+ * @returns The filtered list of companies.
+ */
 export function filterCompanies<T extends FilterableCompany>(
   companies: T[],
   {

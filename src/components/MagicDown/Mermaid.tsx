@@ -15,6 +15,7 @@ import { Button } from "@/components/Internal/Button";
 import { downloadFile } from "@/utils/file";
 
 type Props = {
+  /** The mermaid diagram code. */
   children: ReactNode;
 };
 
@@ -31,6 +32,13 @@ async function loadMermaid(element: HTMLElement, code: string) {
   }
 }
 
+/**
+ * Mermaid component.
+ * Renders Mermaid diagrams with pan/zoom capabilities and download/copy options.
+ *
+ * @param props - The component props.
+ * @returns The mermaid diagram component.
+ */
 function Mermaid({ children }: Props) {
   const { t } = useTranslation();
   const mermaidContainerRef = useRef<HTMLDivElement>(null);

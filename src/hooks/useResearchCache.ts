@@ -21,6 +21,9 @@ import {
   getCacheStatusColor,
 } from "@/utils/cache-utils";
 
+/**
+ * Research Cache Hook Result interface.
+ */
 export interface ResearchCacheHookResult {
   // Cache operations
   getCachedResearch: (params: CacheKeyParams) => CachedResearchResult | null;
@@ -46,6 +49,9 @@ export interface ResearchCacheHookResult {
   cleanupCache: () => number;
 }
 
+/**
+ * Cache Key Params interface.
+ */
 export interface CacheKeyParams {
   type: CacheType;
   companyName?: string;
@@ -106,7 +112,10 @@ export interface CacheConfig {
 }
 
 /**
- * Hook for managing research cache
+ * Hook for managing research cache.
+ * Provides methods to get, set, invalidate cache and get metadata.
+ *
+ * @returns Research cache utilities and state.
  */
 export function useResearchCache(): ResearchCacheHookResult {
   const updateConfig = useCacheStore((state) => state.updateConfig);

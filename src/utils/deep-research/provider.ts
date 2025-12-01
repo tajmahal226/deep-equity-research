@@ -11,6 +11,12 @@ export interface AIProviderOptions {
   enableTools?: boolean;
 }
 
+/**
+ * Creates an AI provider instance compatible with the AI SDK.
+ *
+ * @param options - Configuration options for the provider.
+ * @returns A LanguageModel instance.
+ */
 export async function createAIProvider({
   provider,
   apiKey,

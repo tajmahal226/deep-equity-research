@@ -3,6 +3,9 @@ import { persist } from "zustand/middleware";
 import { nanoid } from "nanoid";
 import { createSafeJSONStorage } from "@/utils/storage";
 
+/**
+ * Document metadata interface.
+ */
 export interface Document {
   id: string;
   name: string;
@@ -53,6 +56,10 @@ const defaultCategories = [
   "Reference Materials"
 ];
 
+/**
+ * Documents Store.
+ * Manages uploaded documents and their categories.
+ */
 export const useDocumentsStore = create<DocumentsState>()(
   persist(
     (set, get) => ({

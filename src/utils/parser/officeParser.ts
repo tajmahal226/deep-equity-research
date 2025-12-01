@@ -109,11 +109,11 @@ async function mergeXmlBlobs(blobs: Blob[]): Promise<Blob> {
 }
 
 type ZipEntryWithData = Entry & {
-  getData?: Entry["getData"];
+  getData?: (writer: any, options?: any) => Promise<any>;
 };
 
 function hasReadableData(entry: Entry): entry is ZipEntryWithData {
-  return typeof entry.getData === "function";
+  return typeof (entry as any).getData === "function";
 }
 
 async function readEntryData(entry: ZipEntryWithData): Promise<Blob> {
@@ -135,6 +135,13 @@ async function readEntryData(entry: ZipEntryWithData): Promise<Blob> {
   throw new Error("Zip entry returned unsupported data type");
 }
 
+/**
+ * Extract files from a zip archive based on a filter function.
+ *
+ * @param zipInput - The zip file.
+ * @param filterFn - Function to filter filenames.
+ * @returns Array of extracted files.
+ */
 export async function extractFiles(
   zipInput: File,
   filterFn: (filename: string) => boolean
@@ -164,6 +171,13 @@ export async function extractFiles(
   }
 }
 
+/**
+ * Parse a Word (.docx) file.
+ *
+ * @param file - The Word file.
+ * @param config - Parsing configuration.
+ * @returns Parsed text or File object.
+ */
 export function parseWord(
   file: File,
   config: Partial<OfficeParserConfig>
@@ -251,6 +265,13 @@ export function parseWord(
   });
 }
 
+/**
+ * Parse a PowerPoint (.pptx) file.
+ *
+ * @param file - The PowerPoint file.
+ * @param config - Parsing configuration.
+ * @returns Parsed text or File object.
+ */
 export function parsePowerPoint(
   file: File,
   config: Partial<OfficeParserConfig>
@@ -366,6 +387,13 @@ export function parsePowerPoint(
   });
 }
 
+/**
+ * Parse an Excel (.xlsx) file.
+ *
+ * @param file - The Excel file.
+ * @param config - Parsing configuration.
+ * @returns Parsed text or File object.
+ */
 export function parseExcel(
   file: File,
   config: Partial<OfficeParserConfig>
@@ -593,6 +621,13 @@ export function parseExcel(
   });
 }
 
+/**
+ * Parse an OpenOffice (.odt, .odp, .ods) file.
+ *
+ * @param file - The OpenOffice file.
+ * @param config - Parsing configuration.
+ * @returns Parsed text or File object.
+ */
 export function parseOpenOffice(
   file: File,
   config: Partial<OfficeParserConfig>
@@ -755,6 +790,14 @@ export function parseOpenOffice(
   });
 }
 
+/**
+ * Main function to read text from various Office file formats.
+ * Dispatches to specific parsers based on file type.
+ *
+ * @param file - The Office file.
+ * @param config - Parsing configuration.
+ * @returns Parsed content.
+ */
 export function readTextFromOffice(
   file: File,
   config?: Partial<OfficeParserConfig>

@@ -79,7 +79,10 @@ interface ValidationResult {
 }
 
 /**
- * Validate environment configuration
+ * Validate environment configuration.
+ * Checks for missing required variables and warns about optional ones.
+ *
+ * @returns Object containing validation status, errors, and warnings.
  */
 export function validateEnvironment(): ValidationResult {
   const errors: string[] = [];
@@ -190,7 +193,13 @@ function validateSpecificConfig(
 }
 
 /**
- * Get environment variable with validation
+ * Get environment variable with validation.
+ *
+ * @param key - The environment variable key.
+ * @param defaultValue - Optional default value.
+ * @param required - Whether the variable is required.
+ * @returns The environment variable value.
+ * @throws Error if required variable is missing.
  */
 export function getEnvVar(
   key: string,
@@ -207,7 +216,9 @@ export function getEnvVar(
 }
 
 /**
- * Get all provider configurations
+ * Get all provider configurations.
+ *
+ * @returns Object containing API keys and base URLs for configured providers.
  */
 export function getProviderConfigs() {
   return {
@@ -237,7 +248,8 @@ export function getProviderConfigs() {
 }
 
 /**
- * Validate environment in development mode
+ * Validate environment in development mode.
+ * Logs errors and warnings to the console.
  */
 export function validateDevelopmentEnvironment(): void {
   if (process.env.NODE_ENV === 'development') {

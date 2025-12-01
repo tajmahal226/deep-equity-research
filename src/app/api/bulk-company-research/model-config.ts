@@ -45,6 +45,13 @@ export interface BulkCompanyRequest {
   searchApiKey?: string;
 }
 
+/**
+ * Resolves model configurations for bulk research requests.
+ * Applies defaults if models are not specified.
+ *
+ * @param body - The bulk company request body.
+ * @returns Object containing thinking and task model configurations.
+ */
 export function resolveModelConfigs(body: BulkCompanyRequest): {
   thinkingModelConfig: ModelConfig;
   taskModelConfig: ModelConfig;

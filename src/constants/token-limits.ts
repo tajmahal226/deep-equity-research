@@ -1,3 +1,7 @@
+/**
+ * Token limits for OpenAI models.
+ * Maps model identifiers to their maximum context window size in tokens.
+ */
 export const OPENAI_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "gpt-4o": 128000,
   "gpt-4o-mini": 128000,
@@ -9,6 +13,10 @@ export const OPENAI_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "o3-pro": 128000,
 };
 
+/**
+ * Token limits for Anthropic models.
+ * Maps model identifiers to their maximum context window size in tokens.
+ */
 export const ANTHROPIC_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "claude-3-opus-20240229": 200000,
   "claude-3-sonnet-20240229": 200000,
@@ -17,14 +25,20 @@ export const ANTHROPIC_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "claude-3-5-haiku-20241022": 200000,
 };
 
+/**
+ * Token limits for DeepSeek models.
+ * Maps model identifiers to their maximum context window size in tokens.
+ */
 export const DEEPSEEK_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "deepseek-chat": 64000,
   "deepseek-reasoner": 64000,
 };
 
-// Gemini models expose very large context windows. Google advertises up to 2M
-// tokens for Gemini 1.5 Pro and 1M tokens for the Flash family. We round down
-// slightly to keep a comfortable margin for system prompts and tool outputs.
+/**
+ * Token limits for Google Gemini models.
+ * Gemini models expose very large context windows (up to 2M tokens).
+ * We round down slightly to keep a comfortable margin.
+ */
 export const GOOGLE_GEMINI_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "gemini-1.5-pro": 2000000,
   "gemini-1.5-flash": 1000000,
@@ -34,8 +48,10 @@ export const GOOGLE_GEMINI_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "gemini-2.0-flash-lite": 1000000,
 };
 
-// Mistral lists 32K context windows for their text models unless otherwise
-// stated. Codestral exposes the same limit for code-specific reasoning.
+/**
+ * Token limits for Mistral models.
+ * Mistral lists 32K context windows for their text models unless otherwise stated.
+ */
 export const MISTRAL_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "mistral-large": 32000,
   "mistral-small": 32000,
@@ -44,8 +60,10 @@ export const MISTRAL_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "codestral": 32000,
 };
 
-// Cohere command models top out at 128K except for command-light, which is
-// capped at a smaller 16K window.
+/**
+ * Token limits for Cohere models.
+ * Cohere command models top out at 128K except for command-light (16K).
+ */
 export const COHERE_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "command-r-plus": 128000,
   "command-r+": 128000,
@@ -54,8 +72,10 @@ export const COHERE_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "command": 128000,
 };
 
-// Groq serves multiple hosted open-source models. The limits below mirror the
-// context windows published by Groq for each backbone.
+/**
+ * Token limits for Groq models.
+ * Mirrors the context windows published by Groq for each backbone.
+ */
 export const GROQ_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "llama3-70b": 8192,
   "llama3-8b": 8192,
@@ -65,8 +85,10 @@ export const GROQ_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "gemma-7b": 8192,
 };
 
-// OpenRouter proxies inherit the upstream model limits. These prefixes match
-// the most common routes so we can reuse the authoritative numbers above.
+/**
+ * Token limits for OpenRouter models.
+ * Proxies inherit the upstream model limits.
+ */
 export const OPENROUTER_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "openrouter/anthropic/claude-3": 200000,
   "openrouter/anthropic/claude-3.5": 200000,
@@ -80,15 +102,20 @@ export const OPENROUTER_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "openrouter/perplexity/llama-3.1-sonar": 128000,
 };
 
-// Perplexity advertises 128K context windows for their Sonar chat/completion
-// models. Legacy instruct variants use the same window, so we reuse the
-// Sonar numbers as the default for that provider.
+/**
+ * Token limits for Perplexity models.
+ * Advertises 128K context windows for Sonar chat/completion models.
+ */
 export const PERPLEXITY_MODEL_TOKEN_LIMITS: Record<string, number> = {
   // The llm names already encode the 128k window (e.g. `llama-3.1-sonar-large-128k-online`).
   // Matching on the shared sonar prefix keeps the mapping resilient to new size variants.
   "llama-3.1-sonar": 128000,
 };
 
+/**
+ * Token limits for xAI models.
+ * Grok models generally support large context windows (~128k tokens).
+ */
 export const XAI_MODEL_TOKEN_LIMITS: Record<string, number> = {
   // Grok models generally support large context windows (~128k tokens)
   // Include common prefixes so matchModel() can handle versioned variants
@@ -101,13 +128,20 @@ export const XAI_MODEL_TOKEN_LIMITS: Record<string, number> = {
   "grok-3-mini": 128000,
 };
 
-// Fallback limit used when we don't have an explicit token limit for a
-// provider/model pair.  This prevents unbounded requests that can exhaust
-// tokens or cause timeouts when the model's true limit is unknown.
+/**
+ * Fallback limit used when we don't have an explicit token limit for a provider/model pair.
+ * Prevents unbounded requests that can exhaust tokens.
+ */
 export const DEFAULT_MODEL_TOKEN_LIMIT = 4000;
 
-// Maps should store lowercase keys. We lowercase incoming model ids before matching
-// so callers can pass canonical or display-case identifiers interchangeably.
+/**
+ * Helper function to match a model ID against a map of known limits.
+ * Maps should store lowercase keys. Checks for exact match or prefix match.
+ *
+ * @param map - The map of model prefixes to token limits.
+ * @param model - The model identifier to check.
+ * @returns The token limit if found, otherwise undefined.
+ */
 function matchModel(map: Record<string, number>, model: string): number | undefined {
   const normalizedModel = model.toLowerCase();
   if (map[normalizedModel] !== undefined) return map[normalizedModel];
@@ -115,6 +149,13 @@ function matchModel(map: Record<string, number>, model: string): number | undefi
   return entry ? entry[1] : undefined;
 }
 
+/**
+ * Retrieves the maximum context token limit for a given provider and model.
+ *
+ * @param provider - The AI provider name (e.g., 'openai', 'anthropic').
+ * @param model - The model identifier (e.g., 'gpt-4').
+ * @returns The maximum number of tokens allowed for the specified model.
+ */
 export function getMaxTokens(provider: string, model: string): number {
   const key = provider.toLowerCase();
   let limit: number | undefined;

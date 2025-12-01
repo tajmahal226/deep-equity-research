@@ -17,12 +17,23 @@ const Code = dynamic(() => import("./Code"));
 const Mermaid = dynamic(() => import("./Mermaid"));
 
 export type MarkdownProps = {
+  /** Optional ID for the container. */
   id?: string;
+  /** Optional class name for the container. */
   className?: string;
+  /** The markdown content string. */
   children: string;
+  /** Optional custom components map for ReactMarkdown. */
   components?: Partial<Components>;
 };
 
+/**
+ * MarkdownBlock component.
+ * Renders markdown content with support for GFM, math, code highlighting, and custom components.
+ *
+ * @param props - The component props (react-markdown options).
+ * @returns The rendered markdown component.
+ */
 function MarkdownBlock({ children: content, ...rest }: Options) {
   const remarkPlugins = useMemo(
     () => rest.remarkPlugins ?? [],

@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+
+/**
+ * GET handler for simple health check.
+ *
+ * @returns Health status JSON.
+ */
 export async function GET() {
   try {
-    // Basic health check - verify the application is responding
+    // Simple response to verify the application is responding
     return NextResponse.json(
       {
         status: 'healthy',
