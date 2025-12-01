@@ -32,7 +32,6 @@ const MagicDown = dynamic(() => import("@/components/MagicDown"));
 
 export default function MarketResearch() {
   const { t } = useTranslation();
-  const settingStore = useSettingStore();
   const [marketTopic, setMarketTopic] = useState("");
   const [researchType, setResearchType] = useState("industry");
   const [timeframe, setTimeframe] = useState("current");

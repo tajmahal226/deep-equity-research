@@ -152,7 +152,6 @@ function useModelProvider() {
         return false;
     }
   }
-  }
 
   return {
     createModelProvider,
