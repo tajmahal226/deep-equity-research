@@ -22,6 +22,12 @@ export const preferredRegion = [
   "kix1",
 ];
 
+/**
+ * POST handler for general deep research via SSE.
+ *
+ * @param req - The NextRequest object.
+ * @returns An SSE response stream.
+ */
 export async function POST(req: NextRequest) {
   // Check for ACCESS_PASSWORD if configured
   const accessPassword = process.env.ACCESS_PASSWORD;

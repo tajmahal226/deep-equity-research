@@ -387,6 +387,12 @@ export class McpServer {
   private _registeredTools: { [name: string]: RegisteredTool } = {};
   private _registeredPrompts: { [name: string]: RegisteredPrompt } = {};
 
+  /**
+   * Initializes the McpServer.
+   *
+   * @param serverInfo - Information about the server implementation.
+   * @param options - Server options.
+   */
   constructor(serverInfo: Implementation, options?: ServerOptions) {
     this.server = new Server(serverInfo, options);
   }

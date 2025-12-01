@@ -57,6 +57,12 @@ const AI_PROVIDER_ENV_VARS: Record<string, string[]> = {
   openrouter: ["OPENROUTER_API_KEY"],
 };
 
+/**
+ * Retrieves environment variable names for a given provider.
+ *
+ * @param provider - The provider ID.
+ * @returns Array of environment variable names.
+ */
 export function getAIProviderEnvVarNames(provider: string): string[] {
   return AI_PROVIDER_ENV_VARS[provider] ?? [];
 }
@@ -65,6 +71,12 @@ export function getAIProviderEnvVarNames(provider: string): string[] {
 // respective lookup functions. This avoids stale values when tests or runtime
 // code modify `process.env` after module initialization.
 
+/**
+ * Gets the base URL for an AI provider.
+ *
+ * @param provider - The provider ID.
+ * @returns The base URL string.
+ */
 export function getAIProviderBaseURL(provider: string) {
   switch (provider) {
     case "google":
@@ -108,6 +120,9 @@ export function getAIProviderBaseURL(provider: string) {
  * 
  * If you're deploying this app for multiple users, DO NOT set these environment
  * variables - let users provide their own keys to avoid cost and security risks.
+ *
+ * @param provider - The provider ID.
+ * @returns The API key string.
  */
 export function getAIProviderApiKey(provider: string) {
   const providersWithoutKeys = ["ollama"];
@@ -134,6 +149,9 @@ export function getAIProviderApiKey(provider: string) {
  * 
  * DEPRECATED: This function is kept for backward compatibility with MCP server.
  * New code should NOT use server-side keys as fallbacks.
+ *
+ * @param provider - The provider ID.
+ * @returns API key string.
  */
 export function getAIProviderApiKeyWithFallback(provider: string): string {
   const apiKey = getAIProviderApiKey(provider);
@@ -155,6 +173,12 @@ export function getAIProviderApiKeyWithFallback(provider: string): string {
   return apiKey;
 }
 
+/**
+ * Gets the base URL for a search provider.
+ *
+ * @param provider - The search provider ID.
+ * @returns The base URL string.
+ */
 export function getSearchProviderBaseURL(provider: string) {
   switch (provider) {
     case "tavily":
@@ -180,6 +204,9 @@ export function getSearchProviderBaseURL(provider: string) {
  * NOTE: Server-side search API keys are OPTIONAL. Users should provide their
  * own search provider keys via the Settings UI. Server-side keys are only for
  * MCP server or specific deployment scenarios.
+ *
+ * @param provider - The search provider ID.
+ * @returns The API key string.
  */
 export function getSearchProviderApiKey(provider: string) {
   const envVarMap: Record<string, string | undefined> = {

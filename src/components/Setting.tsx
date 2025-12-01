@@ -194,6 +194,13 @@ function HelpTip({ children, tip }: { children: ReactNode; tip: string }) {
   );
 }
 
+/**
+ * Settings component.
+ * Application configuration modal (API keys, models, etc.).
+ *
+ * @param props - Component props.
+ * @returns Settings modal UI.
+ */
 function Setting({ open, onClose }: SettingProps) {
   const { t } = useTranslation();
   const { mode, provider, searchProvider, financialProvider, update } = useSettingStore();

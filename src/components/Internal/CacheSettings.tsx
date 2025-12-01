@@ -1,7 +1,7 @@
 /**
  * Cache Settings Component
  *
- * Displays cache analytics and configuration options
+ * Displays cache analytics and configuration options.
  */
 
 "use client";
@@ -25,6 +25,12 @@ import {
 import { useResearchCache } from "@/hooks/useResearchCache";
 import { useSettingStore } from "@/store/setting";
 
+/**
+ * CacheSettings component.
+ * Provides a UI for managing research cache settings and viewing statistics.
+ *
+ * @returns The cache settings component.
+ */
 export default function CacheSettings() {
   const settingStore = useSettingStore();
   const {
@@ -36,12 +42,19 @@ export default function CacheSettings() {
 
   const [cleanupCount, setCleanupCount] = useState<number | null>(null);
 
+  /**
+   * Handles the cache cleanup action.
+   */
   const handleCleanup = () => {
     const removed = cleanupCache();
     setCleanupCount(removed);
     setTimeout(() => setCleanupCount(null), 3000);
   };
 
+  /**
+   * Toggles the cache enabled state.
+   * @param enabled - Whether the cache should be enabled.
+   */
   const handleToggleCache = (enabled: boolean) => {
     settingStore.update({ cacheEnabled: enabled ? "enable" : "disable" });
   };

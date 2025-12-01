@@ -14,14 +14,18 @@ import { researchCacheStorage } from "@/utils/storage";
 import { pick } from "radash";
 import { createHash } from "@/utils/cache-utils";
 
-// Cache entry types
+/**
+ * Cache entry types.
+ */
 export type CacheType =
   | "company-research"
   | "market-research"
   | "bulk-company-research"
   | "free-form-research";
 
-// Individual cache entry
+/**
+ * Individual cache entry.
+ */
 export interface CacheEntry {
   id: string;
   type: CacheType;
@@ -55,7 +59,9 @@ export interface CacheEntry {
   lastAccessedAt: number;
 }
 
-// Cache statistics
+/**
+ * Cache statistics.
+ */
 export interface CacheStats {
   totalHits: number;
   totalMisses: number;
@@ -65,7 +71,9 @@ export interface CacheStats {
   lastUpdated: number;
 }
 
-// Cache configuration
+/**
+ * Cache configuration.
+ */
 export interface CacheConfig {
   enabled: boolean;
 
@@ -84,14 +92,18 @@ export interface CacheConfig {
   autoCleanup: boolean; // Default: true
 }
 
-// Store state
+/**
+ * Store state.
+ */
 export interface CacheStore {
   entries: CacheEntry[];
   stats: CacheStats;
   config: CacheConfig;
 }
 
-// Store functions
+/**
+ * Store functions.
+ */
 export interface CacheFunction {
   // Cache operations
   get: (key: string) => CacheEntry | null;
@@ -146,6 +158,9 @@ const defaultStats: CacheStats = {
   lastUpdated: Date.now(),
 };
 
+/**
+ * Hook to access and manipulate the cache store.
+ */
 export const useCacheStore = create(
   persist<CacheStore & CacheFunction>(
     (set, get) => ({

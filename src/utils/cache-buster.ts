@@ -9,7 +9,9 @@ const SETTINGS_VERSION_KEY = 'settings_version';
 const CURRENT_VERSION = '2.0.0'; // Increment this when making breaking changes
 
 /**
- * Check if cache needs to be cleared
+ * Check if cache needs to be cleared based on version mismatch.
+ *
+ * @returns True if cache should be cleared, false otherwise.
  */
 export function checkCacheVersion(): boolean {
   if (typeof window === 'undefined') return false;
@@ -25,7 +27,8 @@ export function checkCacheVersion(): boolean {
 }
 
 /**
- * Clear all cached data and update version
+ * Clear all cached data and update version.
+ * Preserves critical API keys.
  */
 export function clearCache(): void {
   if (typeof window === 'undefined') return;
@@ -78,7 +81,8 @@ export function clearCache(): void {
 }
 
 /**
- * Initialize cache buster on app start
+ * Initialize cache buster on app start.
+ * Checks version and clears cache if needed.
  */
 export function initCacheBuster(): void {
   if (checkCacheVersion()) {
@@ -96,7 +100,9 @@ export function initCacheBuster(): void {
 }
 
 /**
- * Force refresh of specific settings
+ * Force refresh of specific settings by updating their internal timestamp.
+ *
+ * @param keys - List of keys to refresh (optional).
  */
 export function refreshSettings(keys?: string[]): void {
   if (typeof window === 'undefined') return;
@@ -131,7 +137,10 @@ export function refreshSettings(keys?: string[]): void {
 }
 
 /**
- * Add cache buster to API requests
+ * Add cache buster query param to a URL.
+ *
+ * @param url - The original URL.
+ * @returns The URL with a timestamp parameter.
  */
 export function addCacheBuster(url: string): string {
   const separator = url.includes('?') ? '&' : '?';
@@ -139,14 +148,18 @@ export function addCacheBuster(url: string): string {
 }
 
 /**
- * Create versioned storage key
+ * Create a version-suffixed storage key.
+ *
+ * @param key - The original key.
+ * @returns The versioned key.
  */
 export function versionedKey(key: string): string {
   return `${key}_v${CURRENT_VERSION}`;
 }
 
 /**
- * Migrate old settings to new format
+ * Migrate old settings to new format.
+ * Updates model names to current supported versions.
  */
 export function migrateSettings(): void {
   if (typeof window === 'undefined') return;
@@ -177,7 +190,9 @@ export function migrateSettings(): void {
 }
 
 /**
- * Get cache statistics
+ * Get statistics about local storage usage.
+ *
+ * @returns Object containing cache stats.
  */
 export function getCacheStats(): {
   version: string;

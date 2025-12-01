@@ -19,7 +19,10 @@ function clamp(value: number, min: number, max: number) {
  * - "-t 0.9"
  *
  * The returned value is clamped to the safe range [0, 2] commonly
- * supported by providers. If no valid temperature is found, returns undefined.
+ * supported by providers.
+ *
+ * @param command - The input command string.
+ * @returns The parsed temperature value or undefined if not found.
  */
 export function parseTemperature(command: string): number | undefined {
   if (!command) {

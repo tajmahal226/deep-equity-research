@@ -3,37 +3,17 @@
  * 
  * This file provides reusable utilities for creating SSE streams in Next.js API routes.
  * SSE allows the server to push real-time updates to the client over a single HTTP connection.
- * 
- * What SSE is:
- * - A one-way communication channel from server to client
- * - Perfect for streaming progress updates, live data, or real-time notifications
- * - Built on standard HTTP, works through firewalls and proxies
- * 
- * How it works:
- * 1. Client makes a request to an SSE endpoint
- * 2. Server responds with a special content-type and keeps connection open
- * 3. Server can send events at any time until connection closes
- * 4. Each event has a type and data (usually JSON)
- * 
- * Files that use this:
- * - /src/app/api/company-research/route.ts (company deep dive research)
- * - Could be used by any API route that needs real-time updates
- * 
- * To modify:
- * - Add new event types: Just use sendEvent with a new event name
- * - Change data format: Modify the JSON.stringify in sendEvent
- * - Add reconnection logic: Implement EventSource retry on client side
  */
 
 import { logger } from "@/utils/logger";
 
 /**
- * Creates an SSE stream with helper functions
+ * Creates an SSE stream with helper functions.
  * 
- * @returns {Object} An object containing:
- *   - stream: The ReadableStream to return in the HTTP response
- *   - sendEvent: Function to send events to the client
- *   - closeStream: Function to close the stream gracefully
+ * @returns An object containing:
+ *   - stream: The ReadableStream to return in the HTTP response.
+ *   - sendEvent: Function to send events to the client.
+ *   - closeStream: Function to close the stream gracefully.
  */
 export function createSSEStream() {
   // TextEncoder converts strings to Uint8Array (bytes) for streaming
@@ -140,10 +120,10 @@ export function createSSEStream() {
 }
 
 /**
- * Helper function to create SSE response headers
- * These headers tell the browser this is an SSE stream
+ * Helper function to create SSE response headers.
+ * These headers tell the browser this is an SSE stream.
  * 
- * @returns Standard headers for SSE responses
+ * @returns Standard headers for SSE responses.
  */
 export function getSSEHeaders(): HeadersInit {
   return {
@@ -165,12 +145,12 @@ export function getSSEHeaders(): HeadersInit {
 }
 
 /**
- * Utility to format SSE events manually (for advanced use cases)
+ * Utility to format SSE events manually (for advanced use cases).
  * 
- * @param eventName - The event type
- * @param data - The event data
- * @param id - Optional event ID for reconnection support
- * @returns Formatted SSE event string
+ * @param eventName - The event type.
+ * @param data - The event data.
+ * @param id - Optional event ID for reconnection support.
+ * @returns Formatted SSE event string.
  */
 export function formatSSEEvent(eventName: string, data: any, id?: string): string {
   let event = "";

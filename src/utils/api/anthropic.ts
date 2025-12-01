@@ -6,13 +6,28 @@ import { withTimeout, retryWithBackoff } from "../timeout-config";
 import { AppError, handleError } from "../error";
 import { streamText } from "ai";
 
+/**
+ * Anthropic Provider implementation.
+ */
 export class AnthropicProvider implements Provider {
   private anthropic: any;
 
+  /**
+   * Initializes the Anthropic provider.
+   *
+   * @param apiKey - The Anthropic API key.
+   */
   constructor(apiKey: string) {
     this.anthropic = createAnthropic({ apiKey });
   }
 
+  /**
+   * Generates a report using Anthropic.
+   *
+   * @param prompt - The input prompt.
+   * @param options - Generation options.
+   * @returns The generated report.
+   */
   async generateReport(prompt: string, options: any): Promise<string> {
     try {
       const response: any = await retryWithBackoff(() =>
@@ -28,6 +43,13 @@ export class AnthropicProvider implements Provider {
     }
   }
 
+  /**
+   * Streams a report generation using Anthropic.
+   *
+   * @param prompt - The input prompt.
+   * @param options - Generation options.
+   * @returns A readable stream of the generated report.
+   */
   async streamReport(prompt: string, options: any): Promise<ReadableStream> {
     try {
       const result = await streamText({
@@ -42,6 +64,11 @@ export class AnthropicProvider implements Provider {
     }
   }
 
+  /**
+   * Retrieves available models from Anthropic.
+   *
+   * @returns List of model IDs.
+   */
   async getModels(): Promise<string[]> {
     try {
       // The Anthropic SDK does not have a models() method.

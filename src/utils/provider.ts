@@ -6,6 +6,13 @@ const PROVIDER_STATE_KEY_MAP: Record<string, string> = {
   xai: "xAI",
 };
 
+/**
+ * Gets the state key prefix for a given provider.
+ * Maps 'openai' to 'openAI', etc.
+ *
+ * @param provider - The provider ID.
+ * @returns The state key prefix.
+ */
 export function getProviderStateKey(provider: string): string {
   return PROVIDER_STATE_KEY_MAP[provider] || provider;
 }
@@ -13,6 +20,10 @@ export function getProviderStateKey(provider: string): string {
 /**
  * Lookup a provider's API key from the settings store using a provider id.
  * Falls back to the generic `apiKey` field if a provider-specific key is not found.
+ *
+ * @param store - The settings store object.
+ * @param provider - The provider ID.
+ * @returns The API key string.
  */
 export function getProviderApiKey(
   store: Record<string, any>,
@@ -31,6 +42,9 @@ export function getProviderApiKey(
  * (for example when the settings were reset or a provider was selected
  * without configuring credentials). Ollama is treated as always available
  * because it does not require a key.
+ *
+ * @param store - The settings store.
+ * @returns The resolved provider ID.
  */
 export function resolveActiveProvider(
   store: SettingStore & SettingFunction,
@@ -135,6 +149,10 @@ function getProviderModelFromStore(
  * empty strings.  This helper first checks the store and, if no value exists,
  * falls back to a curated set of defaults that we know work well with the deep
  * research flows.
+ *
+ * @param store - The settings store.
+ * @param provider - The provider ID.
+ * @returns Object containing thinkingModel and taskModel.
  */
 export function resolveProviderModels(
   store: SettingStore,
@@ -154,7 +172,12 @@ export function resolveProviderModels(
   return { thinkingModel, taskModel };
 }
 
+/**
+ * Get default models for a provider.
+ *
+ * @param provider - The provider ID.
+ * @returns Object containing default thinkingModel and taskModel.
+ */
 export function getProviderModelDefaults(provider: string): ProviderModelPair {
   return PROVIDER_MODEL_DEFAULTS[provider] || PROVIDER_MODEL_DEFAULTS.openai;
 }
-

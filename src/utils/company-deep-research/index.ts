@@ -112,6 +112,10 @@ interface CompanyResearchResult {
   }>;
 }
 
+/**
+ * Company Deep Research Implementation.
+ * Handles targeted investment research using AI and search providers.
+ */
 export class CompanyDeepResearch {
   private config: CompanyResearchConfig;
   private thinkingModel: any; // The model used for reasoning and report writing
@@ -119,6 +123,11 @@ export class CompanyDeepResearch {
   private searchProvider: any; // The search provider (Tavily, etc.)
   private initialized: boolean = false;
   
+  /**
+   * Initializes the CompanyDeepResearch instance.
+   *
+   * @param config - Research configuration options.
+   */
   constructor(config: CompanyResearchConfig) {
     this.config = config;
     
@@ -134,8 +143,8 @@ export class CompanyDeepResearch {
   }
   
   /**
-   * Initialize AI models and search provider
-   * This is separate from constructor to allow async operations
+   * Initialize AI models and search provider.
+   * This is separate from constructor to allow async operations.
    * 
    * How this works:
    * 1. Gets default provider/model settings from environment
@@ -316,8 +325,10 @@ export class CompanyDeepResearch {
   }
   
   /**
-   * Run fast research - no web searches, just AI analysis
-   * Perfect for quick overviews or when you already know the basics
+   * Run fast research - no web searches, just AI analysis.
+   * Perfect for quick overviews or when you already know the basics.
+   *
+   * @returns Research result with AI-generated report.
    */
   async runFastResearch(): Promise<CompanyResearchResult> {
     await this.init();
@@ -365,8 +376,10 @@ export class CompanyDeepResearch {
   }
   
   /**
-   * Run medium research - limited searches on key topics
-   * Good balance between speed and depth
+   * Run medium research - limited searches on key topics.
+   * Good balance between speed and depth.
+   *
+   * @returns Research result with medium depth report and sources.
    */
   async runMediumResearch(): Promise<CompanyResearchResult> {
     await this.init();
@@ -396,8 +409,10 @@ export class CompanyDeepResearch {
   }
   
   /**
-   * Run deep research - comprehensive analysis with all investment sections
-   * This is what you want for serious due diligence
+   * Run deep research - comprehensive analysis with all investment sections.
+   * This is what you want for serious due diligence.
+   *
+   * @returns Research result with full report, sections, and extensive sources.
    */
   async runDeepResearch(): Promise<CompanyResearchResult> {
     await this.init();

@@ -14,6 +14,10 @@ interface GlobalFunction {
   setOpenPreFilledPrompts: (visible: boolean) => void;
 }
 
+/**
+ * Global UI state store.
+ * Manages visibility of side panels and modals.
+ */
 export const useGlobalStore = create<GlobalStore & GlobalFunction>((set) => ({
   openSetting: false,
   openHistory: false,

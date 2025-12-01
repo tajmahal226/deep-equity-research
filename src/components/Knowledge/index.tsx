@@ -35,16 +35,30 @@ import { cn } from "@/utils/style";
 const Content = dynamic(() => import("./Content"));
 
 interface KnowledgeProps {
+  /** Whether the dialog is open. */
   open: boolean;
+  /** Callback triggered when the dialog is closed. */
   onClose: () => void;
 }
 
 const PAGE_SIZE = 20;
 
+/**
+ * Formats a timestamp into a human-readable string.
+ * @param timestamp - The timestamp to format.
+ * @returns The formatted date string.
+ */
 function formatDate(timestamp: number) {
   return dayjs(timestamp).format("YYYY-MM-DD HH:mm");
 }
 
+/**
+ * Knowledge component.
+ * Main interface for managing knowledge resources (list, create, edit, delete, search).
+ *
+ * @param props - The component props.
+ * @returns The knowledge management component.
+ */
 function Knowledge({ open, onClose }: KnowledgeProps) {
   const { t } = useTranslation();
   const { generateId } = useKnowledge();

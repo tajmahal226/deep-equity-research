@@ -57,6 +57,12 @@ interface CompanyResult {
   completedAt?: string;
 }
 
+/**
+ * POST handler for bulk company research.
+ *
+ * @param req - The NextRequest object.
+ * @returns An SSE response stream.
+ */
 export async function POST(req: NextRequest) {
   // These will hold the SSE helpers if we get far enough to initialize them
   let stream: ReadableStream | null = null;

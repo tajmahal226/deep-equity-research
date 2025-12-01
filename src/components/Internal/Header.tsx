@@ -6,6 +6,12 @@ import { useGlobalStore } from "@/store/global";
 
 const VERSION = process.env.NEXT_PUBLIC_VERSION;
 
+/**
+ * Header component.
+ * Displays the application title, version, and action buttons (Github, History, Knowledge, Settings).
+ *
+ * @returns The header component.
+ */
 function Header() {
   const { t } = useTranslation();
   const { setOpenSetting, setOpenHistory, setOpenKnowledge } = useGlobalStore();

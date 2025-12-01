@@ -76,9 +76,18 @@ export function addQuoteBeforeAllLine(text: string = "") {
     .join("\n");
 }
 
+/**
+ * Main deep research class that orchestrates the research workflow.
+ */
 class DeepResearch {
   protected options: DeepResearchOptions;
   onMessage: (event: string, data: any) => void = () => {};
+
+  /**
+   * Initializes the DeepResearch instance with configuration options.
+   *
+   * @param options - Configuration options for AI and search providers.
+   */
   constructor(options: DeepResearchOptions) {
     this.options = options;
     if (isFunction(options.onMessage)) {
@@ -86,6 +95,11 @@ class DeepResearch {
     }
   }
 
+  /**
+   * Gets a configured AI provider instance for thinking/planning tasks.
+   *
+   * @returns Configured AI provider.
+   */
   async getThinkingModel() {
     const { AIProvider } = this.options;
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
@@ -110,6 +124,11 @@ class DeepResearch {
     });
   }
 
+  /**
+   * Gets a configured AI provider instance for task execution (e.g., analyzing search results).
+   *
+   * @returns Configured AI provider.
+   */
   async getTaskModel() {
     const { AIProvider } = this.options;
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
@@ -148,6 +167,12 @@ class DeepResearch {
       : `**Respond in the same language as the user's language**`;
   }
 
+  /**
+   * Generates a research plan based on the user's query.
+   *
+   * @param query - The research query.
+   * @returns The generated research plan.
+   */
   async writeReportPlan(query: string): Promise<string> {
     this.onMessage("progress", { step: "report-plan", status: "start" });
     const thinkTagStreamProcessor = new ThinkTagStreamProcessor();
@@ -186,6 +211,12 @@ class DeepResearch {
     return content;
   }
 
+  /**
+   * Generates SERP queries based on the research plan.
+   *
+   * @param reportPlan - The research plan.
+   * @returns List of search tasks.
+   */
   async generateSERPQuery(
     reportPlan: string
   ): Promise<DeepResearchSearchTask[]> {
@@ -225,6 +256,13 @@ class DeepResearch {
     }
   }
 
+  /**
+   * Executes search tasks and processes results.
+   *
+   * @param tasks - List of search tasks.
+   * @param enableReferences - Whether to include references.
+   * @returns List of processed search results.
+   */
   async runSearchTask(
     tasks: DeepResearchSearchTask[],
     enableReferences = true
@@ -420,6 +458,15 @@ class DeepResearch {
     return results;
   }
 
+  /**
+   * Writes the final research report.
+   *
+   * @param reportPlan - The original plan.
+   * @param tasks - The results from search tasks.
+   * @param enableCitationImage - Include images.
+   * @param enableReferences - Include references.
+   * @returns Final report object.
+   */
   async writeFinalReport(
     reportPlan: string,
     tasks: DeepResearchSearchResult[],
@@ -511,6 +558,14 @@ class DeepResearch {
     return finalReportResult;
   }
 
+  /**
+   * Starts the full deep research process.
+   *
+   * @param query - The user's query.
+   * @param enableCitationImage - Include images.
+   * @param enableReferences - Include references.
+   * @returns The final report result.
+   */
   async start(
     query: string,
     enableCitationImage = true,

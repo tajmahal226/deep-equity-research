@@ -13,10 +13,20 @@ import {
 import { omit } from "radash";
 
 interface Props extends ButtonProps {
+  /** The side to display the tooltip. */
   side?: "top" | "right" | "bottom" | "left";
+  /** The offset for the tooltip. */
   sideoffset?: number;
 }
 
+/**
+ * ButtonWithTooltip component.
+ * Renders a button that displays a tooltip when hovered, if a title is provided.
+ *
+ * @param props - The component props.
+ * @param forwardedRef - The forwarded ref for the button element.
+ * @returns The button component with optional tooltip.
+ */
 function ButtonWithTooltip(
   props: Props,
   forwardedRef: ForwardedRef<HTMLButtonElement>
@@ -44,6 +54,9 @@ function ButtonWithTooltip(
   }
 }
 
+/**
+ * Button component with tooltip support.
+ */
 const Button = forwardRef(ButtonWithTooltip);
 Button.displayName = "ButtonWithTooltip";
 

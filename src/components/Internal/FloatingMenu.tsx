@@ -8,13 +8,23 @@ import {
 } from "react";
 
 type FloatingMenuProps = {
+  /** The ref of the target element that the menu should be relative to. */
   targetRef: RefObject<HTMLDivElement | null>;
+  /** The content of the menu. */
   children: ReactNode;
-  //Offset from the top of the browser when fixed (optional)
+  /** Offset from the top of the browser when fixed (optional). */
   fixedTopOffset?: number;
+  /** Offset from the right of the browser when fixed (optional). */
   fixedRightOffset?: number;
 };
 
+/**
+ * FloatingMenu component.
+ * Renders a menu that floats and becomes fixed when scrolling past a certain point relative to a target element.
+ *
+ * @param props - The component props.
+ * @returns The floating menu component.
+ */
 function FloatingMenu({
   targetRef,
   children,

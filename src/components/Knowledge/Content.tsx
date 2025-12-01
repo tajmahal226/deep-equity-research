@@ -18,9 +18,13 @@ import { useKnowledgeStore } from "@/store/knowledge";
 import { cn } from "@/utils/style";
 
 type Props = {
+  /** The ID of the knowledge item to edit. */
   id: string;
+  /** Optional class name for the editor container. */
   editClassName?: string;
+  /** Callback triggered when the form is submitted. */
   onSubmit?: (values: { title: string; content: string }) => void;
+  /** Callback triggered when the back button is clicked. */
   onBack?: () => void;
 };
 
@@ -29,6 +33,13 @@ const formSchema = z.object({
   content: z.string().min(1),
 });
 
+/**
+ * Content component.
+ * A form for editing the title and content of a knowledge item.
+ *
+ * @param props - The component props.
+ * @returns The content editor component.
+ */
 function Content({ id, editClassName, onSubmit, onBack }: Props) {
   const { t } = useTranslation();
   const knowledgeStore = useKnowledgeStore();

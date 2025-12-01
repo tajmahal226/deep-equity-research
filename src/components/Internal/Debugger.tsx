@@ -9,6 +9,12 @@ declare global {
   }
 }
 
+/**
+ * Debugger component.
+ * Initializes the Eruda console for mobile web debugging when enabled in settings.
+ *
+ * @returns The Script component for Eruda if debug is enabled, otherwise null.
+ */
 function Debugger() {
   const { debug } = useSettingStore();
   const isErudaInitialized = useRef(false);

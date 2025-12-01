@@ -99,6 +99,12 @@ interface CompanyResearchRequest {
   searchApiKey?: string;
 }
 
+/**
+ * POST handler for company deep dive research.
+ *
+ * @param req - The NextRequest object.
+ * @returns An SSE response stream.
+ */
 export async function POST(req: NextRequest) {
   try {
     // Step 1: Check for ACCESS_PASSWORD if configured

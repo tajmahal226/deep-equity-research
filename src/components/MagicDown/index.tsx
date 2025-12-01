@@ -13,15 +13,29 @@ const Editor = dynamic(() => import("./Editor"));
 const View = dynamic(() => import("./View"));
 
 type Props = {
+  /** Optional class name for the container. */
   className?: string;
+  /** The current markdown value. */
   value: string;
+  /** Callback triggered when value changes. */
   onChange: (value: string) => void;
+  /** Whether to hide the floating toolbar. */
   hideTools?: boolean;
+  /** Top offset for floating menu when fixed. */
   fixedTopOffset?: number;
+  /** Right offset for floating menu when fixed. */
   fixedRightOffset?: number;
+  /** Custom tools to add to the toolbar. */
   tools?: ReactNode;
 };
 
+/**
+ * MagicDown component.
+ * A comprehensive markdown editor/viewer with a floating toolbar for mode switching and copying.
+ *
+ * @param props - The component props.
+ * @returns The MagicDown component.
+ */
 function MagicDown({
   value,
   onChange,
