@@ -1,6 +1,6 @@
 "use client";
 import Script from "next/script";
-import { useLayoutEffect } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { useSettingStore } from "@/store/setting";
 
 declare global {
@@ -11,11 +11,15 @@ declare global {
 
 function Debugger() {
   const { debug } = useSettingStore();
+  const isErudaInitialized = useRef(false);
 
   function setup() {
-    window.eruda.init({
-      tool: ["console", "network", "info"],
-    });
+    if (!isErudaInitialized.current) {
+      window.eruda.init({
+        tool: ["console", "network", "info"],
+      });
+      isErudaInitialized.current = true;
+    }
   }
 
   useLayoutEffect(() => {
@@ -23,6 +27,7 @@ function Debugger() {
     if (eruda) {
       if (debug === "disable") {
         eruda.destroy();
+        isErudaInitialized.current = false;
       } else {
         setup();
       }
