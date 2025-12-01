@@ -14,7 +14,7 @@ import { Button } from "@/components/Internal/Button";
 
 const ONBOARDING_COMPLETED_KEY = "onboarding-completed";
 
-export function OnboardingModal() {
+export default function OnboardingModal() {
   const [open, setOpen] = useState(false);
   const { setOpenSetting } = useGlobalStore();
   
@@ -62,7 +62,7 @@ export function OnboardingModal() {
           <DialogTitle className="text-2xl">Welcome to Deep Equity Research! 🚀</DialogTitle>
           <DialogDescription className="space-y-4 pt-4">
             <p className="text-base">
-              To get started, you'll need to provide your own API keys. Your keys are stored 
+              To get started, you&apos;ll need to provide your own API keys. Your keys are stored
               <strong> only in your browser</strong> and are never sent to our servers.
             </p>
             
@@ -94,7 +94,7 @@ export function OnboardingModal() {
             variant="outline"
             className="flex-1"
           >
-            I'll do it later
+            I&apos;ll do it later
           </Button>
         </div>
       </DialogContent>

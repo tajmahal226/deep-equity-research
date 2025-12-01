@@ -31,7 +31,6 @@ import { Button } from "@/components/ui/button";
 import { validateApiKeys } from "@/utils/api-key-validation";
 import toast from "react-hot-toast";
 import { useGlobalStore } from "@/store/global";
-import { resolveActiveProvider } from "@/utils/provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
@@ -99,7 +98,6 @@ export default function BulkCompanyResearch() {
       }
     };
   }, []);
-  const settingStore = useSettingStore();
   
   // State management
   const [companyNames, setCompanyNames] = useState<string>(""); // Raw input from user
