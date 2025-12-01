@@ -24,6 +24,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { downloadFile } from "@/utils/file";
 import dynamic from "next/dynamic";
+import { validateApiKeys } from "@/utils/api-key-validation";
+import toast from "react-hot-toast";
+import { useGlobalStore } from "@/store/global";
 
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
 
@@ -62,6 +65,18 @@ export default function MarketResearch() {
   };
 
   const handleAnalyze = async () => {
+    // Pre-flight validation: Check if API keys are configured
+    const settingStore = useSettingStore.getState();
+    const currentProvider = resolveActiveProvider(settingStore);
+    const validation = validateApiKeys(currentProvider, currentProvider);
+    
+    if (!validation.isValid) {
+      toast.error(validation.message || "Missing API keys");
+      const { setOpenSetting } = useGlobalStore.getState();
+      setOpenSetting(true);
+      return;
+    }
+
     if (!marketTopic.trim()) return;
 
     setIsAnalyzing(true);

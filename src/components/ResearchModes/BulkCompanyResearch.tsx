@@ -28,6 +28,10 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
+import { validateApiKeys } from "@/utils/api-key-validation";
+import toast from "react-hot-toast";
+import { useGlobalStore } from "@/store/global";
+import { resolveActiveProvider } from "@/utils/provider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
@@ -147,6 +151,18 @@ export default function BulkCompanyResearch() {
    */
   const handleStartResearch = async () => {
     // Parse the company names
+    // Pre-flight validation: Check if API keys are configured
+    const settingStore = useSettingStore.getState();
+    const currentProvider = resolveActiveProvider(settingStore);
+    const validation = validateApiKeys(currentProvider, currentProvider);
+    
+    if (!validation.isValid) {
+      toast.error(validation.message || "Missing API keys");
+      const { setOpenSetting } = useGlobalStore.getState();
+      setOpenSetting(true);
+      return;
+    }
+
     const parsedCompanies = parseCompanyNames(companyNames);
     
     if (parsedCompanies.length === 0) {
