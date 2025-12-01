@@ -104,7 +104,7 @@ export interface SettingFunction {
 
 export const defaultValues: SettingStore = {
   provider: "",
-  mode: "",
+  mode: "local",
   apiKey: "",
   apiProxy: "",
   thinkingModel: "",

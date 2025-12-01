@@ -102,21 +102,34 @@ function useModelProvider() {
   }
 
   function hasApiKey(): boolean {
-    const { provider } = useSettingStore.getState();
+    const settingStore = useSettingStore.getState();
+    const { provider } = settingStore;
 
     switch (provider) {
       case "google":
-        const { apiKey } = useSettingStore.getState();
-        return apiKey.length > 0;
+        return settingStore.apiKey.length > 0;
       case "openai":
-        const { openAIApiKey } = useSettingStore.getState();
-        return openAIApiKey.length > 0;
+        return settingStore.openAIApiKey.length > 0;
       case "anthropic":
-        const { anthropicApiKey } = useSettingStore.getState();
-        return anthropicApiKey.length > 0;
+        return settingStore.anthropicApiKey.length > 0;
+      case "deepseek":
+        return settingStore.deepseekApiKey.length > 0;
+      case "mistral":
+        return settingStore.mistralApiKey.length > 0;
+      case "xai":
+        return settingStore.xAIApiKey.length > 0;
+      case "cohere":
+        return settingStore.cohereApiKey.length > 0;
+      case "openrouter":
+        return settingStore.openRouterApiKey.length > 0;
+      case "ollama":
+        return true; // Ollama does not require API key
       default:
-        throw new Error("Unsupported Provider: " + provider);
+        // Return false for unknown providers instead of throwing
+        console.warn(`Unknown provider: ${provider}`);
+        return false;
     }
+  }
   }
 
   return {

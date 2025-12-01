@@ -8,6 +8,8 @@ import { useSettingStore } from "@/store/setting";
 
 const Header = dynamic(() => import("@/components/Internal/Header"));
 const Setting = dynamic(() => import("@/components/Setting"));
+const OnboardingModal = dynamic(() => import("@/components/OnboardingModal"));
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 const ResearchTabs = dynamic(() => import("@/components/Internal/ResearchTabs"));
 const FreeFormResearch = dynamic(() => import("@/components/ResearchModes/FreeFormResearch"));
 const CompanyDeepDive = dynamic(() => import("@/components/ResearchModes/CompanyDeepDive"));
@@ -39,6 +41,7 @@ function Home() {
     setTheme(settingStore.theme);
   }, [theme, setTheme]);
   return (
+    <ErrorBoundary>
     <div className="max-lg:max-w-screen-md max-w-screen-lg mx-auto px-4">
       <Header />
       <main>
@@ -66,6 +69,7 @@ function Home() {
       </footer>
       <aside className="print:hidden">
         <Setting open={openSetting} onClose={() => setOpenSetting(false)} />
+        <OnboardingModal />
         <History open={openHistory} onClose={() => setOpenHistory(false)} />
         <Knowledge
           open={openKnowledge}
@@ -73,6 +77,7 @@ function Home() {
         />
       </aside>
     </div>
+    </ErrorBoundary>
   );
 }
 

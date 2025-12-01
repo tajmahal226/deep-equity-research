@@ -28,6 +28,9 @@ import { useSettingStore } from "@/store/setting";
 import { useTaskStore } from "@/store/task";
 import { getProviderStateKey, getProviderApiKey, resolveActiveProvider } from "@/utils/provider";
 import { useResearchCache } from "@/hooks/useResearchCache";
+import { validateApiKeys } from "@/utils/api-key-validation";
+import toast from "react-hot-toast";
+import { useGlobalStore } from "@/store/global";
 
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
 
@@ -127,6 +130,17 @@ export default function CompanyDeepDive() {
 
   const handleSearch = async (forceRefresh = false) => {
     if (!companyName.trim()) return;
+    // Pre-flight validation: Check if API keys are configured
+    const currentProvider = resolveActiveProvider(settingStore);
+    const validation = validateApiKeys(currentProvider, currentProvider);
+    
+    if (!validation.isValid) {
+      toast.error(validation.message || "Missing API keys");
+      const { setOpenSetting } = useGlobalStore.getState();
+      setOpenSetting(true);
+      return;
+    }
+
 
     // Abort any existing request
     if (abortController) {
@@ -318,6 +332,7 @@ export default function CompanyDeepDive() {
       // Don't log abort errors (they're intentional)
       if (error?.name !== 'AbortError') {
         console.error("Company research error:", error);
+        toast.error(error.message || "Research failed. Please check your API keys and try again.");
         setError(error.message);
       } else {
         setStatus("idle");
