@@ -23,43 +23,55 @@ export async function createAIProvider({
   model,
   settings,
 }: AIProviderOptions): Promise<LanguageModel> {
-  if (!apiKey && provider !== "ollama") {
-    throw new Error("API key is required.");
-  }
+  try {
+    if (!provider) throw new Error("Provider identifier is required");
+    if (!model) throw new Error("Model identifier is required");
 
-  const apiProvider = createProvider(provider, apiKey || "");
-
-  const validatePrompt = (prompt: unknown) => {
-    if (typeof prompt !== "string" || prompt.trim().length === 0) {
-      throw new Error("Prompt must be a non-empty string.");
+    if (!apiKey && provider !== "ollama" && provider !== "model") {
+      if (provider !== "ollama") {
+        throw new Error("API key is required.");
+      }
     }
 
-    return prompt;
-  };
+    console.log(`[createAIProvider] Creating provider: ${provider}, model: ${model}`);
 
-  return {
-    async doStream(options: any) {
-      const stream = await apiProvider.streamReport(validatePrompt(options.prompt), {
-        ...settings,
-        model,
-      });
+    const apiProvider = createProvider(provider, apiKey || "");
 
-      return {
-        stream,
-      } as any;
-    },
-    async doGenerate(options: any) {
-      const report = await apiProvider.generateReport(
-        validatePrompt(options.prompt),
-        {
-          ...settings,
-          model,
+    const validatePrompt = (prompt: unknown) => {
+      if (typeof prompt !== "string" || prompt.trim().length === 0) {
+        throw new Error("Prompt must be a non-empty string.");
+      }
+      return prompt;
+    };
+
+    return {
+      async doStream(options: any) {
+        try {
+          const stream = await apiProvider.streamReport(validatePrompt(options.prompt), {
+            ...settings,
+            model,
+          });
+          return { stream } as any;
+        } catch (error) {
+          console.error(`[AIProvider] Stream error (${provider}/${model}):`, error);
+          throw error;
         }
-      );
-
-      return {
-        text: report,
-      } as any;
-    },
-  } as any;
+      },
+      async doGenerate(options: any) {
+        try {
+          const report = await apiProvider.generateReport(
+            validatePrompt(options.prompt),
+            { ...settings, model }
+          );
+          return { text: report } as any;
+        } catch (error) {
+          console.error(`[AIProvider] Generate error (${provider}/${model}):`, error);
+          throw error;
+        }
+      },
+    } as any;
+  } catch (error) {
+    console.error(`[createAIProvider] Failed to create provider ${provider}:`, error);
+    throw error;
+  }
 }

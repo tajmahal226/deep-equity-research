@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { CompanyDeepResearch } from "../../src/utils/company-deep-research";
+import { getAIProviderEnvVarNames } from "@/app/api/utils";
 
 // Preserve original environment variables so tests can manipulate API keys
 const originalEnv = process.env;
@@ -29,7 +30,7 @@ describe("Company Research Initialization Integration Test", () => {
       },
       taskModelConfig: {
         modelId: "gpt-4o",
-        providerId: "openai", 
+        providerId: "openai",
         apiKey: undefined, // No API key provided
       },
       onProgress: vi.fn(),
@@ -82,12 +83,19 @@ describe("Company Research Initialization Integration Test", () => {
     ];
 
     for (const testCase of testCases) {
-      // Remove any existing API key for this provider
-      delete (process.env as any)[testCase.envVar];
+      // Remove any existing API key for this provider (clearing all aliases)
+      const envVars = getAIProviderEnvVarNames(testCase.provider);
+      if (envVars.length === 0) {
+        // Fallback if no aliases map found, though testCases defines specific ones
+        delete (process.env as any)[testCase.envVar];
+      } else {
+        envVars.forEach(name => delete (process.env as any)[name]);
+      }
+
       const config = {
         companyName: "Test Company",
         searchDepth: "fast" as const,
-        language: "en-US", 
+        language: "en-US",
         thinkingModelConfig: {
           modelId: "test-model",
           providerId: testCase.provider,
@@ -99,7 +107,7 @@ describe("Company Research Initialization Integration Test", () => {
           apiKey: undefined,
         },
         onProgress: vi.fn(),
-        onMessage: vi.fn(), 
+        onMessage: vi.fn(),
         onError: vi.fn(),
       };
 
@@ -117,7 +125,7 @@ describe("Company Research Initialization Integration Test", () => {
 
   it("works when API keys are provided", async () => {
     const config = {
-      companyName: "Test Company", 
+      companyName: "Test Company",
       searchDepth: "fast" as const,
       language: "en-US",
       thinkingModelConfig: {
@@ -126,7 +134,7 @@ describe("Company Research Initialization Integration Test", () => {
         apiKey: "sk-test-key-123", // Mock API key provided
       },
       taskModelConfig: {
-        modelId: "gpt-4o", 
+        modelId: "gpt-4o",
         providerId: "openai",
         apiKey: "sk-test-key-123", // Mock API key provided
       },

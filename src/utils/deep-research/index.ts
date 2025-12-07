@@ -81,7 +81,7 @@ export function addQuoteBeforeAllLine(text: string = "") {
  */
 class DeepResearch {
   protected options: DeepResearchOptions;
-  onMessage: (event: string, data: any) => void = () => {};
+  onMessage: (event: string, data: any) => void = () => { };
 
   /**
    * Initializes the DeepResearch instance with configuration options.
@@ -101,9 +101,17 @@ class DeepResearch {
    * @returns Configured AI provider.
    */
   async getThinkingModel() {
+    console.log("[DeepResearch] getThinkingModel called");
+    if (!this.options) console.error("[DeepResearch] options is undefined!");
     const { AIProvider } = this.options;
+    if (!AIProvider) console.error("[DeepResearch] AIProvider is undefined!");
+
+    console.log("[DeepResearch] calling pick on AIProvider:", AIProvider);
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
-    
+    console.log("[DeepResearch] pick result:", AIProviderBaseOptions);
+
+    const { provider, thinkingModel } = AIProvider;
+
     // Don't pass temperature for reasoning models like GPT-5
     let settings: any = undefined;
     if (AIProvider.temperature !== undefined) {
@@ -113,9 +121,9 @@ class DeepResearch {
     if (maxTokens !== undefined) {
       settings = { ...(settings || {}), maxTokens };
     }
-    
+
     logger.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", temperature=${AIProvider.temperature}, finalSettings=`, settings);
-    
+
     return await createAIProvider({
       provider: AIProvider.provider,
       model: AIProvider.thinkingModel,
@@ -132,15 +140,15 @@ class DeepResearch {
   async getTaskModel() {
     const { AIProvider } = this.options;
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
-    
+
     // Build settings object
     const settings: any = {};
-    
+
     // Add temperature only if not restricted (don't pass temperature for reasoning models like GPT-5)
     if (AIProvider.temperature !== undefined) {
       settings.temperature = AIProvider.temperature;
     }
-    
+
     // Add Google-specific settings
     if (AIProvider.provider === "google" && isNetworkingModel(AIProvider.taskModel)) {
       settings.useSearchGrounding = true;
@@ -149,10 +157,10 @@ class DeepResearch {
     if (maxTokens !== undefined) {
       settings.maxTokens = maxTokens;
     }
-    
+
     const finalSettings = Object.keys(settings).length > 0 ? settings : undefined;
     logger.log(`[DEBUG] DeepResearch.getTaskModel: model="${AIProvider.taskModel}", temperature=${AIProvider.temperature}, finalSettings=`, finalSettings);
-    
+
     return await createAIProvider({
       provider: AIProvider.provider,
       model: AIProvider.taskModel,
@@ -428,8 +436,7 @@ class DeepResearch {
           sources
             .map(
               (item, idx) =>
-                `[${idx + 1}]: ${item.url}${
-                  item.title ? ` "${item.title.replaceAll('"', " ")}"` : ""
+                `[${idx + 1}]: ${item.url}${item.title ? ` "${item.title.replaceAll('"', " ")}"` : ""
                 }`
             )
             .join("\n");
@@ -525,8 +532,7 @@ class DeepResearch {
             sources
               .map(
                 (item, idx) =>
-                  `[${idx + 1}]: ${item.url}${
-                    item.title ? ` "${item.title.replaceAll('"', " ")}"` : ""
+                  `[${idx + 1}]: ${item.url}${item.title ? ` "${item.title.replaceAll('"', " ")}"` : ""
                   }`
               )
               .join("\n");

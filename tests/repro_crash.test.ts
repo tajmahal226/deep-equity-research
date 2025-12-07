@@ -4,12 +4,12 @@ import DeepResearch from "@/utils/deep-research";
 import { getAIProviderBaseURL } from "@/app/api/utils";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
-import { isFunction } from "radash";
+import { isFunction, pick } from "radash";
 
 describe("Reproduction Test", () => {
     it("logs steps to find crash", async () => {
         console.log("Starting test");
-        console.log("isFunction imported:", isFunction);
+        console.log("radash check -> isFunction:", typeof isFunction, "pick:", typeof pick);
         try {
             console.log("Checking @ai-sdk/google import");
             const google = createGoogleGenerativeAI({ apiKey: "test" });
