@@ -33,7 +33,7 @@ export async function createAIProvider({
       }
     }
 
-    console.log(`[createAIProvider] Creating provider: ${provider}, model: ${model}`);
+    // console.log(`[createAIProvider] Creating provider: ${provider}, model: ${model}`);
 
     const apiProvider = createProvider(provider, apiKey || "");
 

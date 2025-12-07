@@ -95,22 +95,9 @@ class DeepResearch {
     }
   }
 
-  /**
-   * Gets a configured AI provider instance for thinking/planning tasks.
-   *
-   * @returns Configured AI provider.
-   */
   async getThinkingModel() {
-    console.log("[DeepResearch] getThinkingModel called");
-    if (!this.options) console.error("[DeepResearch] options is undefined!");
     const { AIProvider } = this.options;
-    if (!AIProvider) console.error("[DeepResearch] AIProvider is undefined!");
-
-    console.log("[DeepResearch] calling pick on AIProvider:", AIProvider);
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
-    console.log("[DeepResearch] pick result:", AIProviderBaseOptions);
-
-    const { provider, thinkingModel } = AIProvider;
 
     // Don't pass temperature for reasoning models like GPT-5
     let settings: any = undefined;
@@ -121,8 +108,6 @@ class DeepResearch {
     if (maxTokens !== undefined) {
       settings = { ...(settings || {}), maxTokens };
     }
-
-    logger.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", temperature=${AIProvider.temperature}, finalSettings=`, settings);
 
     return await createAIProvider({
       provider: AIProvider.provider,

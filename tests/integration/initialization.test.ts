@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { CompanyDeepResearch } from "../../src/utils/company-deep-research";
-import { getAIProviderEnvVarNames } from "@/app/api/utils";
+import { getAIProviderEnvVarNames } from "../../src/app/api/utils";
 
 // Preserve original environment variables so tests can manipulate API keys
 const originalEnv = process.env;
@@ -23,6 +23,9 @@ describe("Company Research Initialization Integration Test", () => {
       companyName: "Test Company",
       searchDepth: "fast" as const,
       language: "en-US",
+      subIndustries: [],
+      competitors: [],
+      researchSources: [],
       thinkingModelConfig: {
         modelId: "gpt-4o",
         providerId: "openai",
@@ -44,7 +47,7 @@ describe("Company Research Initialization Integration Test", () => {
     try {
       await researcher.runFastResearch();
       expect.fail("Should have thrown an error for missing API key");
-    } catch (error) {
+    } catch (error: any) {
       expect(error).toBeInstanceOf(Error);
       expect(error.message).toMatch(/No API key found for openai/i);
       expect(error.message).toMatch(/settings gear icon/i); // Should provide user guidance
@@ -89,13 +92,16 @@ describe("Company Research Initialization Integration Test", () => {
         // Fallback if no aliases map found, though testCases defines specific ones
         delete (process.env as any)[testCase.envVar];
       } else {
-        envVars.forEach(name => delete (process.env as any)[name]);
+        envVars.forEach((name: string) => delete (process.env as any)[name]);
       }
 
       const config = {
         companyName: "Test Company",
         searchDepth: "fast" as const,
         language: "en-US",
+        subIndustries: [],
+        competitors: [],
+        researchSources: [],
         thinkingModelConfig: {
           modelId: "test-model",
           providerId: testCase.provider,
@@ -116,7 +122,7 @@ describe("Company Research Initialization Integration Test", () => {
       try {
         await researcher.runFastResearch();
         expect.fail(`Should have thrown error for ${testCase.provider}`);
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).toMatch(testCase.expectedMessage);
         expect(error.message).toMatch(/settings gear icon/i);
       }
@@ -128,6 +134,9 @@ describe("Company Research Initialization Integration Test", () => {
       companyName: "Test Company",
       searchDepth: "fast" as const,
       language: "en-US",
+      subIndustries: [],
+      competitors: [],
+      researchSources: [],
       thinkingModelConfig: {
         modelId: "gpt-4o",
         providerId: "openai",
@@ -148,7 +157,7 @@ describe("Company Research Initialization Integration Test", () => {
     // This should not throw during initialization (it might fail later due to invalid API key)
     try {
       await researcher.runFastResearch();
-    } catch (error) {
+    } catch (error: any) {
       // If it fails, it should be due to API call failure, not missing API key
       expect(error.message).not.toMatch(/No API key found/i);
       expect(error.message).not.toMatch(/not configured/i);

@@ -46,7 +46,7 @@ export interface Provider {
  * @throws Error if the provider is unsupported.
  */
 export function createProvider(provider: string, apiKey: string): Provider {
-  console.log(`[createProvider] Factory called for: ${provider}`);
+  // console.log(`[createProvider] Factory called for: ${provider}`);
   switch (provider) {
     case "openai":
       return new OpenAIProvider(apiKey);

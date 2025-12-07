@@ -1,0 +1,143 @@
+
+> tj-deep-research@0.0.1 test
+> vitest run tests/integration/initialization.test.ts
+
+
+[1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mC:/Users/tyler/projects/deep-equity-research[39m
+
+[90mstdout[2m | tests/integration/initialization.test.ts[2m > [22m[2mCompany Research Initialization Integration Test[2m > [22m[2mhandles missing API keys gracefully
+[22m[39mCompanyDeepResearch constructor - Checking imports:
+systemInstruction: string You are a public equity investment analyst with de...
+outputGuidelinesPrompt: string <OutputGuidelines>
+
+## Typographical rules
+
+Follow...
+INVESTMENT_RESEARCH_SECTIONS: object [
+  [32m'companyOverview'[39m,
+  [32m'companyProductDeepDive'[39m,
+  [32m'customersBuyersChannels'[39m,
+  [32m'marketBackground'[39m,
+  [32m'competitiveAnalysis'[39m,
+  [32m'trendsAndStrategy'[39m,
+  [32m'bullBearCase'[39m,
+  [32m'keyQuestions'[39m,
+  [32m'recentNews'[39m
+]
+
+[90mstdout[2m | tests/integration/initialization.test.ts[2m > [22m[2mCompany Research Initialization Integration Test[2m > [22m[2mprovides helpful error messages for different providers
+[22m[39mCompanyDeepResearch constructor - Checking imports:
+systemInstruction: string You are a public equity investment analyst with de...
+outputGuidelinesPrompt: string <OutputGuidelines>
+
+## Typographical rules
+
+Follow...
+INVESTMENT_RESEARCH_SECTIONS: object [
+  [32m'companyOverview'[39m,
+  [32m'companyProductDeepDive'[39m,
+  [32m'customersBuyersChannels'[39m,
+  [32m'marketBackground'[39m,
+  [32m'competitiveAnalysis'[39m,
+  [32m'trendsAndStrategy'[39m,
+  [32m'bullBearCase'[39m,
+  [32m'keyQuestions'[39m,
+  [32m'recentNews'[39m
+]
+
+[90mstdout[2m | tests/integration/initialization.test.ts[2m > [22m[2mCompany Research Initialization Integration Test[2m > [22m[2mprovides helpful error messages for different providers
+[22m[39mCompanyDeepResearch constructor - Checking imports:
+systemInstruction: string You are a public equity investment analyst with de...
+outputGuidelinesPrompt: string <OutputGuidelines>
+
+## Typographical rules
+
+Follow...
+INVESTMENT_RESEARCH_SECTIONS: object [
+  [32m'companyOverview'[39m,
+  [32m'companyProductDeepDive'[39m,
+  [32m'customersBuyersChannels'[39m,
+  [32m'marketBackground'[39m,
+  [32m'competitiveAnalysis'[39m,
+  [32m'trendsAndStrategy'[39m,
+  [32m'bullBearCase'[39m,
+  [32m'keyQuestions'[39m,
+  [32m'recentNews'[39m
+]
+
+[90mstdout[2m | tests/integration/initialization.test.ts[2m > [22m[2mCompany Research Initialization Integration Test[2m > [22m[2mprovides helpful error messages for different providers
+[22m[39mCompanyDeepResearch constructor - Checking imports:
+systemInstruction: string You are a public equity investment analyst with de...
+outputGuidelinesPrompt: string <OutputGuidelines>
+
+## Typographical rules
+
+Follow...
+INVESTMENT_RESEARCH_SECTIONS: object [
+  [32m'companyOverview'[39m,
+  [32m'companyProductDeepDive'[39m,
+  [32m'customersBuyersChannels'[39m,
+  [32m'marketBackground'[39m,
+  [32m'competitiveAnalysis'[39m,
+  [32m'trendsAndStrategy'[39m,
+  [32m'bullBearCase'[39m,
+  [32m'keyQuestions'[39m,
+  [32m'recentNews'[39m
+]
+
+[90mstdout[2m | tests/integration/initialization.test.ts[2m > [22m[2mCompany Research Initialization Integration Test[2m > [22m[2mprovides helpful error messages for different providers
+[22m[39mCompanyDeepResearch constructor - Checking imports:
+systemInstruction: string You are a public equity investment analyst with de...
+outputGuidelinesPrompt: string <OutputGuidelines>
+
+## Typographical rules
+
+Follow...
+INVESTMENT_RESEARCH_SECTIONS: object [
+  [32m'companyOverview'[39m,
+  [32m'companyProductDeepDive'[39m,
+  [32m'customersBuyersChannels'[39m,
+  [32m'marketBackground'[39m,
+  [32m'competitiveAnalysis'[39m,
+  [32m'trendsAndStrategy'[39m,
+  [32m'bullBearCase'[39m,
+  [32m'keyQuestions'[39m,
+  [32m'recentNews'[39m
+]
+
+[90mstdout[2m | tests/integration/initialization.test.ts[2m > [22m[2mCompany Research Initialization Integration Test[2m > [22m[2mworks when API keys are provided
+[22m[39mCompanyDeepResearch constructor - Checking imports:
+systemInstruction: string You are a public equity investment analyst with de...
+outputGuidelinesPrompt: string <OutputGuidelines>
+
+## Typographical rules
+
+Follow...
+INVESTMENT_RESEARCH_SECTIONS: object [
+  [32m'companyOverview'[39m,
+  [32m'companyProductDeepDive'[39m,
+  [32m'customersBuyersChannels'[39m,
+  [32m'marketBackground'[39m,
+  [32m'competitiveAnalysis'[39m,
+  [32m'trendsAndStrategy'[39m,
+  [32m'bullBearCase'[39m,
+  [32m'keyQuestions'[39m,
+  [32m'recentNews'[39m
+]
+[createAIProvider] Creating provider: openai, model: gpt-4o
+[createProvider] Factory called for: openai
+
+[90mstdout[2m | tests/integration/initialization.test.ts[2m > [22m[2mCompany Research Initialization Integration Test[2m > [22m[2mworks when API keys are provided
+[22m[39m[createAIProvider] Creating provider: openai, model: gpt-4o
+[createProvider] Factory called for: openai
+
+[90mstdout[2m | tests/integration/initialization.test.ts[2m > [22m[2mCompany Research Initialization Integration Test[2m > [22m[2mworks when API keys are provided
+[22m[39m[DEBUG] getTaskModelSettings: provider="openai", model="gpt-4o", settings= { temperature: [33m0.7[39m, maxTokens: [33m128000[39m }
+
+ [32mΓ£ô[39m tests/integration/initialization.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m 17:23:26
+[2m   Duration [22m 937ms[2m (transform 156ms, setup 18ms, collect 345ms, tests 8ms, environment 0ms, prepare 76ms)[22m
+
