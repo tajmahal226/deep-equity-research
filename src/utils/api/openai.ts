@@ -18,7 +18,26 @@ export class OpenAIProvider implements Provider {
    * @param apiKey - The OpenAI API key.
    */
   constructor(apiKey: string) {
-    this.openai = createOpenAI({ apiKey });
+    this.openai = createOpenAI({ 
+      apiKey,
+      compatibility: 'strict', // Ensures API compatibility
+      fetch: (url, init) => {
+        // Add store: true to all request bodies to enable response persistence
+        // This fixes the 404 error: "Items are not persisted when `store` is set to false"
+        if (init?.body) {
+          try {
+            const body = JSON.parse(init.body as string);
+            if (!('store' in body)) {
+              body.store = true;
+            }
+            init.body = JSON.stringify(body);
+          } catch {
+            // If parsing fails, continue with original body
+          }
+        }
+        return fetch(url, init);
+      }
+    });
   }
 
   /**
