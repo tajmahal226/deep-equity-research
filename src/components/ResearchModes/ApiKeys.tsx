@@ -23,7 +23,7 @@ const providers: ProviderInfo[] = [
     url: "https://platform.openai.com/api-keys",
     compatibility: "full",
     compatibilityText: "100% - All modules working",
-    recommendedModels: "gpt-5 + gpt-5-turbo"
+    recommendedModels: "gpt-4o + gpt-4o-mini"
   },
   {
     name: "Anthropic",

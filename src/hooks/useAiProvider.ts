@@ -170,9 +170,19 @@ function useModelProvider() {
         }
         break;
       }
-      default:
-        console.warn(`Unknown provider in createModelProvider: ${provider}`);
+      default: {
+        // Fall back to OpenAI when provider is empty or unknown
+        console.warn(`Unknown or empty provider "${provider}", falling back to OpenAI`);
+        options.provider = "openai";
+        const { openAIApiKey = "", openAIApiProxy } = settingState;
+        if (mode === "local") {
+          options.baseURL = completePath(openAIApiProxy || OPENAI_BASE_URL, "/v1");
+          options.apiKey = multiApiKeyPolling(openAIApiKey);
+        } else {
+          options.baseURL = location.origin + "/api/ai/openai/v1";
+        }
         break;
+      }
     }
 
     if (mode === "proxy") {
