@@ -243,6 +243,14 @@ export const useSettingStore = create(
     {
       name: "setting",
       storage: createSelectiveEncryptedStorage(SENSITIVE_FIELDS),
+      // Skip hydration during SSR to prevent hydration mismatches
+      // The store will be hydrated on the client after mount
+      skipHydration: true,
     }
   )
 );
+
+// Hydrate the store on the client side
+if (typeof window !== "undefined") {
+  useSettingStore.persist.rehydrate();
+}
