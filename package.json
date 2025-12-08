@@ -18,7 +18,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:e2e": "pnpm build && playwright test"
+    "test:e2e": "npm run build && playwright test"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.10",
