@@ -3,7 +3,6 @@ import { NextRequest } from "next/server";
 import { getCustomModelList, multiApiKeyPolling } from "@/utils/model";
 import { verifySignature } from "@/utils/signature";
 
-const NODE_ENV = process.env.NODE_ENV;
 
 const getEnvConfig = () => ({
   accessPassword: process.env.ACCESS_PASSWORD || "",
@@ -22,6 +21,18 @@ const getEnvConfig = () => ({
   disabledSearchProvider: process.env.NEXT_PUBLIC_DISABLED_SEARCH_PROVIDER || "",
   modelList: process.env.NEXT_PUBLIC_MODEL_LIST || "",
 });
+/**
+ * Safely extracts a Bearer token from an Authorization header.
+ * @param authHeader - The Authorization header value.
+ * @returns The token without "Bearer " prefix, or null if invalid.
+ */
+function extractBearerToken(authHeader: string | null | undefined): string | null {
+  if (!authHeader) return null;
+  const parts = authHeader.split(" ");
+  if (parts.length !== 2 || parts[0] !== "Bearer") return null;
+  const token = parts[1].trim();
+  return token.length > 0 ? token : null;
+}
 
 // Limit the middleware to paths starting with `/api/`
 export const config = {
@@ -49,7 +60,7 @@ const ERRORS = {
  * @returns The Next.js response.
  */
 export async function middleware(request: NextRequest) {
-  if (NODE_ENV === "production") console.debug(request);
+  // Debug logging removed for security - do not log request objects in production
 
   const {
     accessPassword,
@@ -168,7 +179,7 @@ export async function middleware(request: NextRequest) {
     const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
-        authorization.substring(7),
+        extractBearerToken(authorization) ?? "",
         accessPassword,
         Date.now()
       ) ||
@@ -208,7 +219,7 @@ export async function middleware(request: NextRequest) {
     const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
-        authorization.substring(7),
+        extractBearerToken(authorization) ?? "",
         accessPassword,
         Date.now()
       ) ||
@@ -288,7 +299,7 @@ export async function middleware(request: NextRequest) {
     const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
-        authorization.substring(7),
+        extractBearerToken(authorization) ?? "",
         accessPassword,
         Date.now()
       ) ||
@@ -328,7 +339,7 @@ export async function middleware(request: NextRequest) {
     const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
-        authorization.substring(7),
+        extractBearerToken(authorization) ?? "",
         accessPassword,
         Date.now()
       ) ||
@@ -368,7 +379,7 @@ export async function middleware(request: NextRequest) {
     const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
-        authorization.substring(7),
+        extractBearerToken(authorization) ?? "",
         accessPassword,
         Date.now()
       ) ||
@@ -409,7 +420,7 @@ export async function middleware(request: NextRequest) {
     const isDisabledModel = hasDisabledAIModel(requestBody);
     if (
       !verifySignature(
-        authorization.substring(7),
+        extractBearerToken(authorization) ?? "",
         accessPassword,
         Date.now()
       ) ||
@@ -438,7 +449,7 @@ export async function middleware(request: NextRequest) {
     if (
       request.method.toUpperCase() !== "POST" ||
       !verifySignature(
-        authorization.substring(7),
+        extractBearerToken(authorization) ?? "",
         accessPassword,
         Date.now()
       ) ||
@@ -477,7 +488,7 @@ export async function middleware(request: NextRequest) {
     if (
       request.method.toUpperCase() !== "POST" ||
       !verifySignature(
-        authorization.substring(7),
+        extractBearerToken(authorization) ?? "",
         accessPassword,
         Date.now()
       ) ||
@@ -516,7 +527,7 @@ export async function middleware(request: NextRequest) {
     if (
       request.method.toUpperCase() !== "POST" ||
       !verifySignature(
-        authorization.substring(7),
+        extractBearerToken(authorization) ?? "",
         accessPassword,
         Date.now()
       ) ||
@@ -555,7 +566,7 @@ export async function middleware(request: NextRequest) {
     if (
       request.method.toUpperCase() !== "POST" ||
       !verifySignature(
-        authorization.substring(7),
+        extractBearerToken(authorization) ?? "",
         accessPassword,
         Date.now()
       ) ||
@@ -594,7 +605,7 @@ export async function middleware(request: NextRequest) {
     if (
       request.method.toUpperCase() !== "POST" ||
       !verifySignature(
-        authorization.substring(7),
+        extractBearerToken(authorization) ?? "",
         accessPassword,
         Date.now()
       ) ||
@@ -622,7 +633,7 @@ export async function middleware(request: NextRequest) {
     const authorization = request.headers.get("authorization") || "";
     if (
       request.method.toUpperCase() !== "POST" ||
-      !verifySignature(authorization.substring(7), accessPassword, Date.now())
+      !verifySignature(extractBearerToken(authorization) ?? "", accessPassword, Date.now())
     ) {
       return NextResponse.json(
         { error: ERRORS.NO_PERMISSIONS },
@@ -645,7 +656,7 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/api/sse")) {
     let authorization = request.headers.get("authorization") || "";
     if (authorization !== "") {
-      authorization = authorization.substring(7);
+      authorization = extractBearerToken(authorization) || "";
     } else if (request.method.toUpperCase() === "GET") {
       authorization = request.nextUrl.searchParams.get("password") || "";
     }
@@ -670,7 +681,7 @@ export async function middleware(request: NextRequest) {
   }
   if (request.nextUrl.pathname.startsWith("/api/mcp")) {
     const authorization = request.headers.get("authorization") || "";
-    if (authorization.substring(7) !== accessPassword) {
+    if (extractBearerToken(authorization) !== accessPassword) {
       const responseHeaders = new Headers();
       responseHeaders.set("WWW-Authenticate", ERRORS.NO_PERMISSIONS.message);
       return NextResponse.json(
