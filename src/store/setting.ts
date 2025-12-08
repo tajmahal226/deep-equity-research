@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { createSelectiveEncryptedStorage } from "@/utils/encrypted-storage";
 
 /**
  * Settings store for application configuration.
@@ -203,7 +204,34 @@ export const defaultValues: SettingStore = {
 };
 
 /**
+/**
+ * List of sensitive fields that should be encrypted in localStorage.
+ * These fields contain API keys and access credentials.
+ */
+const SENSITIVE_FIELDS = [
+  "apiKey",
+  "openRouterApiKey",
+  "openAIApiKey",
+  "anthropicApiKey",
+  "deepseekApiKey",
+  "xAIApiKey",
+  "mistralApiKey",
+  "cohereApiKey",
+  "togetherApiKey",
+  "groqApiKey",
+  "perplexityApiKey",
+  "accessPassword",
+  "tavilyApiKey",
+  "firecrawlApiKey",
+  "exaApiKey",
+  "bochaApiKey",
+  "alphaVantageApiKey",
+  "yahooFinanceApiKey",
+];
+
+/**
  * Hook to access and manipulate the settings store.
+ * API keys and sensitive data are encrypted before being stored in localStorage.
  */
 export const useSettingStore = create(
   persist<SettingStore & SettingFunction>(
@@ -212,6 +240,9 @@ export const useSettingStore = create(
       update: (values) => set(values),
       reset: () => set(defaultValues),
     }),
-    { name: "setting" }
+    {
+      name: "setting",
+      storage: createSelectiveEncryptedStorage(SENSITIVE_FIELDS),
+    }
   )
 );
