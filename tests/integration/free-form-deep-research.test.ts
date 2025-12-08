@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import DeepResearch from '@/utils/deep-research';
 import { createSearchProvider } from '@/utils/deep-research/search';
 import { POST as financialDataPost } from '@/app/api/financial-data/route';

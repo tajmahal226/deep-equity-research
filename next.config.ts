@@ -33,7 +33,7 @@ const BOCHA_API_BASE_URL =
 const SEARXNG_API_BASE_URL =
   process.env.SEARXNG_API_BASE_URL || "http://0.0.0.0:8080";
 
-export default async function Config(phase: string) {
+export default async function Config() {
   const nextConfig: NextConfig = {
     /* config options here */
     env: {

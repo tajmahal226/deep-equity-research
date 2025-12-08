@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { createAIProvider } from "@/utils/deep-research/provider";
 import { createProvider } from "@/utils/api";
-import { OpenAIProvider } from "@/utils/api/openai";
 
 vi.mock("@/utils/api", () => ({
   createProvider: vi.fn(),
