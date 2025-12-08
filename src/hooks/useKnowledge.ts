@@ -117,7 +117,7 @@ function useKnowledge() {
       for await (const part of result.fullStream) {
         if (part.type === "text-delta") {
           thinkTagStreamProcessor.processChunk(
-            part.textDelta,
+            part.text,
             (data) => {
               content += data;
             },
@@ -125,8 +125,8 @@ function useKnowledge() {
               reasoning += data;
             }
           );
-        } else if (part.type === "reasoning") {
-          reasoning += part.textDelta;
+        } else if (part.type === "reasoning-delta") {
+          reasoning += part.text;
         }
       }
       if (reasoning) logger.log(reasoning);

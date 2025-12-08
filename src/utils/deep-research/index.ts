@@ -182,7 +182,7 @@ class DeepResearch {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.textDelta,
+          part.text,
           (data) => {
             content += data;
             this.onMessage("message", { type: "text", text: data });
@@ -191,8 +191,8 @@ class DeepResearch {
             this.onMessage("reasoning", { type: "text", text: data });
           }
         );
-      } else if (part.type === "reasoning") {
-        this.onMessage("reasoning", { type: "text", text: part.textDelta });
+      } else if (part.type === "reasoning-delta") {
+        this.onMessage("reasoning", { type: "text", text: part.text });
       }
     }
     this.onMessage("message", { type: "text", text: "\n</report-plan>\n\n" });
@@ -319,7 +319,7 @@ class DeepResearch {
             processResultPrompt(item.query, item.researchGoal),
             this.getResponseLanguagePrompt(),
           ].join("\n\n"),
-          tools: await getTools(),
+          tools: (await getTools()) as any,
           providerOptions: getProviderOptions(),
         });
       } else {
@@ -361,7 +361,7 @@ class DeepResearch {
       for await (const part of searchResult.fullStream) {
         if (part.type === "text-delta") {
           thinkTagStreamProcessor.processChunk(
-            part.textDelta,
+            part.text,
             (data) => {
               content += data;
               this.onMessage("message", { type: "text", text: data });
@@ -370,13 +370,13 @@ class DeepResearch {
               this.onMessage("reasoning", { type: "text", text: data });
             }
           );
-        } else if (part.type === "reasoning") {
-          this.onMessage("reasoning", { type: "text", text: part.textDelta });
+        } else if (part.type === "reasoning-delta") {
+          this.onMessage("reasoning", { type: "text", text: part.text });
         } else if (part.type === "source") {
-          sources.push(part.source);
+          sources.push(part as any);
         } else if (part.type === "finish") {
-          if (part.providerMetadata?.google) {
-            const { groundingMetadata } = part.providerMetadata.google;
+          if ((part as any).providerMetadata?.google) {
+            const { groundingMetadata } = (part as any).providerMetadata.google;
             const googleGroundingMetadata =
               groundingMetadata as GoogleGenerativeAIProviderMetadata["groundingMetadata"];
             if (googleGroundingMetadata?.groundingSupports) {
@@ -394,7 +394,7 @@ class DeepResearch {
                 }
               );
             }
-          } else if (part.providerMetadata?.openai) {
+          } else if ((part as any).providerMetadata?.openai) {
             // Fixed the problem that OpenAI cannot generate markdown reference link syntax properly in Chinese context
             content = content.replaceAll("【", "[").replaceAll("】", "]");
           }
@@ -497,7 +497,7 @@ class DeepResearch {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.textDelta,
+          part.text,
           (data) => {
             content += data;
             this.onMessage("message", { type: "text", text: data });
@@ -506,10 +506,10 @@ class DeepResearch {
             this.onMessage("reasoning", { type: "text", text: data });
           }
         );
-      } else if (part.type === "reasoning") {
-        this.onMessage("reasoning", { type: "text", text: part.textDelta });
+      } else if (part.type === "reasoning-delta") {
+        this.onMessage("reasoning", { type: "text", text: part.text });
       } else if (part.type === "source") {
-        sources.push(part.source);
+        sources.push(part as any);
       } else if (part.type === "finish") {
         if (sources.length > 0) {
           const sourceContent =
