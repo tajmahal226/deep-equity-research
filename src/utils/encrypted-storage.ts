@@ -54,18 +54,26 @@ function decrypt(encryptedData: string, key: string): string | null {
 /**
  * Creates an encrypted storage adapter that only encrypts sensitive fields.
  * This provides a balance between security and debuggability.
- * 
+ *
  * @param sensitiveFields - Array of field names that should be encrypted.
  * @returns A PersistStorage implementation with selective encryption.
  */
 export function createSelectiveEncryptedStorage<S = unknown>(
   sensitiveFields: string[]
 ): PersistStorage<S> | undefined {
+  // During SSR, return undefined to let Zustand skip hydration
+  // The skipHydration option below ensures this works correctly
   if (typeof window === "undefined") {
     return undefined;
   }
 
-  const encryptionKey = generateEncryptionKey();
+  let encryptionKey: string;
+  try {
+    encryptionKey = generateEncryptionKey();
+  } catch {
+    // Fallback if browser APIs aren't available yet
+    encryptionKey = "fallback-key";
+  }
 
   const encryptedStorage = {
     getItem: (name: string): string | null => {
