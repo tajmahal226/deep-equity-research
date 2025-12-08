@@ -55,7 +55,7 @@ function getDefaultModelConfig(providerId?: string) {
       return { thinkingModel: "llama3.1:8b", networkingModel: "llama3.1:8b" };
     case "openai":
     default:
-      return { thinkingModel: "gpt-5", networkingModel: "gpt-5-turbo" };
+      return { thinkingModel: "gpt-4o", networkingModel: "gpt-4o-mini" };
   }
 }
 

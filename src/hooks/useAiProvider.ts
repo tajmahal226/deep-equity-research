@@ -170,9 +170,19 @@ function useModelProvider() {
         }
         break;
       }
-      default:
-        console.warn(`Unknown provider in createModelProvider: ${provider}`);
+      default: {
+        // Fall back to OpenAI when provider is empty or unknown
+        console.warn(`Unknown or empty provider "${provider}", falling back to OpenAI`);
+        options.provider = "openai";
+        const { openAIApiKey = "", openAIApiProxy } = settingState;
+        if (mode === "local") {
+          options.baseURL = completePath(openAIApiProxy || OPENAI_BASE_URL, "/v1");
+          options.apiKey = multiApiKeyPolling(openAIApiKey);
+        } else {
+          options.baseURL = location.origin + "/api/ai/openai/v1";
+        }
         break;
+      }
     }
 
     if (mode === "proxy") {
@@ -180,6 +190,24 @@ function useModelProvider() {
     }
     return await createAIProvider(options);
   }
+
+  /**
+   * Default models for each provider, used as fallbacks when user hasn't configured models.
+   */
+  const DEFAULT_MODELS: Record<string, { thinking: string; networking: string }> = {
+    google: { thinking: "gemini-2.0-flash-thinking-exp", networking: "gemini-2.0-flash" },
+    openai: { thinking: "gpt-4o", networking: "gpt-4o-mini" },
+    anthropic: { thinking: "claude-3-5-sonnet-20241022", networking: "claude-3-5-haiku-20241022" },
+    deepseek: { thinking: "deepseek-reasoner", networking: "deepseek-chat" },
+    xai: { thinking: "grok-2-1212", networking: "grok-2-1212" },
+    mistral: { thinking: "mistral-large-latest", networking: "mistral-medium-latest" },
+    cohere: { thinking: "command-r-plus", networking: "command-r" },
+    together: { thinking: "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo", networking: "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo" },
+    groq: { thinking: "llama-3.1-70b-versatile", networking: "llama-3.1-8b-instant" },
+    perplexity: { thinking: "llama-3.1-sonar-large-128k-online", networking: "llama-3.1-sonar-small-128k-online" },
+    openrouter: { thinking: "anthropic/claude-3.5-sonnet", networking: "anthropic/claude-3.5-sonnet" },
+    ollama: { thinking: "llama3.1:8b", networking: "llama3.1:8b" },
+  };
 
   /**
    * Retrieves the current thinking and networking models based on the active provider.
@@ -190,73 +218,77 @@ function useModelProvider() {
     const state = useSettingStore.getState();
     const { provider } = state;
 
+    // Helper to get model with fallback
+    const getWithFallback = (model: string, fallback: string) => model || fallback;
+    const defaults = DEFAULT_MODELS[provider] || DEFAULT_MODELS.openai;
+
     switch (provider) {
       case "google":
         return {
-          thinkingModel: state.thinkingModel,
-          networkingModel: state.networkingModel,
+          thinkingModel: getWithFallback(state.thinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.networkingModel, defaults.networking),
         };
       case "openai":
         return {
-          thinkingModel: state.openAIThinkingModel,
-          networkingModel: state.openAINetworkingModel,
+          thinkingModel: getWithFallback(state.openAIThinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.openAINetworkingModel, defaults.networking),
         };
       case "anthropic":
         return {
-          thinkingModel: state.anthropicThinkingModel,
-          networkingModel: state.anthropicNetworkingModel,
+          thinkingModel: getWithFallback(state.anthropicThinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.anthropicNetworkingModel, defaults.networking),
         };
       case "deepseek":
         return {
-          thinkingModel: state.deepseekThinkingModel,
-          networkingModel: state.deepseekNetworkingModel,
+          thinkingModel: getWithFallback(state.deepseekThinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.deepseekNetworkingModel, defaults.networking),
         };
       case "xai":
         return {
-          thinkingModel: state.xAIThinkingModel,
-          networkingModel: state.xAINetworkingModel,
+          thinkingModel: getWithFallback(state.xAIThinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.xAINetworkingModel, defaults.networking),
         };
       case "mistral":
         return {
-          thinkingModel: state.mistralThinkingModel,
-          networkingModel: state.mistralNetworkingModel,
+          thinkingModel: getWithFallback(state.mistralThinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.mistralNetworkingModel, defaults.networking),
         };
       case "cohere":
         return {
-          thinkingModel: state.cohereThinkingModel,
-          networkingModel: state.cohereNetworkingModel,
+          thinkingModel: getWithFallback(state.cohereThinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.cohereNetworkingModel, defaults.networking),
         };
       case "together":
         return {
-          thinkingModel: state.togetherThinkingModel,
-          networkingModel: state.togetherNetworkingModel,
+          thinkingModel: getWithFallback(state.togetherThinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.togetherNetworkingModel, defaults.networking),
         };
       case "groq":
         return {
-          thinkingModel: state.groqThinkingModel,
-          networkingModel: state.groqNetworkingModel,
+          thinkingModel: getWithFallback(state.groqThinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.groqNetworkingModel, defaults.networking),
         };
       case "perplexity":
         return {
-          thinkingModel: state.perplexityThinkingModel,
-          networkingModel: state.perplexityNetworkingModel,
+          thinkingModel: getWithFallback(state.perplexityThinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.perplexityNetworkingModel, defaults.networking),
         };
       case "openrouter":
         return {
-          thinkingModel: state.openRouterThinkingModel,
-          networkingModel: state.openRouterNetworkingModel,
+          thinkingModel: getWithFallback(state.openRouterThinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.openRouterNetworkingModel, defaults.networking),
         };
       case "ollama":
         return {
-          thinkingModel: state.ollamaThinkingModel,
-          networkingModel: state.ollamaNetworkingModel,
+          thinkingModel: getWithFallback(state.ollamaThinkingModel, defaults.thinking),
+          networkingModel: getWithFallback(state.ollamaNetworkingModel, defaults.networking),
         };
       default:
         // Fallback to OpenAI models if provider is unknown
         console.warn(`Unknown provider "${provider}", falling back to OpenAI models`);
         return {
-          thinkingModel: state.openAIThinkingModel || "gpt-4o",
-          networkingModel: state.openAINetworkingModel || "gpt-4o-mini",
+          thinkingModel: getWithFallback(state.openAIThinkingModel, DEFAULT_MODELS.openai.thinking),
+          networkingModel: getWithFallback(state.openAINetworkingModel, DEFAULT_MODELS.openai.networking),
         };
     }
   }
