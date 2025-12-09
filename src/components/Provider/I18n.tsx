@@ -4,15 +4,6 @@ import { I18nextProvider } from "react-i18next";
 import { useSettingStore } from "@/store/setting";
 import i18n, { detectLanguage } from "@/utils/i18n";
 
-/**
- * I18Provider component.
- * Initializes and provides internationalization context to the application.
- * Detects browser language if not set, updates the document title and lang attribute.
- *
- * @param props - The component props.
- * @param props.children - The child components.
- * @returns The I18nextProvider wrapping the children.
- */
 function I18Provider({ children }: { children: React.ReactNode }) {
   const { language } = useSettingStore();
 

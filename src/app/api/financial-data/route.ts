@@ -233,13 +233,6 @@ async function fetchYahooFinanceStock(ticker: string, _apiKey?: string) {
   }
 }
 
-/**
- * POST handler for financial data requests.
- * Supports stock prices, company financials, profiles, and search.
- *
- * @param request - The NextRequest object.
- * @returns Financial data response.
- */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

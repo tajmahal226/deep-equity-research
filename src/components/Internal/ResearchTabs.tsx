@@ -26,9 +26,7 @@ import {
 } from "lucide-react";
 
 interface ResearchTabsProps {
-  /** The key of the tab to be active by default. */
   defaultTab?: string;
-  /** The content for each tab. */
   children: {
     // First row tabs
     companyDeepDive: React.ReactNode;
@@ -43,13 +41,6 @@ interface ResearchTabsProps {
   };
 }
 
-/**
- * ResearchTabs component.
- * Displays tabs for navigating between different research modes.
- *
- * @param props - The component props.
- * @returns The research tabs component.
- */
 export default function ResearchTabs({ 
   defaultTab = "free-form", 
   children 

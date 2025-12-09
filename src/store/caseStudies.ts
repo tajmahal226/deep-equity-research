@@ -6,78 +6,119 @@ import { createSafeJSONStorage } from "@/utils/storage";
 export interface CaseStudy {
   id: string;
   title: string;
+  description: string;
   companyName: string;
   industry: string;
-  description: string;
-  investmentThesis: string;
-  status: "active" | "exited" | "passed" | "write-off" | "monitoring";
-  outcome?: "success" | "failure" | "neutral" | "partial";
-  createdAt: number;
-  updatedAt: number;
-  keyMilestones: Milestone[];
-  attachments: Attachment[];
-  tags: string[];
-  category: string; // broadened from literal union to string to allow UI flexibility, though we provide defaults
-
-  // Fields used in component but missing in interface previously?
-  // Checking component usage:
-  // fundingStage, dealSize, valuation, ownership, leadInvestor, coinvestors, keyMetrics, risks, mitigationStrategies, lessonsLearned, whatWorked, whatDidntWork, isPublic, author
   fundingStage: string;
   dealSize?: string;
-  author: string;
+  investmentDate: number;
+  status: "active" | "exited" | "write-off" | "monitoring";
+  outcome?: "success" | "partial" | "failure";
+
+  // Investment Thesis
+  investmentThesis: string;
+  keyMetrics: string[];
+  risks: string[];
+  mitigationStrategies: string[];
+
+  // Deal Details
   valuation?: string;
   ownership?: string;
   leadInvestor?: string;
   coinvestors: string[];
-  keyMetrics: string[];
-  risks: string[];
-  mitigationStrategies: string[];
+  boardSeats?: number;
+
+  // Performance Tracking
+  currentValuation?: string;
+  multipleReturned?: string;
+  irrReturned?: string;
+  keyMilestones: Milestone[];
+
+  // Analysis
   lessonsLearned: string[];
   whatWorked: string[];
   whatDidntWork: string[];
-  isPublic: boolean;
-  investmentDate: number;
+  wouldInvestAgain?: boolean;
+  recommendationScore?: number; // 1-10
+
+  // Metadata
+  tags: string[];
+  category: string;
+  author: string;
   collaborators: string[];
+  isPublic: boolean;
+  createdAt: number;
+  updatedAt: number;
+  attachments: Attachment[];
 }
 
 export interface Milestone {
   id: string;
-  date: string;
+  date: number;
   title: string;
   description: string;
-  type: "funding" | "product" | "hiring" | "revenue" | "other";
-  impact?: "positive" | "negative" | "neutral";
+  type: "funding" | "product" | "business" | "team" | "exit" | "other";
+  impact: "positive" | "negative" | "neutral";
 }
 
 export interface Attachment {
   id: string;
   name: string;
-  url: string;
-  type: "pdf" | "image" | "link" | "other";
+  type: string;
+  size: number;
+  url?: string;
   uploadedAt: number;
+}
+
+export interface CaseStudyTemplate {
+  id: string;
+  name: string;
+  description: string;
+  sections: TemplateSection[];
+  tags: string[];
+  isDefault: boolean;
+  createdAt: number;
+}
+
+export interface TemplateSection {
+  id: string;
+  title: string;
+  description?: string;
+  fieldType: "text" | "textarea" | "select" | "multiselect" | "date" | "number";
+  options?: string[];
+  isRequired: boolean;
+  placeholder?: string;
 }
 
 interface CaseStudiesState {
   caseStudies: CaseStudy[];
+  templates: CaseStudyTemplate[];
   categories: string[];
-  isSearching: boolean;
+  tags: string[];
   
-  // Actions
+  // Case Study Management
   addCaseStudy: (caseStudy: Omit<CaseStudy, "id" | "createdAt" | "updatedAt">) => void;
   updateCaseStudy: (id: string, updates: Partial<CaseStudy>) => void;
   removeCaseStudy: (id: string) => void;
   duplicateCaseStudy: (id: string) => void;
   
+  // Template Management
+  addTemplate: (template: Omit<CaseStudyTemplate, "id" | "createdAt">) => void;
+  updateTemplate: (id: string, updates: Partial<CaseStudyTemplate>) => void;
+  removeTemplate: (id: string) => void;
+
+  // Milestone Management
   addMilestone: (caseStudyId: string, milestone: Omit<Milestone, "id">) => void;
   updateMilestone: (caseStudyId: string, milestoneId: string, updates: Partial<Milestone>) => void;
   removeMilestone: (caseStudyId: string, milestoneId: string) => void;
   
+  // Attachment Management
   addAttachment: (caseStudyId: string, attachment: Omit<Attachment, "id" | "uploadedAt">) => void;
   removeAttachment: (caseStudyId: string, attachmentId: string) => void;
   
-  // Queries
+  // Filtering and Search
   getCaseStudiesByCategory: (category: string) => CaseStudy[];
-  getCaseStudiesByStatus: (status: string) => CaseStudy[];
+  getCaseStudiesByStatus: (status: CaseStudy["status"]) => CaseStudy[];
   getCaseStudiesByIndustry: (industry: string) => CaseStudy[];
   searchCaseStudies: (query: string) => CaseStudy[];
   getCaseStudyById: (id: string) => CaseStudy | undefined;
@@ -93,16 +134,100 @@ interface CaseStudiesState {
   };
 }
 
-/**
- * Case Study Store.
- * Manages case studies, milestones, and attachments.
- */
+const defaultCategories = [
+  "Public Equity",
+  "Venture Capital",
+  "Private Equity",
+  "Seed Investment",
+  "Series A",
+  "Series B+",
+  "Late Stage",
+  "Acquisition",
+  "IPO"
+];
+
+const defaultTags = [
+  "SaaS",
+  "B2B",
+  "B2C",
+  "Marketplace",
+  "Fintech",
+  "Healthcare",
+  "Enterprise",
+  "Consumer",
+  "AI/ML",
+  "Success",
+  "Learning",
+  "High Growth"
+];
+
+// Default case study template
+const defaultTemplate: CaseStudyTemplate = {
+  id: "default-template",
+  name: "Standard Investment Case Study",
+  description: "Comprehensive template for documenting investment case studies",
+  isDefault: true,
+  tags: ["standard", "investment", "comprehensive"],
+  createdAt: Date.now(),
+  sections: [
+    {
+      id: "company-overview",
+      title: "Company Overview",
+      description: "Basic company information",
+      fieldType: "textarea",
+      isRequired: true,
+      placeholder: "Company background, product/service, business model..."
+    },
+    {
+      id: "investment-thesis",
+      title: "Investment Thesis",
+      description: "Why we invested",
+      fieldType: "textarea",
+      isRequired: true,
+      placeholder: "Key reasons for investment, market opportunity, competitive advantages..."
+    },
+    {
+      id: "deal-structure",
+      title: "Deal Structure",
+      description: "Investment terms and structure",
+      fieldType: "textarea",
+      isRequired: false,
+      placeholder: "Valuation, ownership, terms, co-investors..."
+    },
+    {
+      id: "key-risks",
+      title: "Key Risks",
+      description: "Identified risks and concerns",
+      fieldType: "textarea",
+      isRequired: true,
+      placeholder: "Market, execution, competitive, financial risks..."
+    },
+    {
+      id: "performance",
+      title: "Performance & Outcomes",
+      description: "How the investment performed",
+      fieldType: "textarea",
+      isRequired: false,
+      placeholder: "Financial returns, operational improvements, exit details..."
+    },
+    {
+      id: "lessons-learned",
+      title: "Lessons Learned",
+      description: "Key takeaways",
+      fieldType: "textarea",
+      isRequired: true,
+      placeholder: "What worked, what didn't, what would you do differently..."
+    }
+  ]
+};
+
 export const useCaseStudiesStore = create<CaseStudiesState>()(
   persist(
     (set, get) => ({
       caseStudies: [],
-      categories: ["Growth Equity", "Venture Capital", "Turnaround", "Value Investing", "Buyout"],
-      isSearching: false,
+      templates: [defaultTemplate],
+      categories: defaultCategories,
+      tags: defaultTags,
       
       addCaseStudy: (caseStudy) =>
         set((state) => ({
@@ -120,7 +245,9 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
       updateCaseStudy: (id, updates) =>
         set((state) => ({
           caseStudies: state.caseStudies.map(cs =>
-            cs.id === id ? { ...cs, ...updates, updatedAt: Date.now() } : cs
+            cs.id === id
+              ? { ...cs, ...updates, updatedAt: Date.now() }
+              : cs
           ),
         })),
       
@@ -129,24 +256,41 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
           caseStudies: state.caseStudies.filter(cs => cs.id !== id),
         })),
 
-      duplicateCaseStudy: (id) =>
-        set((state) => {
-          const original = state.caseStudies.find(cs => cs.id === id);
-          if (!original) return {};
+      duplicateCaseStudy: (id) => {
+        const caseStudy = get().getCaseStudyById(id);
+        if (caseStudy) {
+          get().addCaseStudy({
+            ...caseStudy,
+            title: `${caseStudy.title} (Copy)`,
+            keyMilestones: caseStudy.keyMilestones.map(m => ({ ...m, id: nanoid() })),
+            attachments: [], // Don't duplicate attachments
+          });
+        }
+      },
 
-          return {
-            caseStudies: [
-              {
-                ...original,
-                id: nanoid(),
-                title: `${original.title} (Copy)`,
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-              },
-              ...state.caseStudies
-            ]
-          };
-        }),
+      addTemplate: (template) =>
+        set((state) => ({
+          templates: [
+            {
+              ...template,
+              id: nanoid(),
+              createdAt: Date.now(),
+            },
+            ...state.templates
+          ],
+        })),
+
+      updateTemplate: (id, updates) =>
+        set((state) => ({
+          templates: state.templates.map(t =>
+            t.id === id ? { ...t, ...updates } : t
+          ),
+        })),
+
+      removeTemplate: (id) =>
+        set((state) => ({
+          templates: state.templates.filter(t => t.id !== id || t.isDefault),
+        })),
       
       addMilestone: (caseStudyId, milestone) =>
         set((state) => ({
@@ -154,7 +298,10 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
             cs.id === caseStudyId
               ? {
                   ...cs,
-                  keyMilestones: [...cs.keyMilestones, { ...milestone, id: nanoid() }],
+                  keyMilestones: [
+                    ...cs.keyMilestones,
+                    { ...milestone, id: nanoid() }
+                  ],
                   updatedAt: Date.now()
                 }
               : cs

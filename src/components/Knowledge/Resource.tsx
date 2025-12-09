@@ -13,30 +13,15 @@ import {
 import { useKnowledgeStore } from "@/store/knowledge";
 
 type Props = {
-  /** The ID of the resource to display. */
   id: string;
-  /** Whether the dialog is open. */
   open: boolean;
-  /** Callback triggered when the dialog is closed. */
   onClose: () => void;
 };
 
-/**
- * Formats a timestamp into a human-readable string.
- * @param timestamp - The timestamp to format.
- * @returns The formatted date string.
- */
 function formatDate(timestamp: number) {
   return dayjs(timestamp).format("YYYY-MM-DD HH:mm");
 }
 
-/**
- * KnowledgeInfor component.
- * Displays information about the knowledge resource (e.g., creation date, type).
- *
- * @param props - The component props.
- * @returns The knowledge info text or null.
- */
 function KnowledgeInfor({ id }: { id: string }) {
   const { t } = useTranslation();
   const knowledge = useMemo(() => {
@@ -57,13 +42,6 @@ function KnowledgeInfor({ id }: { id: string }) {
   return null;
 }
 
-/**
- * Resource component.
- * A dialog for viewing and editing a specific knowledge resource.
- *
- * @param props - The component props.
- * @returns The resource dialog component.
- */
 function Resource({ id, open, onClose }: Props) {
   const { t } = useTranslation();
   function handleClose(open: boolean) {

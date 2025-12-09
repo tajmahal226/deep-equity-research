@@ -9,9 +9,6 @@ import type { CacheType } from "@/store/cache";
 /**
  * Create a hash from a string
  * Simple hash function for generating cache IDs
- *
- * @param str - The input string.
- * @returns The hash string.
  */
 export function createHash(str: string): string {
   let hash = 0;
@@ -25,9 +22,6 @@ export function createHash(str: string): string {
 
 /**
  * Build cache key for company research
- *
- * @param params - The parameters for the cache key.
- * @returns The cache key string.
  */
 export function buildCompanyResearchCacheKey(params: {
   companyName: string;
@@ -67,9 +61,6 @@ export function buildCompanyResearchCacheKey(params: {
 
 /**
  * Build cache key for market research
- *
- * @param params - The parameters for the cache key.
- * @returns The cache key string.
  */
 export function buildMarketResearchCacheKey(params: {
   query: string;
@@ -95,9 +86,6 @@ export function buildMarketResearchCacheKey(params: {
 
 /**
  * Build cache key for bulk company research
- *
- * @param params - The parameters for the cache key.
- * @returns The cache key string.
  */
 export function buildBulkCompanyResearchCacheKey(params: {
   companies: string[];
@@ -126,9 +114,6 @@ export function buildBulkCompanyResearchCacheKey(params: {
 
 /**
  * Build cache key for free-form research
- *
- * @param params - The parameters for the cache key.
- * @returns The cache key string.
  */
 export function buildFreeFormResearchCacheKey(params: {
   query: string;
@@ -150,9 +135,6 @@ export function buildFreeFormResearchCacheKey(params: {
 /**
  * Estimate cost savings from cache hit
  * Based on typical API costs per provider
- *
- * @param params - The parameters for cost estimation.
- * @returns Estimated cost in USD.
  */
 export function estimateCostSavings(params: {
   provider: string;
@@ -209,9 +191,6 @@ export function estimateCostSavings(params: {
 
 /**
  * Estimate token savings from cache hit
- *
- * @param params - The parameters for token estimation.
- * @returns Estimated token count.
  */
 export function estimateTokenSavings(params: {
   cacheType: CacheType;
@@ -246,9 +225,6 @@ export function estimateTokenSavings(params: {
 
 /**
  * Format time remaining until cache expiry
- *
- * @param expiresAt - The expiration timestamp.
- * @returns Formatted time string.
  */
 export function formatTimeRemaining(expiresAt: number): string {
   const now = Date.now();
@@ -273,9 +249,6 @@ export function formatTimeRemaining(expiresAt: number): string {
 
 /**
  * Format last updated time
- *
- * @param timestamp - The last updated timestamp.
- * @returns Formatted time string relative to now.
  */
 export function formatLastUpdated(timestamp: number): string {
   const now = Date.now();
@@ -299,9 +272,6 @@ export function formatLastUpdated(timestamp: number): string {
 /**
  * Check if research parameters are cacheable
  * Some queries should not be cached (e.g., real-time data requests)
- *
- * @param params - The research parameters.
- * @returns True if cacheable, false otherwise.
  */
 export function isCacheable(params: {
   cacheType: CacheType;
@@ -336,9 +306,6 @@ export function isCacheable(params: {
 
 /**
  * Get cache status color for UI
- *
- * @param entry - The cache entry metadata.
- * @returns Status color string ('green', 'yellow', 'red').
  */
 export function getCacheStatusColor(entry: {
   createdAt: number;

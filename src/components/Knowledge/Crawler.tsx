@@ -26,9 +26,7 @@ import useKnowledge from "@/hooks/useKnowledge";
 import { useSettingStore } from "@/store/setting";
 
 type Props = {
-  /** Whether the dialog is open. */
   open: boolean;
-  /** Callback triggered when the dialog is closed. */
   onClose: () => void;
 };
 
@@ -40,13 +38,6 @@ const formSchema = z.object({
   crawler: z.string(),
 });
 
-/**
- * Crawler component.
- * A dialog for fetching knowledge from a URL using a specified crawler (local or Jina).
- *
- * @param props - The component props.
- * @returns The crawler dialog component.
- */
 function Crawler({ open, onClose }: Props) {
   const { t } = useTranslation();
   const { getKnowledgeFromUrl } = useKnowledge();

@@ -5,10 +5,6 @@ import { researchStore } from "@/utils/storage";
 import { customAlphabet } from "nanoid";
 import { clone, pick } from "radash";
 
-/**
- * Research history item.
- * Includes full task state plus timestamps.
- */
 export interface ResearchHistory extends TaskStore {
   createdAt: number;
   updatedAt?: number;
@@ -27,10 +23,6 @@ interface HistoryFunction {
 
 const nanoid = customAlphabet("1234567890abcdefghijklmnopqrstuvwxyz", 12);
 
-/**
- * History Store.
- * Manages saved research sessions.
- */
 export const useHistoryStore = create(
   persist<HistoryStore & HistoryFunction>(
     (set, get) => ({

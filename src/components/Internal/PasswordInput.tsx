@@ -11,14 +11,6 @@ import { cn } from "@/utils/style";
 
 type Props = ComponentProps<"input">;
 
-/**
- * PasswordInput component.
- * An input field with a toggle to show/hide the password.
- *
- * @param props - The component props.
- * @param forwardedRef - The forwarded ref for the input element.
- * @returns The password input component.
- */
 function PasswordInput(
   { className, type, ...props }: Props,
   forwardedRef: ForwardedRef<HTMLInputElement>
@@ -50,9 +42,6 @@ function PasswordInput(
   );
 }
 
-/**
- * Password component that forwards the ref.
- */
 const Password = forwardRef(PasswordInput);
 Password.displayName = "PasswordInput";
 

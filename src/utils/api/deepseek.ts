@@ -6,28 +6,13 @@ import { withTimeout, retryWithBackoff } from "../timeout-config";
 import { AppError, handleError } from "../error";
 import { streamText } from "ai";
 
-/**
- * DeepSeek Provider implementation.
- */
 export class DeepSeekProvider implements Provider {
   private deepseek: any;
 
-  /**
-   * Initializes the DeepSeek provider.
-   *
-   * @param apiKey - The DeepSeek API key.
-   */
   constructor(apiKey: string) {
     this.deepseek = createDeepSeek({ apiKey });
   }
 
-  /**
-   * Generates a report using DeepSeek.
-   *
-   * @param prompt - The input prompt.
-   * @param options - Generation options.
-   * @returns The generated report.
-   */
   async generateReport(prompt: string, options: any): Promise<string> {
     try {
       const response: any = await retryWithBackoff(() =>
@@ -43,13 +28,6 @@ export class DeepSeekProvider implements Provider {
     }
   }
 
-  /**
-   * Streams a report generation using DeepSeek.
-   *
-   * @param prompt - The input prompt.
-   * @param options - Generation options.
-   * @returns A readable stream of the generated report.
-   */
   async streamReport(prompt: string, options: any): Promise<ReadableStream> {
     try {
       const result = await streamText({
@@ -64,11 +42,6 @@ export class DeepSeekProvider implements Provider {
     }
   }
 
-  /**
-   * Retrieves available models from DeepSeek.
-   *
-   * @returns List of model IDs.
-   */
   async getModels(): Promise<string[]> {
     try {
       // The DeepSeek SDK does not have a models() method.

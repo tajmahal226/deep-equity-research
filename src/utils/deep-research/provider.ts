@@ -4,6 +4,9 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createMistral } from "@ai-sdk/mistral";
 import { createXai } from "@ai-sdk/xai";
+import { createOllama } from "ollama-ai-provider";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { LanguageModel } from "ai";
 
 export interface AIProviderOptions {
   provider: string;
@@ -15,159 +18,64 @@ export interface AIProviderOptions {
   enableTools?: boolean;
 }
 
-/**
- * Creates an AI provider instance compatible with the AI SDK v5.
- * Returns a model that can be used with streamText/generateText.
- *
- * @param options - Configuration options for the provider.
- * @returns A language model instance compatible with AI SDK.
- */
 export async function createAIProvider({
   provider,
   baseURL,
   apiKey,
-  model,
   headers,
-}: AIProviderOptions): Promise<any> {
-  // Validate required fields
-  if (!provider) {
-    console.warn("[createAIProvider] Provider is empty, defaulting to openai");
-    provider = "openai";
-  }
-  if (!model) {
-    console.warn("[createAIProvider] Model is empty, defaulting to gpt-4o");
-    model = "gpt-4o";
+  model,
+  settings,
+}: AIProviderOptions): Promise<LanguageModel> {
+  if (!apiKey && provider !== "ollama") {
+    throw new Error("API key is required.");
   }
 
-  // console.log(`[createAIProvider] Creating provider: ${provider}, model: ${model}, baseURL: ${baseURL}`);
+  const commonOptions = {
+    baseURL: baseURL || undefined,
+    headers: headers || undefined,
+    apiKey: apiKey || undefined,
+  };
 
-  try {
-    switch (provider) {
-      case "openai": {
-        const openai = createOpenAI({
-          apiKey: apiKey || "",
-          baseURL: baseURL || undefined,
-          compatibility: "strict",
-        });
-        return openai(model);
-      }
+  switch (provider) {
+    case "openai":
+      const openai = createOpenAI(commonOptions);
+      return openai(model, settings);
 
-      case "anthropic": {
-        const anthropic = createAnthropic({
-          apiKey: apiKey || "",
-          baseURL: baseURL || undefined,
-          headers: headers || {
-            "anthropic-dangerous-direct-browser-access": "true",
-          },
-        });
-        return anthropic(model);
-      }
+    case "anthropic":
+      const anthropic = createAnthropic(commonOptions);
+      return anthropic(model, settings);
 
-      case "google": {
-        const google = createGoogleGenerativeAI({
-          apiKey: apiKey || "",
-          baseURL: baseURL || undefined,
-        });
-        return google(model);
-      }
+    case "google":
+      const google = createGoogleGenerativeAI(commonOptions);
+      return google(model, settings);
 
-      case "deepseek": {
-        const deepseek = createDeepSeek({
-          apiKey: apiKey || "",
-          baseURL: baseURL || undefined,
-        });
-        return deepseek(model);
-      }
+    case "deepseek":
+      const deepseek = createDeepSeek(commonOptions);
+      return deepseek(model, settings);
 
-      case "mistral": {
-        const mistral = createMistral({
-          apiKey: apiKey || "",
-          baseURL: baseURL || undefined,
-        });
-        return mistral(model);
-      }
+    case "mistral":
+      const mistral = createMistral(commonOptions);
+      return mistral(model, settings);
 
-      case "xai": {
-        const xai = createXai({
-          apiKey: apiKey || "",
-          baseURL: baseURL || undefined,
-        });
-        return xai(model);
-      }
+    case "xai":
+      const xai = createXai(commonOptions);
+      return xai(model, settings);
 
-      case "openrouter": {
-        // OpenRouter uses OpenAI-compatible API
-        const openrouter = createOpenAI({
-          apiKey: apiKey || "",
-          baseURL: baseURL || "https://openrouter.ai/api/v1",
-          compatibility: "compatible",
-        });
-        return openrouter(model);
-      }
+    case "ollama":
+      const ollama = createOllama({
+        baseURL: baseURL || "http://localhost:11434/api",
+        headers,
+      });
+      return ollama(model, settings);
 
-      case "ollama": {
-        // Ollama uses OpenAI-compatible API
-        const ollama = createOpenAI({
-          apiKey: apiKey || "ollama", // Ollama doesn't require a real API key
-          baseURL: baseURL || "http://localhost:11434/v1",
-          compatibility: "compatible",
-        });
-        return ollama(model);
-      }
+    case "openrouter":
+      const openrouter = createOpenRouter({
+        ...commonOptions,
+        extraBody: settings, // OpenRouter often takes extra parameters in body
+      });
+      return openrouter(model, settings);
 
-      case "together": {
-        // Together AI uses OpenAI-compatible API
-        const together = createOpenAI({
-          apiKey: apiKey || "",
-          baseURL: baseURL || "https://api.together.xyz/v1",
-          compatibility: "compatible",
-        });
-        return together(model);
-      }
-
-      case "groq": {
-        // Groq uses OpenAI-compatible API
-        const groq = createOpenAI({
-          apiKey: apiKey || "",
-          baseURL: baseURL || "https://api.groq.com/openai/v1",
-          compatibility: "compatible",
-        });
-        return groq(model);
-      }
-
-      case "perplexity": {
-        // Perplexity uses OpenAI-compatible API
-        const perplexity = createOpenAI({
-          apiKey: apiKey || "",
-          baseURL: baseURL || "https://api.perplexity.ai",
-          compatibility: "compatible",
-        });
-        return perplexity(model);
-      }
-
-      case "cohere": {
-        // Cohere uses OpenAI-compatible API
-        const cohere = createOpenAI({
-          apiKey: apiKey || "",
-          baseURL: baseURL || "https://api.cohere.ai/v1",
-          compatibility: "compatible",
-        });
-        return cohere(model);
-      }
-
-      default: {
-        // Default to OpenAI for unknown providers
-        console.warn(`[createAIProvider] Unknown provider "${provider}", falling back to OpenAI`);
-        const fallbackOpenai = createOpenAI({
-          apiKey: apiKey || "",
-          baseURL: baseURL || undefined,
-          compatibility: "strict",
-        });
-        return fallbackOpenai(model || "gpt-4o");
-      }
-    }
-  } catch (error) {
-    console.error(`[createAIProvider] Failed to create provider ${provider}:`, error);
-    throw error;
+    default:
+      throw new Error(`Unsupported provider: ${provider}`);
   }
 }

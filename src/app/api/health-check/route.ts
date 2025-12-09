@@ -219,12 +219,6 @@ async function checkMistral(apiKey: string): Promise<void> {
   }
 }
 
-/**
- * GET handler for comprehensive health check.
- * Checks connectivity to configured AI providers.
- *
- * @returns Detailed health report.
- */
 export async function GET() {
   const startTime = Date.now();
   
@@ -327,12 +321,6 @@ export async function GET() {
   }
 }
 
-/**
- * POST handler for testing a specific provider.
- *
- * @param req - The NextRequest object.
- * @returns Provider health status.
- */
 export async function POST(req: NextRequest) {
   // Allow testing specific providers
   try {

@@ -27,23 +27,11 @@ function smoothTextStream(type: "character" | "word" | "line") {
   });
 }
 
-/**
- * Hook for managing knowledge extraction from files and URLs.
- *
- * @returns Object with methods to generate IDs and extract knowledge.
- */
 function useKnowledge() {
   const { smoothTextStreamType } = useSettingStore();
   const { createModelProvider, getModel } = useModelProvider();
   const knowledgeStore = useKnowledgeStore();
 
-  /**
-   * Generates a unique ID based on the resource type and metadata.
-   *
-   * @param type - The resource type ('file', 'url', 'knowledge').
-   * @param options - Metadata for files or URLs.
-   * @returns A hash ID.
-   */
   function generateId(
     type: "file" | "url" | "knowledge",
     options?: {
@@ -66,11 +54,6 @@ function useKnowledge() {
     }
   }
 
-  /**
-   * Extracts text and metadata from a file and saves it to the knowledge store.
-   *
-   * @param file - The file to process.
-   */
   async function getKnowledgeFromFile(file: File) {
     const { resources, addResource, updateResource } = useTaskStore.getState();
 
@@ -117,7 +100,7 @@ function useKnowledge() {
       for await (const part of result.fullStream) {
         if (part.type === "text-delta") {
           thinkTagStreamProcessor.processChunk(
-            part.text,
+            part.textDelta,
             (data) => {
               content += data;
             },
@@ -125,8 +108,8 @@ function useKnowledge() {
               reasoning += data;
             }
           );
-        } else if (part.type === "reasoning-delta") {
-          reasoning += part.text;
+        } else if (part.type === "reasoning") {
+          reasoning += part.textDelta;
         }
       }
       if (reasoning) logger.log(reasoning);
@@ -228,12 +211,6 @@ function useKnowledge() {
     }
   }
 
-  /**
-   * Crawls a URL and saves its content to the knowledge store.
-   *
-   * @param url - The URL to crawl.
-   * @param crawler - The crawler type ('jina' or 'local').
-   */
   async function getKnowledgeFromUrl(url: string, crawler: string) {
     const knowledgeStore = useKnowledgeStore.getState();
     const { resources, addResource, updateResource } = useTaskStore.getState();
