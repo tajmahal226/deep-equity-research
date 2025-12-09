@@ -1,5 +1,9 @@
-import { createProvider } from "@/utils/api";
-import { LanguageModel } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createDeepSeek } from "@ai-sdk/deepseek";
+import { createMistral } from "@ai-sdk/mistral";
+import { createXai } from "@ai-sdk/xai";
 
 export interface AIProviderOptions {
   provider: string;
@@ -12,64 +16,156 @@ export interface AIProviderOptions {
 }
 
 /**
- * Creates an AI provider instance compatible with the AI SDK.
+ * Creates an AI provider instance compatible with the AI SDK v5.
+ * Returns a model that can be used with streamText/generateText.
  *
  * @param options - Configuration options for the provider.
- * @returns A LanguageModel instance.
+ * @returns A language model instance compatible with AI SDK.
  */
 export async function createAIProvider({
   provider,
+  baseURL,
   apiKey,
   model,
-  settings,
-}: AIProviderOptions): Promise<LanguageModel> {
-  try {
-    if (!provider) throw new Error("Provider identifier is required");
-    if (!model) throw new Error("Model identifier is required");
+  headers,
+}: AIProviderOptions): Promise<any> {
+  // Validate required fields
+  if (!provider) {
+    console.warn("[createAIProvider] Provider is empty, defaulting to openai");
+    provider = "openai";
+  }
+  if (!model) {
+    console.warn("[createAIProvider] Model is empty, defaulting to gpt-4o");
+    model = "gpt-4o";
+  }
 
-    if (!apiKey && provider !== "ollama" && provider !== "model") {
-      if (provider !== "ollama") {
-        throw new Error("API key is required.");
+  // console.log(`[createAIProvider] Creating provider: ${provider}, model: ${model}, baseURL: ${baseURL}`);
+
+  try {
+    switch (provider) {
+      case "openai": {
+        const openai = createOpenAI({
+          apiKey: apiKey || "",
+          baseURL: baseURL || undefined,
+          compatibility: "strict",
+        });
+        return openai(model);
+      }
+
+      case "anthropic": {
+        const anthropic = createAnthropic({
+          apiKey: apiKey || "",
+          baseURL: baseURL || undefined,
+          headers: headers || {
+            "anthropic-dangerous-direct-browser-access": "true",
+          },
+        });
+        return anthropic(model);
+      }
+
+      case "google": {
+        const google = createGoogleGenerativeAI({
+          apiKey: apiKey || "",
+          baseURL: baseURL || undefined,
+        });
+        return google(model);
+      }
+
+      case "deepseek": {
+        const deepseek = createDeepSeek({
+          apiKey: apiKey || "",
+          baseURL: baseURL || undefined,
+        });
+        return deepseek(model);
+      }
+
+      case "mistral": {
+        const mistral = createMistral({
+          apiKey: apiKey || "",
+          baseURL: baseURL || undefined,
+        });
+        return mistral(model);
+      }
+
+      case "xai": {
+        const xai = createXai({
+          apiKey: apiKey || "",
+          baseURL: baseURL || undefined,
+        });
+        return xai(model);
+      }
+
+      case "openrouter": {
+        // OpenRouter uses OpenAI-compatible API
+        const openrouter = createOpenAI({
+          apiKey: apiKey || "",
+          baseURL: baseURL || "https://openrouter.ai/api/v1",
+          compatibility: "compatible",
+        });
+        return openrouter(model);
+      }
+
+      case "ollama": {
+        // Ollama uses OpenAI-compatible API
+        const ollama = createOpenAI({
+          apiKey: apiKey || "ollama", // Ollama doesn't require a real API key
+          baseURL: baseURL || "http://localhost:11434/v1",
+          compatibility: "compatible",
+        });
+        return ollama(model);
+      }
+
+      case "together": {
+        // Together AI uses OpenAI-compatible API
+        const together = createOpenAI({
+          apiKey: apiKey || "",
+          baseURL: baseURL || "https://api.together.xyz/v1",
+          compatibility: "compatible",
+        });
+        return together(model);
+      }
+
+      case "groq": {
+        // Groq uses OpenAI-compatible API
+        const groq = createOpenAI({
+          apiKey: apiKey || "",
+          baseURL: baseURL || "https://api.groq.com/openai/v1",
+          compatibility: "compatible",
+        });
+        return groq(model);
+      }
+
+      case "perplexity": {
+        // Perplexity uses OpenAI-compatible API
+        const perplexity = createOpenAI({
+          apiKey: apiKey || "",
+          baseURL: baseURL || "https://api.perplexity.ai",
+          compatibility: "compatible",
+        });
+        return perplexity(model);
+      }
+
+      case "cohere": {
+        // Cohere uses OpenAI-compatible API
+        const cohere = createOpenAI({
+          apiKey: apiKey || "",
+          baseURL: baseURL || "https://api.cohere.ai/v1",
+          compatibility: "compatible",
+        });
+        return cohere(model);
+      }
+
+      default: {
+        // Default to OpenAI for unknown providers
+        console.warn(`[createAIProvider] Unknown provider "${provider}", falling back to OpenAI`);
+        const fallbackOpenai = createOpenAI({
+          apiKey: apiKey || "",
+          baseURL: baseURL || undefined,
+          compatibility: "strict",
+        });
+        return fallbackOpenai(model || "gpt-4o");
       }
     }
-
-    // console.log(`[createAIProvider] Creating provider: ${provider}, model: ${model}`);
-
-    const apiProvider = createProvider(provider, apiKey || "");
-
-    const validatePrompt = (prompt: unknown) => {
-      if (typeof prompt !== "string" || prompt.trim().length === 0) {
-        throw new Error("Prompt must be a non-empty string.");
-      }
-      return prompt;
-    };
-
-    return {
-      async doStream(options: any) {
-        try {
-          const stream = await apiProvider.streamReport(validatePrompt(options.prompt), {
-            ...settings,
-            model,
-          });
-          return { stream } as any;
-        } catch (error) {
-          console.error(`[AIProvider] Stream error (${provider}/${model}):`, error);
-          throw error;
-        }
-      },
-      async doGenerate(options: any) {
-        try {
-          const report = await apiProvider.generateReport(
-            validatePrompt(options.prompt),
-            { ...settings, model }
-          );
-          return { text: report } as any;
-        } catch (error) {
-          console.error(`[AIProvider] Generate error (${provider}/${model}):`, error);
-          throw error;
-        }
-      },
-    } as any;
   } catch (error) {
     console.error(`[createAIProvider] Failed to create provider ${provider}:`, error);
     throw error;
