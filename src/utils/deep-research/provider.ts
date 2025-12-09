@@ -1,4 +1,3 @@
-import { LanguageModel } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
@@ -18,9 +17,10 @@ export interface AIProviderOptions {
 
 /**
  * Creates an AI provider instance compatible with the AI SDK v5.
+ * Returns a model that can be used with streamText/generateText.
  *
  * @param options - Configuration options for the provider.
- * @returns A LanguageModel instance.
+ * @returns A language model instance compatible with AI SDK.
  */
 export async function createAIProvider({
   provider,
@@ -28,7 +28,7 @@ export async function createAIProvider({
   apiKey,
   model,
   headers,
-}: AIProviderOptions): Promise<LanguageModel> {
+}: AIProviderOptions): Promise<any> {
   // Validate required fields
   if (!provider) {
     console.warn("[createAIProvider] Provider is empty, defaulting to openai");
