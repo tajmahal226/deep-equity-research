@@ -183,10 +183,6 @@ export function getActiveModels(
 
 /**
  * Get stale models (models older than maxAgeMonths)
- *
- * @param provider - Provider name.
- * @param maxAgeMonths - Age threshold in months.
- * @returns Set of stale model names.
  */
 export function getStaleModels(
   provider: string,
@@ -215,11 +211,6 @@ export function getStaleModels(
 
 /**
  * Check if a model is stale
- *
- * @param provider - Provider name.
- * @param model - Model name.
- * @param maxAgeMonths - Age threshold in months.
- * @returns True if stale, false otherwise.
  */
 export function isModelStale(
   provider: string,
@@ -241,10 +232,6 @@ export function isModelStale(
 
 /**
  * Get model age in months
- *
- * @param provider - Provider name.
- * @param model - Model name.
- * @returns Age in months or null if unknown.
  */
 export function getModelAgeMonths(provider: string, model: string): number | null {
   const dates = MODEL_RELEASE_DATES[provider];
@@ -263,10 +250,6 @@ export function getModelAgeMonths(provider: string, model: string): number | nul
 
 /**
  * Get model release date
- *
- * @param provider - Provider name.
- * @param model - Model name.
- * @returns Release date string (YYYY-MM) or null.
  */
 export function getModelReleaseDate(provider: string, model: string): string | null {
   const dates = MODEL_RELEASE_DATES[provider];

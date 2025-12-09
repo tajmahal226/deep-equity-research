@@ -5,12 +5,6 @@ import { initReactI18next } from "react-i18next";
 import locales from "@/constants/locales";
 import { keys } from "radash";
 
-/**
- * Normalizes a locale string to a supported locale format.
- *
- * @param locale - The locale string to normalize.
- * @returns The normalized locale string.
- */
 const normalizeLocale = (locale: string) => {
   if (locale.startsWith("en")) {
     return "en-US";
@@ -25,12 +19,6 @@ const normalizeLocale = (locale: string) => {
   }
 };
 
-/**
- * Detects the user's preferred language based on browser settings.
- * Maps detected language to supported locales.
- *
- * @returns The detected language code (e.g., 'en-US').
- */
 export function detectLanguage() {
   const languageDetector = new LanguageDetector();
   languageDetector.init();
@@ -51,7 +39,6 @@ export function detectLanguage() {
   return lang;
 }
 
-// Initialize i18next
 i18next
   .use(initReactI18next)
   .use(

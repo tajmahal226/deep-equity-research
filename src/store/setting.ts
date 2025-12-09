@@ -1,11 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { createSelectiveEncryptedStorage } from "@/utils/encrypted-storage";
 
-/**
- * Settings store for application configuration.
- * Stores API keys, model preferences, and UI settings.
- */
 export interface SettingStore {
   provider: string;
   mode: string;
@@ -109,7 +104,7 @@ export interface SettingFunction {
 
 export const defaultValues: SettingStore = {
   provider: "",
-  mode: "local",
+  mode: "",
   apiKey: "",
   apiProxy: "",
   thinkingModel: "",
@@ -203,36 +198,6 @@ export const defaultValues: SettingStore = {
   cacheAutoCleanup: "enable",
 };
 
-/**
-/**
- * List of sensitive fields that should be encrypted in localStorage.
- * These fields contain API keys and access credentials.
- */
-const SENSITIVE_FIELDS = [
-  "apiKey",
-  "openRouterApiKey",
-  "openAIApiKey",
-  "anthropicApiKey",
-  "deepseekApiKey",
-  "xAIApiKey",
-  "mistralApiKey",
-  "cohereApiKey",
-  "togetherApiKey",
-  "groqApiKey",
-  "perplexityApiKey",
-  "accessPassword",
-  "tavilyApiKey",
-  "firecrawlApiKey",
-  "exaApiKey",
-  "bochaApiKey",
-  "alphaVantageApiKey",
-  "yahooFinanceApiKey",
-];
-
-/**
- * Hook to access and manipulate the settings store.
- * API keys and sensitive data are encrypted before being stored in localStorage.
- */
 export const useSettingStore = create(
   persist<SettingStore & SettingFunction>(
     (set) => ({
@@ -240,17 +205,6 @@ export const useSettingStore = create(
       update: (values) => set(values),
       reset: () => set(defaultValues),
     }),
-    {
-      name: "setting",
-      storage: createSelectiveEncryptedStorage(SENSITIVE_FIELDS),
-      // Skip hydration during SSR to prevent hydration mismatches
-      // The store will be hydrated on the client after mount
-      skipHydration: true,
-    }
+    { name: "setting" }
   )
 );
-
-// Hydrate the store on the client side
-if (typeof window !== "undefined") {
-  useSettingStore.persist.rehydrate();
-}

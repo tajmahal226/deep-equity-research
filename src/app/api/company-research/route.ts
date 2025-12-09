@@ -55,7 +55,7 @@ function getDefaultModelConfig(providerId?: string) {
       return { thinkingModel: "llama3.1:8b", networkingModel: "llama3.1:8b" };
     case "openai":
     default:
-      return { thinkingModel: "gpt-4o", networkingModel: "gpt-4o-mini" };
+      return { thinkingModel: "gpt-5", networkingModel: "gpt-5-turbo" };
   }
 }
 
@@ -99,12 +99,6 @@ interface CompanyResearchRequest {
   searchApiKey?: string;
 }
 
-/**
- * POST handler for company deep dive research.
- *
- * @param req - The NextRequest object.
- * @returns An SSE response stream.
- */
 export async function POST(req: NextRequest) {
   try {
     // Step 1: Check for ACCESS_PASSWORD if configured

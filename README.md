@@ -1,11 +1,5 @@
 <div align="center">
 <h1>TJ Deep Research</h1>
-
-[![Node.js Build](https://github.com/tajmahal226/deep-equity-research/actions/workflows/npm-gulp.yml/badge.svg)](https://github.com/tajmahal226/deep-equity-research/actions/workflows/npm-gulp.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Next.js](https://img.shields.io/badge/Next.js-15.5-black)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-
 </div>
 
 **Deep Equity Research Analyst**
@@ -41,7 +35,7 @@ TJ Deep Research orchestrates advanced "Thinking" and "Task" AI models with live
    ```
 2. **Install dependencies**
    ```bash
-   npm install
+   pnpm install
    ```
 
 ## Getting Started
@@ -52,7 +46,7 @@ This app requires you to provide your own API keys via the Settings UI.
 
 1. **Start the dev server:**
    ```bash
-   npm run dev
+   pnpm dev
    ```
    
 2. **Open the app:** Navigate to [http://localhost:3000](http://localhost:3000)
@@ -97,7 +91,7 @@ If you do want server-side keys:
 ## Running Research Modes
 Start the development server:
 ```bash
-npm run dev
+pnpm dev
 ```
 Then open [http://localhost:3000](http://localhost:3000) and choose a mode from the UI:
 
@@ -112,8 +106,8 @@ Then open [http://localhost:3000](http://localhost:3000) and choose a mode from 
 
 For production builds:
 ```bash
-npm run build
-npm start
+pnpm build
+pnpm start
 ```
 
 ## Documentation
@@ -124,22 +118,22 @@ Additional usage notes and API details can be found in the [docs](./docs) direct
 2. Install dependencies and ensure the development server runs.
 3. Run linting and tests before committing:
    ```bash
-   npm run lint
-   npm test
+   pnpm lint
+   pnpm test
    ```
 4. Submit a pull request describing your changes.
 
 ## Testing
 Run project checks locally:
 ```bash
-npm run lint
-npm test
+pnpm lint
+pnpm test
 ```
 
 ## Deployment Tips
 - **Vercel**: configure environment variables in project settings. To opt into the experimental React Compiler, set `REACT_COMPILER=true`.
-- **Docker/Standalone**: build with `npm run build:standalone` and run the resulting image.
-- **Static Hosting**: generate static export with `npm run build:export`.
+- **Docker/Standalone**: build with `pnpm build:standalone` and run the resulting image.
+- **Static Hosting**: generate static export with `pnpm build:export`.
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions and security model.
 

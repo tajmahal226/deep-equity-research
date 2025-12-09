@@ -6,28 +6,13 @@ import { withTimeout, retryWithBackoff } from "../timeout-config";
 import { AppError, handleError } from "../error";
 import { streamText } from "ai";
 
-/**
- * xAI Provider implementation.
- */
 export class XaiProvider implements Provider {
   private xai: any;
 
-  /**
-   * Initializes the xAI provider.
-   *
-   * @param apiKey - The xAI API key.
-   */
   constructor(apiKey: string) {
     this.xai = createXai({ apiKey });
   }
 
-  /**
-   * Generates a report using xAI.
-   *
-   * @param prompt - The input prompt.
-   * @param options - Generation options.
-   * @returns The generated report.
-   */
   async generateReport(prompt: string, options: any): Promise<string> {
     try {
       const response: any = await retryWithBackoff(() =>
@@ -43,13 +28,6 @@ export class XaiProvider implements Provider {
     }
   }
 
-  /**
-   * Streams a report generation using xAI.
-   *
-   * @param prompt - The input prompt.
-   * @param options - Generation options.
-   * @returns A readable stream of the generated report.
-   */
   async streamReport(prompt: string, options: any): Promise<ReadableStream> {
     try {
       const result = await streamText({
@@ -64,11 +42,6 @@ export class XaiProvider implements Provider {
     }
   }
 
-  /**
-   * Retrieves available models from xAI.
-   *
-   * @returns List of model IDs.
-   */
   async getModels(): Promise<string[]> {
     try {
       // The Xai SDK does not have a models() method.

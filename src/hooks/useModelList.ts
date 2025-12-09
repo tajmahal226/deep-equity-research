@@ -112,11 +112,6 @@ interface OllamaModel {
   };
 }
 
-/**
- * Hook to fetch and manage the list of available models for a provider.
- *
- * @returns Object with modelList, modelTokenMap, and refresh function.
- */
 function useModelList() {
   const [modelList, setModelList] = useState<string[]>([]);
   const [modelTokenMap, setModelTokenMap] = useState<Record<string, number>>({});

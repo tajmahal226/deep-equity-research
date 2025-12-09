@@ -21,7 +21,7 @@ function getDefaultModelConfig(providerId?: string): ModelDefaults {
       return { thinkingModel: "llama3.1:8b", networkingModel: "llama3.1:8b" };
     case "openai":
     default:
-      return { thinkingModel: "gpt-4o", networkingModel: "gpt-4o-mini" };
+      return { thinkingModel: "gpt-5", networkingModel: "gpt-5-turbo" };
   }
 }
 
@@ -45,13 +45,6 @@ export interface BulkCompanyRequest {
   searchApiKey?: string;
 }
 
-/**
- * Resolves model configurations for bulk research requests.
- * Applies defaults if models are not specified.
- *
- * @param body - The bulk company request body.
- * @returns Object containing thinking and task model configurations.
- */
 export function resolveModelConfigs(body: BulkCompanyRequest): {
   thinkingModelConfig: ModelConfig;
   taskModelConfig: ModelConfig;

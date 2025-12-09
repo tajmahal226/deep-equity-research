@@ -1,11 +1,6 @@
 "use client";
 import Link from "next/link";
 
-/**
- * 404 Not Found page component.
- *
- * @returns The 404 error page.
- */
 function NotFound() {
   return (
     <div>

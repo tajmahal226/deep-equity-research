@@ -6,28 +6,13 @@ import { withTimeout, retryWithBackoff } from "../timeout-config";
 import { AppError, handleError } from "../error";
 import { streamText } from "ai";
 
-/**
- * Mistral Provider implementation.
- */
 export class MistralProvider implements Provider {
   private mistral: any;
 
-  /**
-   * Initializes the Mistral provider.
-   *
-   * @param apiKey - The Mistral API key.
-   */
   constructor(apiKey: string) {
     this.mistral = createMistral({ apiKey });
   }
 
-  /**
-   * Generates a report using Mistral.
-   *
-   * @param prompt - The input prompt.
-   * @param options - Generation options.
-   * @returns The generated report.
-   */
   async generateReport(prompt: string, options: any): Promise<string> {
     try {
       const response: any = await retryWithBackoff(() =>
@@ -43,13 +28,6 @@ export class MistralProvider implements Provider {
     }
   }
 
-  /**
-   * Streams a report generation using Mistral.
-   *
-   * @param prompt - The input prompt.
-   * @param options - Generation options.
-   * @returns A readable stream of the generated report.
-   */
   async streamReport(prompt: string, options: any): Promise<ReadableStream> {
     try {
       const result = await streamText({
@@ -64,11 +42,6 @@ export class MistralProvider implements Provider {
     }
   }
 
-  /**
-   * Retrieves available models from Mistral.
-   *
-   * @returns List of model IDs.
-   */
   async getModels(): Promise<string[]> {
     try {
       // The Mistral SDK does not have a models() method.

@@ -8,21 +8,11 @@ import { cn } from "@/utils/style";
 import { isFunction } from "radash";
 
 type Props = {
-  /** Optional class name for the list container. */
   className?: string;
-  /** Array of resources to display. */
   resources: Resource[];
-  /** Optional callback triggered when a resource is removed. */
   onRemove?: (id: string) => void;
 };
 
-/**
- * ResourceList component.
- * Displays a grid of resources with options to view and optionally remove them.
- *
- * @param props - The component props.
- * @returns The resource list component.
- */
 function ResourceList({ className, resources, onRemove }: Props) {
   const [openResource, setOpenResource] = useState<boolean>(false);
   const [resourceId, setResourceId] = useState<string>("");

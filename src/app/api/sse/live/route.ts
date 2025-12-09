@@ -22,12 +22,6 @@ export const preferredRegion = [
   "kix1",
 ];
 
-/**
- * GET handler for live deep research (e.g. for streaming to other apps).
- *
- * @param req - The NextRequest object.
- * @returns An SSE response stream.
- */
 export async function GET(req: NextRequest) {
   // Get parameters from query string
   function getValueFromSearchParams(key: string) {

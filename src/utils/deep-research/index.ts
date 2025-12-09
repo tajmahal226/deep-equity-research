@@ -66,28 +66,16 @@ export interface DeepResearchSearchResult {
   }[];
 }
 
-export function addQuoteBeforeAllLine(text: string = "") {
-  if (!text) {
-    return "";
-  }
+function addQuoteBeforeAllLine(text: string = "") {
   return text
     .split("\n")
     .map((line) => `> ${line}`)
     .join("\n");
 }
 
-/**
- * Main deep research class that orchestrates the research workflow.
- */
 class DeepResearch {
   protected options: DeepResearchOptions;
-  onMessage: (event: string, data: any) => void = () => { };
-
-  /**
-   * Initializes the DeepResearch instance with configuration options.
-   *
-   * @param options - Configuration options for AI and search providers.
-   */
+  onMessage: (event: string, data: any) => void = () => {};
   constructor(options: DeepResearchOptions) {
     this.options = options;
     if (isFunction(options.onMessage)) {
@@ -109,6 +97,8 @@ class DeepResearch {
       settings = { ...(settings || {}), maxTokens };
     }
 
+    logger.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", temperature=${AIProvider.temperature}, finalSettings=`, settings);
+
     return await createAIProvider({
       provider: AIProvider.provider,
       model: AIProvider.thinkingModel,
@@ -117,11 +107,6 @@ class DeepResearch {
     });
   }
 
-  /**
-   * Gets a configured AI provider instance for task execution (e.g., analyzing search results).
-   *
-   * @returns Configured AI provider.
-   */
   async getTaskModel() {
     const { AIProvider } = this.options;
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
@@ -160,12 +145,6 @@ class DeepResearch {
       : `**Respond in the same language as the user's language**`;
   }
 
-  /**
-   * Generates a research plan based on the user's query.
-   *
-   * @param query - The research query.
-   * @returns The generated research plan.
-   */
   async writeReportPlan(query: string): Promise<string> {
     this.onMessage("progress", { step: "report-plan", status: "start" });
     const thinkTagStreamProcessor = new ThinkTagStreamProcessor();
@@ -182,7 +161,7 @@ class DeepResearch {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.text,
+          part.textDelta,
           (data) => {
             content += data;
             this.onMessage("message", { type: "text", text: data });
@@ -191,8 +170,8 @@ class DeepResearch {
             this.onMessage("reasoning", { type: "text", text: data });
           }
         );
-      } else if (part.type === "reasoning-delta") {
-        this.onMessage("reasoning", { type: "text", text: part.text });
+      } else if (part.type === "reasoning") {
+        this.onMessage("reasoning", { type: "text", text: part.textDelta });
       }
     }
     this.onMessage("message", { type: "text", text: "\n</report-plan>\n\n" });
@@ -204,12 +183,6 @@ class DeepResearch {
     return content;
   }
 
-  /**
-   * Generates SERP queries based on the research plan.
-   *
-   * @param reportPlan - The research plan.
-   * @returns List of search tasks.
-   */
   async generateSERPQuery(
     reportPlan: string
   ): Promise<DeepResearchSearchTask[]> {
@@ -249,13 +222,6 @@ class DeepResearch {
     }
   }
 
-  /**
-   * Executes search tasks and processes results.
-   *
-   * @param tasks - List of search tasks.
-   * @param enableReferences - Whether to include references.
-   * @returns List of processed search results.
-   */
   async runSearchTask(
     tasks: DeepResearchSearchTask[],
     enableReferences = true
@@ -319,7 +285,7 @@ class DeepResearch {
             processResultPrompt(item.query, item.researchGoal),
             this.getResponseLanguagePrompt(),
           ].join("\n\n"),
-          tools: (await getTools()) as any,
+          tools: await getTools(),
           providerOptions: getProviderOptions(),
         });
       } else {
@@ -361,7 +327,7 @@ class DeepResearch {
       for await (const part of searchResult.fullStream) {
         if (part.type === "text-delta") {
           thinkTagStreamProcessor.processChunk(
-            part.text,
+            part.textDelta,
             (data) => {
               content += data;
               this.onMessage("message", { type: "text", text: data });
@@ -370,13 +336,13 @@ class DeepResearch {
               this.onMessage("reasoning", { type: "text", text: data });
             }
           );
-        } else if (part.type === "reasoning-delta") {
-          this.onMessage("reasoning", { type: "text", text: part.text });
+        } else if (part.type === "reasoning") {
+          this.onMessage("reasoning", { type: "text", text: part.textDelta });
         } else if (part.type === "source") {
-          sources.push(part as any);
+          sources.push(part.source);
         } else if (part.type === "finish") {
-          if ((part as any).providerMetadata?.google) {
-            const { groundingMetadata } = (part as any).providerMetadata.google;
+          if (part.providerMetadata?.google) {
+            const { groundingMetadata } = part.providerMetadata.google;
             const googleGroundingMetadata =
               groundingMetadata as GoogleGenerativeAIProviderMetadata["groundingMetadata"];
             if (googleGroundingMetadata?.groundingSupports) {
@@ -394,7 +360,7 @@ class DeepResearch {
                 }
               );
             }
-          } else if ((part as any).providerMetadata?.openai) {
+          } else if (part.providerMetadata?.openai) {
             // Fixed the problem that OpenAI cannot generate markdown reference link syntax properly in Chinese context
             content = content.replaceAll("【", "[").replaceAll("】", "]");
           }
@@ -421,7 +387,8 @@ class DeepResearch {
           sources
             .map(
               (item, idx) =>
-                `[${idx + 1}]: ${item.url}${item.title ? ` "${item.title.replaceAll('"', " ")}"` : ""
+                `[${idx + 1}]: ${item.url}${
+                  item.title ? ` "${item.title.replaceAll('"', " ")}"` : ""
                 }`
             )
             .join("\n");
@@ -450,15 +417,6 @@ class DeepResearch {
     return results;
   }
 
-  /**
-   * Writes the final research report.
-   *
-   * @param reportPlan - The original plan.
-   * @param tasks - The results from search tasks.
-   * @param enableCitationImage - Include images.
-   * @param enableReferences - Include references.
-   * @returns Final report object.
-   */
   async writeFinalReport(
     reportPlan: string,
     tasks: DeepResearchSearchResult[],
@@ -497,7 +455,7 @@ class DeepResearch {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.text,
+          part.textDelta,
           (data) => {
             content += data;
             this.onMessage("message", { type: "text", text: data });
@@ -506,10 +464,10 @@ class DeepResearch {
             this.onMessage("reasoning", { type: "text", text: data });
           }
         );
-      } else if (part.type === "reasoning-delta") {
-        this.onMessage("reasoning", { type: "text", text: part.text });
+      } else if (part.type === "reasoning") {
+        this.onMessage("reasoning", { type: "text", text: part.textDelta });
       } else if (part.type === "source") {
-        sources.push(part as any);
+        sources.push(part.source);
       } else if (part.type === "finish") {
         if (sources.length > 0) {
           const sourceContent =
@@ -517,7 +475,8 @@ class DeepResearch {
             sources
               .map(
                 (item, idx) =>
-                  `[${idx + 1}]: ${item.url}${item.title ? ` "${item.title.replaceAll('"', " ")}"` : ""
+                  `[${idx + 1}]: ${item.url}${
+                    item.title ? ` "${item.title.replaceAll('"', " ")}"` : ""
                   }`
               )
               .join("\n");
@@ -549,14 +508,6 @@ class DeepResearch {
     return finalReportResult;
   }
 
-  /**
-   * Starts the full deep research process.
-   *
-   * @param query - The user's query.
-   * @param enableCitationImage - Include images.
-   * @param enableReferences - Include references.
-   * @returns The final report result.
-   */
   async start(
     query: string,
     enableCitationImage = true,

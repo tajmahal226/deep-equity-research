@@ -6,28 +6,13 @@ import { withTimeout, retryWithBackoff } from "../timeout-config";
 import { AppError, handleError } from "../error";
 import { streamText } from "ai";
 
-/**
- * Google Provider implementation.
- */
 export class GoogleProvider implements Provider {
   private google: any;
 
-  /**
-   * Initializes the Google provider.
-   *
-   * @param apiKey - The Google API key.
-   */
   constructor(apiKey: string) {
     this.google = createGoogleGenerativeAI({ apiKey });
   }
 
-  /**
-   * Generates a report using Google.
-   *
-   * @param prompt - The input prompt.
-   * @param options - Generation options.
-   * @returns The generated report.
-   */
   async generateReport(prompt: string, options: any): Promise<string> {
     try {
       const response: any = await retryWithBackoff(() =>
@@ -43,13 +28,6 @@ export class GoogleProvider implements Provider {
     }
   }
 
-  /**
-   * Streams a report generation using Google.
-   *
-   * @param prompt - The input prompt.
-   * @param options - Generation options.
-   * @returns A readable stream of the generated report.
-   */
   async streamReport(prompt: string, options: any): Promise<ReadableStream> {
     try {
       const result = await streamText({
@@ -64,11 +42,6 @@ export class GoogleProvider implements Provider {
     }
   }
 
-  /**
-   * Retrieves available models from Google.
-   *
-   * @returns List of model IDs.
-   */
   async getModels(): Promise<string[]> {
     try {
       // The Google SDK does not have a models() method.

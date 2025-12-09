@@ -18,12 +18,6 @@ interface ReaderResult extends CrawlerResult {
   };
 }
 
-/**
- * Fetches and parses content from a URL using the Jina Reader API.
- *
- * @param url - The URL to crawl.
- * @returns The parsed content including title and text.
- */
 export async function jinaReader(url: string) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 60_000);
@@ -45,13 +39,6 @@ export async function jinaReader(url: string) {
   return omit(data, ["usage", "description"]) as CrawlerResult;
 }
 
-/**
- * Fetches content from a URL using a local crawler API.
- *
- * @param url - The URL to crawl.
- * @param password - Authentication password for the local crawler.
- * @returns The crawled content.
- */
 export async function localCrawler(url: string, password: string) {
   const accessKey = generateSignature(password, Date.now());
   const controller = new AbortController();

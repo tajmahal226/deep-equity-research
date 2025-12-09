@@ -190,14 +190,6 @@ async function fetchWithTimeout(
   }
 }
 
-/**
- * Creates a search provider instance.
- * Supports multiple providers: Tavily, Firecrawl, Exa, Bocha, SearXNG.
- *
- * @param options - Configuration options for the search provider.
- * @returns Object containing sources and images.
- * @throws Error if provider is unsupported or request fails.
- */
 export async function createSearchProvider({
   provider,
   baseURL,

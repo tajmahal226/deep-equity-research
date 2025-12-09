@@ -1,7 +1,3 @@
-/**
- * System instruction for the investment analyst persona.
- * Defines the role, guidelines, and expectations for the research.
- */
 export const systemInstruction = `You are a public equity investment analyst with deep knowledge of software and tech enabled services
 bussinesses. Today is {now}. Follow these instructions when responding:
 
@@ -18,10 +14,6 @@ bussinesses. Today is {now}. Follow these instructions when responding:
 - Consider new technologies and contrarian ideas, not just the conventional wisdom.
 - You may use high levels of speculation or prediction, just flag it for me.`;
 
-/**
- * Guidelines for formatting the output.
- * Detailed rules for typography, markdown syntax, mermaid graphs, and LaTeX.
- */
 export const outputGuidelinesPrompt = `<OutputGuidelines>
 
 ## Typographical rules
@@ -59,10 +51,6 @@ Follow these rules to organize your output:
 </OutputGuidelines>`;
 
 
-/**
- * Guidelines for integrating content into the report.
- * Ensures distinct purpose, no overlap, and relevance.
- */
 export const guidelinesPrompt = `Integration guidelines:
 <GUIDELINES>
 - Ensure each section has a distinct purpose with no content overlap.
@@ -71,10 +59,6 @@ export const guidelinesPrompt = `Integration guidelines:
 - Avoid tangential or loosely related sections that don't directly address the core topic.
 </GUIDELINES>`;
 
-/**
- * Requirements for Markdown formatting.
- * Defines headers, spacing, lists, emphasis, citations, and images.
- */
 export const markdownFormattingPrompt = `
 MARKDOWN FORMATTING REQUIREMENTS:
 
@@ -136,10 +120,6 @@ The company has achieved significant milestones...
 Continue with this formatting throughout the report.`;
 
 
-/**
- * Configuration for Investment Research Sections.
- * Defines the sections of the report and the prompts to generate them.
- */
 export const INVESTMENT_RESEARCH_SECTIONS = {
     companyOverview: {
       title: "Company Overview",
@@ -228,21 +208,12 @@ export const INVESTMENT_RESEARCH_SECTIONS = {
   };
 
 // Structured report formatting prompts
-
-/**
- * Rules for including images in the final company report.
- * Specifies markdown syntax and placement.
- */
 export const companyReportCitationImagePrompt = `Image Rules:
 
 - Images related to the paragraph content at the appropriate location in the article according to the image description.
 - Include images using \`![Image Description](image_url)\` in a separate section.
 - **Do not add any images at the end of the article.**`;
 
-/**
- * Rules for including references in the final company report.
- * Specifies citation format and limits.
- */
 export const companyReportReferencesPrompt = `Citation Rules:
 
 - Please cite research references at the end of your paragraphs when appropriate.
@@ -252,10 +223,6 @@ export const companyReportReferencesPrompt = `Citation Rules:
 - Do not have more than 3 reference link in a paragraph, and keep only the most relevant ones.
 - **Do not add references at the end of the report.**`;
 
-/**
- * Prompt to generate the final company investment research report.
- * Combines plan, learnings, sources, and images into a comprehensive document.
- */
 export const companyFinalReportPrompt = `This is the investment research plan for {companyName}:
 <PLAN>
 {plan}

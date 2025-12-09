@@ -13,23 +13,12 @@ import { cn } from "@/utils/style";
 import "./style.css";
 
 type EditorProps = {
-  /** Optional class name for the editor container. */
   className?: string;
-  /** The initial value of the markdown content. */
   defaultValue: string;
-  /** Whether to hide the preview pane. */
   hideView?: boolean;
-  /** Callback triggered when the content changes. */
   onChange: (value: string) => void;
 };
 
-/**
- * Editor component.
- * A markdown editor with split-pane preview functionality using MagicdownEditor.
- *
- * @param props - The component props.
- * @returns The markdown editor component.
- */
 function Editor({
   className,
   defaultValue,

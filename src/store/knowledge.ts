@@ -3,10 +3,6 @@ import { persist, type StorageValue } from "zustand/middleware";
 import { researchStore } from "@/utils/storage";
 import { clone, pick } from "radash";
 
-/**
- * Knowledge Store.
- * Manages knowledge base items.
- */
 export interface KnowledgeStore {
   knowledges: Knowledge[];
 }

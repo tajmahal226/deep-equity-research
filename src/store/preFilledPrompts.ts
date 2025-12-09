@@ -3,9 +3,6 @@ import { persist } from "zustand/middleware";
 import { nanoid } from "nanoid";
 import { createSafeJSONStorage } from "@/utils/storage";
 
-/**
- * Pre-filled prompt interface.
- */
 interface PreFilledPrompt {
   id: string;
   title: string;
@@ -71,7 +68,7 @@ Section 3: Customers, Buyers, and Channels
 Profile of primary customer types, including specific industry verticals, business size, and buying personas (CIO, CISO, CTO, etc.).
 Analysis of the company's go-to-market strategy, channel partnerships, and distribution strategy, geographic focus
 Overview of typical buying cycles, channels of importance, implementation times and decision-making processes in the company's target markets. Call out geographic differences.
-Key purchase criteria in chart that a buyer would evaluate and relative importance and what they are looking for
+Key purchase criteria in chart that a buyer would evaluate and relative importance of each, what they are looking for
 Key purchase criteria of a user-centric purchaser (vs. budget holder) and relative importance and what they are looking for
 How competitors stack rank across each of the above KPCs
  
@@ -280,10 +277,6 @@ Investment Thesis Validation:
   createdAt: Date.now(),
 };
 
-/**
- * Pre-filled prompts store.
- * Manages reusable prompt templates and categories.
- */
 export const usePreFilledPromptsStore = create<PreFilledPromptsState>()(
   persist(
     (set, get) => ({

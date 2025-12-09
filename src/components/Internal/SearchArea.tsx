@@ -6,23 +6,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/style";
 
 type Props = {
-  /** Optional class name for the container. */
   className?: string;
-  /** The current value of the search input. */
   value?: string;
-  /** Callback triggered when the search form is submitted. */
   onChange: (value: string) => void;
-  /** Callback triggered when the clear button is clicked. */
   onClear?: () => void;
 };
 
-/**
- * SearchArea component.
- * A search input field with a submit button and a clear button.
- *
- * @param props - The component props.
- * @returns The search area component.
- */
 function SearchArea({ className, value = "", onChange, onClear }: Props) {
   const { t } = useTranslation();
   const [query, setQuery] = useState<string>(value);

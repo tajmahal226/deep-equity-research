@@ -33,15 +33,14 @@ const BOCHA_API_BASE_URL =
 const SEARXNG_API_BASE_URL =
   process.env.SEARXNG_API_BASE_URL || "http://0.0.0.0:8080";
 
-export default async function Config() {
+export default async function Config(phase: string) {
   const nextConfig: NextConfig = {
     /* config options here */
     env: {
       NEXT_PUBLIC_VERSION: pkg.version,
     },
     transpilePackages: ["pdfjs-dist", "mermaid"],
-    // Only use standalone output for Docker builds, not for Vercel
-    ...(process.env.DOCKER_BUILD === 'true' && { output: 'standalone' }),
+    output: 'standalone', // Enable standalone output for Docker
   };
 
   nextConfig.rewrites = async () => {
@@ -100,44 +99,6 @@ export default async function Config() {
           source: "/api/search/searxng/:path*",
           destination: `${SEARXNG_API_BASE_URL}/:path*`,
         },
-    ];
-  };
-
-  nextConfig.headers = async () => {
-    return [
-      {
-        source: "/:path*",
-        headers: [
-          {
-            key: "X-DNS-Prefetch-Control",
-            value: "on"
-          },
-          {
-            key: "Strict-Transport-Security",
-            value: "max-age=63072000; includeSubDomains; preload"
-          },
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN"
-          },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff"
-          },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block"
-          },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin"
-          },
-          {
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()"
-          }
-        ]
-      }
     ];
   };
 

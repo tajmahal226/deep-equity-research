@@ -1,6 +1,4 @@
 {
-  "installCommand": "npm install",
-  "buildCommand": "npm run build",
-  "framework": "nextjs",
-  "regions": ["iad1"]
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm build"
 }

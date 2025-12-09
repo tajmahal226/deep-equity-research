@@ -6,11 +6,6 @@ import {
 import { multiApiKeyPolling } from "@/utils/model";
 import { generateSignature } from "@/utils/signature";
 
-/**
- * Hook for performing web searches using the configured provider.
- *
- * @returns Object with search method.
- */
 function useWebSearch() {
   async function search(query: string) {
     const { mode, searchProvider, searchMaxResult, accessPassword } =
