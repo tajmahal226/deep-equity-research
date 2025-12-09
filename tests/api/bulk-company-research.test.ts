@@ -161,12 +161,12 @@ describe("Bulk Company Research model configuration resolution", () => {
     const { thinkingModelConfig, taskModelConfig } = resolveModelConfigs(body);
 
     expect(thinkingModelConfig).toEqual({
-      modelId: "gpt-5",
+      modelId: "gpt-4o",
       providerId: "openai",
     });
 
     expect(taskModelConfig).toEqual({
-      modelId: "gpt-5-turbo",
+      modelId: "gpt-4o-mini",
       providerId: "openai",
     });
   });
