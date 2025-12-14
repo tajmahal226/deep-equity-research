@@ -1,21 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { createAIProvider } from "@/utils/deep-research/provider";
-import { createProvider } from "@/utils/api";
-import { OpenAIProvider } from "@/utils/api/openai";
-
-vi.mock("@/utils/api", () => ({
-  createProvider: vi.fn(),
-}));
 
 describe("createAIProvider", () => {
-  it("should return a LanguageModel object", async () => {
-    const provider = {
-      generateReport: vi.fn(),
-      streamReport: vi.fn(),
-      getModels: vi.fn(),
-    };
-    (createProvider as any).mockReturnValue(provider);
-
+  it("should return a LanguageModel object for openai", async () => {
     const model = await createAIProvider({
       provider: "openai",
       apiKey: "test-key",
@@ -24,77 +11,37 @@ describe("createAIProvider", () => {
     });
 
     expect(model).toBeDefined();
-    expect(model.doGenerate).toBeDefined();
-    expect(model.doStream).toBeDefined();
+    expect(model.provider).toBe("openai.chat");
+    expect(model.modelId).toBe("gpt-4o");
+    expect(model.specificationVersion).toBe("v1");
   });
 
-  it("should call the provider's generateReport method when doGenerate is called", async () => {
-    const provider = {
-      generateReport: vi.fn(),
-      streamReport: vi.fn(),
-      getModels: vi.fn(),
-    };
-    (createProvider as any).mockReturnValue(provider);
-
+  it("should return a LanguageModel object for google", async () => {
     const model = await createAIProvider({
-      provider: "openai",
+      provider: "google",
       apiKey: "test-key",
-      model: "gpt-4o",
-      baseURL: "https://example.com",
+      model: "gemini-pro",
     });
 
-    await model.doGenerate({ prompt: "test prompt" } as any);
-
-    expect(provider.generateReport).toHaveBeenCalledWith("test prompt", {
-      model: "gpt-4o",
-    });
+    expect(model).toBeDefined();
+    expect(model.provider).toBe("google.generative-ai");
+    expect(model.modelId).toBe("gemini-pro");
+    expect(model.specificationVersion).toBe("v1");
   });
 
-  it("should call the provider's streamReport method when doStream is called", async () => {
-    const provider = {
-      generateReport: vi.fn(),
-      streamReport: vi.fn(),
-      getModels: vi.fn(),
-    };
-    (createProvider as any).mockReturnValue(provider);
-
-    const model = await createAIProvider({
-      provider: "openai",
+  it("should throw error if provider is unsupported", async () => {
+    await expect(createAIProvider({
+      provider: "unknown-provider",
       apiKey: "test-key",
-      model: "gpt-4o",
-      baseURL: "https://example.com",
-    });
-
-    await model.doStream({ prompt: "test prompt" } as any);
-
-    expect(provider.streamReport).toHaveBeenCalledWith("test prompt", {
-      model: "gpt-4o",
-    });
+      model: "gpt-4",
+    } as any)).rejects.toThrow("Unsupported provider: unknown-provider");
   });
 
-  it("should throw a clear error when prompt is missing or not a string", async () => {
-    const provider = {
-      generateReport: vi.fn(),
-      streamReport: vi.fn(),
-      getModels: vi.fn(),
-    };
-    (createProvider as any).mockReturnValue(provider);
-
-    const model = await createAIProvider({
+  it("should throw error if apiKey is missing (except ollama)", async () => {
+    await expect(createAIProvider({
       provider: "openai",
-      apiKey: "test-key",
-      model: "gpt-4o",
-      baseURL: "https://example.com",
-    });
-
-    await expect(model.doStream({ prompt: "   " } as any)).rejects.toThrow(
-      "Prompt must be a non-empty string."
-    );
-    await expect(model.doGenerate({ prompt: 123 } as any)).rejects.toThrow(
-      "Prompt must be a non-empty string."
-    );
-
-    expect(provider.streamReport).not.toHaveBeenCalled();
-    expect(provider.generateReport).not.toHaveBeenCalled();
+      apiKey: "",
+      model: "gpt-4",
+    } as any)).rejects.toThrow("API key is required.");
   });
 });

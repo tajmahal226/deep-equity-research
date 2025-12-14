@@ -14,7 +14,7 @@ const providers = [
 
 async function testProvider(provider) {
   console.log(`\n🧪 Testing ${provider.name} (${provider.model})...`);
-  
+
   const payload = {
     query: testQuery.topic,
     provider: provider.name.toLowerCase(),
@@ -53,7 +53,7 @@ async function testProvider(provider) {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         chunks++;
         const chunk = decoder.decode(value);
         // Look for valid SSE data indicating the AI is working
@@ -61,7 +61,7 @@ async function testProvider(provider) {
           hasContent = true;
           break; // We got valid streaming data
         }
-        
+
         if (chunks > 5) break; // Don't read forever
       }
     } finally {
@@ -91,27 +91,27 @@ async function runProviderTests() {
   console.log(`Test Query: "${testQuery.topic}"`);
   console.log(`Search Provider: Tavily`);
   console.log(`Search Depth: ${testQuery.searchDepth}`);
-  
+
   const results = [];
-  
+
   for (const provider of providers) {
     const success = await testProvider(provider);
     results.push({ provider: provider.name, model: provider.model, success });
-    
+
     // Wait 2 seconds between tests
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
-  
+
   console.log('\n📊 Test Results Summary:');
   console.log('========================');
   results.forEach(result => {
     const status = result.success ? '✅ WORKING' : '❌ FAILED';
     console.log(`${result.provider.padEnd(12)} (${result.model.padEnd(25)}): ${status}`);
   });
-  
+
   const workingCount = results.filter(r => r.success).length;
   console.log(`\n🎯 ${workingCount}/${results.length} providers working successfully`);
-  
+
   if (workingCount > 0) {
     const workingProviders = results.filter(r => r.success).map(r => r.provider);
     console.log(`\n✨ Recommended providers: ${workingProviders.join(', ')}`);

@@ -4,19 +4,19 @@ const anthropicModels = [
   { name: 'claude-3-opus-20240229', category: 'Claude 3', tier: 'Flagship' },
   { name: 'claude-3-sonnet-20240229', category: 'Claude 3', tier: 'Balanced' },
   { name: 'claude-3-haiku-20240307', category: 'Claude 3', tier: 'Fast' },
-  
+
   // Claude 3.5 Models (Newest)
   { name: 'claude-3-5-sonnet-20240620', category: 'Claude 3.5', tier: 'Enhanced' },
   { name: 'claude-3-5-sonnet-20241022', category: 'Claude 3.5', tier: 'Latest' },
   { name: 'claude-3-5-haiku-20241022', category: 'Claude 3.5', tier: 'Fast Enhanced' },
-  
+
   // Legacy Claude 2 Models
   { name: 'claude-2.1', category: 'Claude 2', tier: 'Legacy' },
   { name: 'claude-2.0', category: 'Claude 2', tier: 'Legacy' },
-  
+
   // Instant Models (Fast, Economical)
   { name: 'claude-instant-1.2', category: 'Claude Instant', tier: 'Economy' },
-  
+
   // Potential new models to test
   { name: 'claude-3-opus-latest', category: 'Claude 3', tier: 'Latest Opus' },
   { name: 'claude-3-5-opus-20241022', category: 'Claude 3.5', tier: 'Premium' },
@@ -24,7 +24,7 @@ const anthropicModels = [
 
 async function testAnthropicModel(model) {
   console.log(`\n🧪 Testing Anthropic ${model.name} (${model.tier})...`);
-  
+
   const payload = {
     query: "Analyze the competitive advantages of Microsoft vs Google in enterprise AI services. Focus on: revenue models, market share, technical capabilities, and 3-year outlook.",
     provider: "anthropic",
@@ -52,12 +52,12 @@ async function testAnthropicModel(model) {
     if (!response.ok) {
       const errorText = await response.text();
       const errorPreview = errorText.slice(0, 150).replace(/\n/g, ' ');
-      
+
       if (errorText.includes('model_not_found') || errorText.includes('invalid_model')) {
         console.log(`   ❌ ${model.name}: Model not available on your API key`);
         return { model: model.name, category: model.category, tier: model.tier, success: false, error: 'Model not available' };
       }
-      
+
       console.log(`   ❌ ${model.name}: HTTP ${response.status}`);
       console.log(`      → Error: ${errorPreview}`);
       return { model: model.name, category: model.category, tier: model.tier, success: false, error: `HTTP ${response.status}` };
@@ -73,22 +73,22 @@ async function testAnthropicModel(model) {
 
     try {
       const startTime = Date.now();
-      
+
       while (chunks < 5) { // Check first 5 chunks
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         chunks++;
         totalBytes += value.length;
         const chunk = decoder.decode(value);
-        
+
         if (chunks === 1) {
           firstChunk = chunk.slice(0, 200);
         }
-        
+
         // Look for valid Claude response patterns
-        if (chunk.includes('event: message') || 
-            chunk.includes('event: progress') || 
+        if (chunk.includes('event: message') ||
+            chunk.includes('event: progress') ||
             chunk.includes('report-plan') ||
             chunk.includes('thinking') ||
             chunk.includes('analyzing')) {
@@ -96,24 +96,24 @@ async function testAnthropicModel(model) {
           break;
         }
       }
-      
+
       const responseTime = Date.now() - startTime;
-      
+
       if (hasValidContent) {
         console.log(`   ✅ ${model.name}: Working perfectly!`);
         console.log(`      → Response time: ${responseTime}ms | Chunks: ${chunks} | Bytes: ${totalBytes}`);
         console.log(`      → Preview: ${firstChunk.replace(/\n/g, ' ').slice(0, 80)}...`);
-        return { 
-          model: model.name, 
-          category: model.category, 
-          tier: model.tier, 
-          success: true, 
+        return {
+          model: model.name,
+          category: model.category,
+          tier: model.tier,
+          success: true,
           responseTime,
           chunks,
-          bytes: totalBytes 
+          bytes: totalBytes
         };
       }
-      
+
     } finally {
       reader.releaseLock();
     }
@@ -139,17 +139,17 @@ async function runAnthropicTests() {
   console.log(`Total models to test: ${anthropicModels.length}`);
   console.log(`Test query: Enterprise AI competitive analysis (MSFT vs GOOGL)\n`);
   console.log('='.repeat(70));
-  
+
   const results = [];
-  
+
   for (const model of anthropicModels) {
     const result = await testAnthropicModel(model);
     results.push(result);
-    
+
     // Wait 1.5 seconds between tests to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 1500));
   }
-  
+
   // Group results by category
   const categories = {};
   results.forEach(result => {
@@ -158,45 +158,45 @@ async function runAnthropicTests() {
     }
     categories[result.category].push(result);
   });
-  
+
   console.log('\n' + '='.repeat(70));
   console.log('📊 Anthropic Claude Model Test Results:');
   console.log('='.repeat(70));
-  
+
   Object.keys(categories).forEach(category => {
     console.log(`\n🏷️  ${category} Models:`);
     categories[category].forEach(result => {
-      const status = result.success 
+      const status = result.success
         ? `✅ WORKING (${result.responseTime}ms, ${result.chunks} chunks)`
         : `❌ FAILED (${result.error})`;
       console.log(`   ${result.model.padEnd(35)} [${result.tier.padEnd(15)}]: ${status}`);
     });
   });
-  
+
   const workingModels = results.filter(r => r.success);
   const failedModels = results.filter(r => !r.success);
-  
+
   console.log('\n' + '='.repeat(70));
   console.log(`🎯 Summary: ${workingModels.length}/${results.length} Anthropic models working`);
-  
+
   if (workingModels.length > 0) {
     console.log(`\n✨ Working Claude Models (${workingModels.length}):`);
-    
+
     // Sort by response time
     workingModels.sort((a, b) => a.responseTime - b.responseTime);
-    
+
     console.log('\n🏆 Performance Ranking (by speed):');
     workingModels.forEach((model, index) => {
       const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '  ';
       console.log(`   ${medal} ${model.model} - ${model.responseTime}ms (${model.tier})`);
     });
-    
+
     console.log(`\n💡 Recommendations for Equity Research:`);
-    
+
     const opus = workingModels.find(m => m.model.includes('opus'));
     const sonnet = workingModels.find(m => m.model.includes('sonnet'));
     const haiku = workingModels.find(m => m.model.includes('haiku'));
-    
+
     if (opus) {
       console.log(`   🌟 Deep Analysis: ${opus.model}`);
       console.log(`      → Best for: Comprehensive company analysis, complex financial modeling`);
@@ -210,7 +210,7 @@ async function runAnthropicTests() {
       console.log(`      → Best for: Quick screening, bulk analysis, real-time monitoring`);
     }
   }
-  
+
   if (failedModels.length > 0) {
     console.log(`\n❌ Models Not Available (${failedModels.length}):`);
     const errorGroups = {};
@@ -218,7 +218,7 @@ async function runAnthropicTests() {
       if (!errorGroups[model.error]) errorGroups[model.error] = [];
       errorGroups[model.error].push(model.model);
     });
-    
+
     Object.keys(errorGroups).forEach(error => {
       console.log(`   ${error}:`);
       errorGroups[error].forEach(model => {
@@ -226,7 +226,7 @@ async function runAnthropicTests() {
       });
     });
   }
-  
+
   console.log('\n' + '='.repeat(70));
   console.log('💎 Claude Model Insights for Equity Research:');
   console.log('='.repeat(70));
@@ -235,7 +235,7 @@ async function runAnthropicTests() {
   • Claude 3.5 Sonnet: Best balance of speed and capability
   • Claude 3 Haiku: Fastest for high-volume screening
   • Claude Instant: Most cost-effective for basic queries
-  
+
   All Claude models excel at:
   - Understanding financial statements
   - Analyzing competitive dynamics

@@ -29,7 +29,7 @@ The platform now uses these bleeding-edge models by default:
 - **Thinking**: `gpt-5`
 - **Tasks**: `gpt-5-turbo`
 
-### Anthropic  
+### Anthropic
 - **Thinking**: `claude-opus-4-1-20250805`
 - **Tasks**: `claude-sonnet-4-0-20250805`
 
@@ -68,7 +68,7 @@ node test-new-models.js
 
 The platform might be loading cached JavaScript. Try:
 
-1. **Hard Refresh**: 
+1. **Hard Refresh**:
    - Windows/Linux: `Ctrl + Shift + R`
    - Mac: `Cmd + Shift + R`
 

@@ -106,7 +106,7 @@ interface CaseStudiesState {
   addTemplate: (template: Omit<CaseStudyTemplate, "id" | "createdAt">) => void;
   updateTemplate: (id: string, updates: Partial<CaseStudyTemplate>) => void;
   removeTemplate: (id: string) => void;
-  
+
   // Milestone Management
   addMilestone: (caseStudyId: string, milestone: Omit<Milestone, "id">) => void;
   updateMilestone: (caseStudyId: string, milestoneId: string, updates: Partial<Milestone>) => void;
@@ -136,7 +136,7 @@ interface CaseStudiesState {
 
 const defaultCategories = [
   "Public Equity",
-  "Venture Capital", 
+  "Venture Capital",
   "Private Equity",
   "Seed Investment",
   "Series A",
@@ -221,7 +221,7 @@ const defaultTemplate: CaseStudyTemplate = {
   ]
 };
 
-export const useCaseStudiesStore = create<CaseStudiesState>()( 
+export const useCaseStudiesStore = create<CaseStudiesState>()(
   persist(
     (set, get) => ({
       caseStudies: [],
@@ -255,7 +255,7 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
         set((state) => ({
           caseStudies: state.caseStudies.filter(cs => cs.id !== id),
         })),
-      
+
       duplicateCaseStudy: (id) => {
         const caseStudy = get().getCaseStudyById(id);
         if (caseStudy) {
@@ -267,7 +267,7 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
           });
         }
       },
-      
+
       addTemplate: (template) =>
         set((state) => ({
           templates: [
@@ -279,14 +279,14 @@ export const useCaseStudiesStore = create<CaseStudiesState>()(
             ...state.templates
           ],
         })),
-      
+
       updateTemplate: (id, updates) =>
         set((state) => ({
           templates: state.templates.map(t =>
             t.id === id ? { ...t, ...updates } : t
           ),
         })),
-      
+
       removeTemplate: (id) =>
         set((state) => ({
           templates: state.templates.filter(t => t.id !== id || t.isDefault),

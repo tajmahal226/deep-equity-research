@@ -20,29 +20,46 @@ vi.mock("@/utils/model", () => ({
 }));
 
 describe("POST /api/sse", () => {
+  const basePayload = {
+    query: "test question",
+    provider: "openai",
+    thinkingModel: "gpt-4o",
+    taskModel: "gpt-4o",
+    searchProvider: "tavily",
+    language: "en-US",
+    maxResult: 3,
+    aiApiKey: "test-key",
+    searchApiKey: "search-key",
+  };
+
+  const originalAccessPassword = process.env.ACCESS_PASSWORD;
+
+  const resetAccessPassword = () => {
+    if (originalAccessPassword === undefined) {
+      delete process.env.ACCESS_PASSWORD;
+    } else {
+      process.env.ACCESS_PASSWORD = originalAccessPassword;
+    }
+  };
+
   beforeEach(() => {
     startMock.mockReset();
     startMock.mockResolvedValue(undefined);
+    resetAccessPassword();
   });
 
-  it("emits an initial info event with version details", async () => {
-    const request = new NextRequest("http://localhost/api/sse", {
+  const createRequest = (payload = basePayload, headers: Record<string, string> = {}) =>
+    new NextRequest("http://localhost/api/sse", {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        ...headers,
       },
-      body: JSON.stringify({
-        query: "test question",
-        provider: "openai",
-        thinkingModel: "gpt-4o",
-        taskModel: "gpt-4o",
-        searchProvider: "tavily",
-        language: "en-US",
-        maxResult: 3,
-        aiApiKey: "test-key",
-        searchApiKey: "search-key",
-      }),
+      body: JSON.stringify(payload),
     });
+
+  it("emits an initial info event with version details", async () => {
+    const request = createRequest();
 
     const response = await POST(request);
     const reader = response.body?.getReader();
@@ -73,5 +90,50 @@ describe("POST /api/sse", () => {
     const infoData = JSON.parse(dataLine?.replace("data: ", "") || "{}");
 
     expect(infoData).toEqual({ name: "deep-research", version: "0.1.0" });
+  });
+
+  it("returns 403 when ACCESS_PASSWORD is set and not provided", async () => {
+    process.env.ACCESS_PASSWORD = "secret";
+
+    const response = await POST(createRequest());
+
+    expect(response.status).toBe(403);
+    expect(await response.text()).toBe("Unauthorized");
+    expect(startMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when AI API key is missing for provider", async () => {
+    const payload = { ...basePayload, aiApiKey: undefined };
+    const response = await POST(createRequest(payload));
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      code: 400,
+      message: "API key required for openai. Please configure your API key in Settings.",
+    });
+    expect(startMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when search API key is missing for provider", async () => {
+    const payload = { ...basePayload, searchApiKey: undefined };
+    const response = await POST(createRequest(payload));
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({
+      code: 400,
+      message:
+        "Search API key required for tavily. Please configure your search provider API key in Settings.",
+    });
+    expect(startMock).not.toHaveBeenCalled();
+  });
+
+  it("accepts valid access password and proceeds", async () => {
+    process.env.ACCESS_PASSWORD = "secret";
+    const response = await POST(
+      createRequest(basePayload, { Authorization: "Bearer secret" })
+    );
+
+    expect(response.status).toBe(200);
+    expect(startMock).toHaveBeenCalledTimes(1);
   });
 });

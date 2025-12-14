@@ -5,12 +5,12 @@ const latestModels = [
   { name: 'o3-pro', category: 'O3' },
   { name: 'o3-deep-research', category: 'O3' },
   { name: 'o3-mini', category: 'O3' },
-  
+
   // Potential GPT-5 Models
   { name: 'gpt-5', category: 'GPT-5' },
   { name: 'gpt-5-turbo', category: 'GPT-5' },
   { name: 'gpt-5-preview', category: 'GPT-5' },
-  
+
   // Other potential latest models
   { name: 'chatgpt-4o-latest', category: 'ChatGPT' },
   { name: 'gpt-4o-2024-11-20', category: 'GPT-4' },
@@ -19,7 +19,7 @@ const latestModels = [
 
 async function testLatestModel(model) {
   console.log(`\n🧪 Testing ${model.name}...`);
-  
+
   const payload = {
     query: "Provide deep research analysis on emerging AI investment opportunities in 2025",
     provider: "openai",
@@ -63,19 +63,19 @@ async function testLatestModel(model) {
       while (chunks < 5) { // Check first 5 chunks for advanced models
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         chunks++;
         const chunk = decoder.decode(value);
-        
+
         if (chunks === 1) {
           responsePreview = chunk.slice(0, 200);
         }
-        
+
         // Check for error messages
         if (chunk.includes('error') || chunk.includes('Error') || chunk.includes('failed') || chunk.includes('invalid')) {
           errorContent = chunk;
         }
-        
+
         // Look for valid response indicators
         if (chunk.includes('event: message') || chunk.includes('event: progress') || chunk.includes('report-plan')) {
           hasValidContent = true;
@@ -118,17 +118,17 @@ async function runLatestModelTests() {
   console.log(`Total models to test: ${latestModels.length}`);
   console.log(`Test query: Deep research on AI investment opportunities`);
   console.log(`Provider: OpenAI | Search: Tavily | Timeout: 20s\n`);
-  
+
   const results = [];
-  
+
   for (const model of latestModels) {
     const result = await testLatestModel(model);
     results.push(result);
-    
+
     // Wait 2 seconds between tests for advanced models
     await new Promise(resolve => setTimeout(resolve, 2000));
   }
-  
+
   // Group results by category
   const categories = {};
   results.forEach(result => {
@@ -137,10 +137,10 @@ async function runLatestModelTests() {
     }
     categories[result.category].push(result);
   });
-  
+
   console.log('\n📊 Latest OpenAI Models Test Results:');
   console.log('=====================================');
-  
+
   Object.keys(categories).forEach(category => {
     console.log(`\n🏷️  ${category} Models:`);
     categories[category].forEach(result => {
@@ -151,19 +151,19 @@ async function runLatestModelTests() {
       }
     });
   });
-  
+
   const workingModels = results.filter(r => r.success);
   const failedModels = results.filter(r => !r.success);
-  
+
   console.log(`\n🎯 Summary: ${workingModels.length}/${results.length} latest models working`);
-  
+
   if (workingModels.length > 0) {
     console.log(`\n🌟 BREAKTHROUGH: Latest Models Working!`);
     workingModels.forEach(model => {
       console.log(`   🚀 ${model.model} (${model.category}) - Next-gen AI research capabilities!`);
     });
   }
-  
+
   if (failedModels.length > 0) {
     console.log(`\n📋 Models Not Yet Available:`);
     failedModels.forEach(model => {
@@ -174,15 +174,15 @@ async function runLatestModelTests() {
       }
     });
   }
-  
+
   console.log(`\n💡 Total OpenAI Models Available: ${12 + workingModels.length}`);
   console.log(`   • Standard Models: 12/12 working`);
   console.log(`   • Latest Models: ${workingModels.length}/${latestModels.length} working`);
-  
+
   if (workingModels.some(m => m.model.includes('o3'))) {
     console.log(`\n🎉 O3 MODELS DETECTED! These offer advanced reasoning for deep research!`);
   }
-  
+
   if (workingModels.some(m => m.model.includes('gpt-5'))) {
     console.log(`\n🎊 GPT-5 DETECTED! You have access to the next generation of AI!`);
   }

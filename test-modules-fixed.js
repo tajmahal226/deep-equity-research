@@ -30,7 +30,7 @@ const testModules = [
   },
   {
     name: 'Bulk Company Research',
-    endpoint: '/api/bulk-company-research', 
+    endpoint: '/api/bulk-company-research',
     payload: (provider, model) => ({
       companies: [
         { name: "Microsoft Corporation", website: "https://microsoft.com" },
@@ -62,12 +62,12 @@ const testProviders = [
 
 async function testModule(module, provider, model) {
   const startTime = Date.now();
-  
+
   try {
     const payload = module.payload(provider, model);
     console.log(`\nTesting ${module.name} with ${provider}/${model}`);
     console.log(`Payload:`, JSON.stringify(payload, null, 2));
-    
+
     const response = await fetch(`http://localhost:3001${module.endpoint}`, {
       method: 'POST',
       headers: {
@@ -84,8 +84,8 @@ async function testModule(module, provider, model) {
     if (!response.ok) {
       const errorText = await response.text();
       console.log(`Error Response:`, errorText.slice(0, 200));
-      return { 
-        success: false, 
+      return {
+        success: false,
         status: response.status,
         time: responseTime,
         error: errorText.slice(0, 100)
@@ -97,7 +97,7 @@ async function testModule(module, provider, model) {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let hasContent = false;
-      
+
       try {
         const { value } = await reader.read();
         if (value) {
@@ -108,20 +108,20 @@ async function testModule(module, provider, model) {
       } finally {
         reader.releaseLock();
       }
-      
-      return { 
-        success: hasContent, 
+
+      return {
+        success: hasContent,
         status: 200,
-        time: responseTime 
+        time: responseTime
       };
     }
-    
+
     // For JSON endpoints
     const data = await response.json();
     console.log(`Response Data:`, JSON.stringify(data).slice(0, 150));
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       status: 200,
       time: responseTime,
       hasData: !!data
@@ -129,8 +129,8 @@ async function testModule(module, provider, model) {
 
   } catch (error) {
     console.log(`Error:`, error.message);
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: error.message,
       time: Date.now() - startTime
     };
@@ -140,45 +140,45 @@ async function testModule(module, provider, model) {
 async function runFixedTests() {
   console.log('🚀 Testing Research Modules with Correct Parameters\n');
   console.log('='.repeat(80));
-  
+
   const results = [];
-  
+
   for (const module of testModules) {
     console.log(`\n${'='.repeat(80)}`);
     console.log(`MODULE: ${module.name}`);
     console.log(`Endpoint: ${module.endpoint}`);
     console.log(`${'='.repeat(80)}`);
-    
+
     for (const providerConfig of testProviders) {
       for (const model of providerConfig.models) {
         const result = await testModule(module, providerConfig.provider, model);
-        
+
         results.push({
           module: module.name,
           provider: providerConfig.provider,
           model: model,
           ...result
         });
-        
+
         if (result.success) {
           console.log(`✅ SUCCESS: ${providerConfig.provider}/${model} working!`);
         } else {
           console.log(`❌ FAILED: ${providerConfig.provider}/${model} - ${result.error || `HTTP ${result.status}`}`);
         }
-        
+
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
   }
-  
+
   console.log('\n' + '='.repeat(80));
   console.log('📊 FINAL RESULTS');
   console.log('='.repeat(80));
-  
+
   for (const module of testModules) {
     const moduleResults = results.filter(r => r.module === module.name);
     const workingCount = moduleResults.filter(r => r.success).length;
-    
+
     console.log(`\n${module.name}:`);
     moduleResults.forEach(r => {
       const status = r.success ? '✅' : '❌';
@@ -186,13 +186,13 @@ async function runFixedTests() {
     });
     console.log(`  Summary: ${workingCount}/${moduleResults.length} working`);
   }
-  
+
   const totalWorking = results.filter(r => r.success).length;
   const totalTests = results.length;
-  
+
   console.log(`\n${'='.repeat(80)}`);
   console.log(`OVERALL: ${totalWorking}/${totalTests} tests passed`);
-  
+
   if (totalWorking === totalTests) {
     console.log('🎉 ALL MODULES WORKING WITH ALL PROVIDERS!');
   } else {

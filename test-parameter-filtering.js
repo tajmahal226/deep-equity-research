@@ -7,9 +7,9 @@
 // Mock the filterModelSettings function directly
 function filterModelSettings(provider, model, settings) {
   if (!settings) return settings;
-  
+
   const filteredSettings = { ...settings };
-  
+
   switch (provider) {
     case "openai":
       // For responses API (o3, GPT-5): temperature must be 1 or omitted
@@ -21,25 +21,25 @@ function filterModelSettings(provider, model, settings) {
       }
       // Regular OpenAI models support temperature 0-2
       break;
-      
+
     case "anthropic":
       // Anthropic Claude supports temperature 0-1
       if (filteredSettings.temperature !== undefined && filteredSettings.temperature > 1) {
         filteredSettings.temperature = 1;
       }
       break;
-      
+
     case "deepseek":
     case "xai":
     case "mistral":
       // These providers support temperature
       break;
-      
+
     default:
       // For unknown providers, be conservative
       break;
   }
-  
+
   return filteredSettings;
 }
 
@@ -77,7 +77,7 @@ const testCases = [
   },
   {
     name: 'Anthropic Claude with temperature 1.5',
-    provider: 'anthropic', 
+    provider: 'anthropic',
     model: 'claude-3-5-sonnet-20241022',
     input: { temperature: 1.5, maxTokens: 1000 },
     expected: 'Should change temperature to 1 (max for Claude)'
@@ -99,13 +99,13 @@ let allPassed = true;
 for (const testCase of testCases) {
   const result = filterModelSettings(testCase.provider, testCase.model, testCase.input);
   const passed = result !== null && result !== undefined;
-  
+
   console.log(`\n${testCase.name}:`);
   console.log(`   Input:     ${JSON.stringify(testCase.input)}`);
   console.log(`   Output:    ${JSON.stringify(result)}`);
   console.log(`   Expected:  ${testCase.expected}`);
   console.log(`   Status:    ${passed ? '✅ PASS' : '❌ FAIL'}`);
-  
+
   if (!passed) allPassed = false;
 }
 

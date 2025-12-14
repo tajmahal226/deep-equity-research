@@ -157,4 +157,3 @@ export function resolveProviderModels(
 export function getProviderModelDefaults(provider: string): ProviderModelPair {
   return PROVIDER_MODEL_DEFAULTS[provider] || PROVIDER_MODEL_DEFAULTS.openai;
 }
-

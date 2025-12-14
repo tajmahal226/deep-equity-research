@@ -8,12 +8,12 @@ const openaiModels = [
   { name: 'gpt-4', category: 'GPT-4' },
   { name: 'gpt-4-0125-preview', category: 'GPT-4' },
   { name: 'gpt-4-1106-preview', category: 'GPT-4' },
-  
+
   // GPT-3.5 Models
   { name: 'gpt-3.5-turbo', category: 'GPT-3.5' },
   { name: 'gpt-3.5-turbo-0125', category: 'GPT-3.5' },
   { name: 'gpt-3.5-turbo-1106', category: 'GPT-3.5' },
-  
+
   // O1 Models (Reasoning)
   { name: 'o1-preview', category: 'O1' },
   { name: 'o1-mini', category: 'O1' },
@@ -21,7 +21,7 @@ const openaiModels = [
 
 async function testOpenAIModel(model) {
   console.log(`\n🧪 Testing OpenAI ${model.name}...`);
-  
+
   const payload = {
     query: "What are the top 3 AI technology trends for investors?",
     provider: "openai",
@@ -60,15 +60,15 @@ async function testOpenAIModel(model) {
       while (chunks < 3) { // Check first 3 chunks
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         chunks++;
         const chunk = decoder.decode(value);
-        
+
         // Check for error messages
         if (chunk.includes('error') || chunk.includes('Error') || chunk.includes('failed')) {
           errorContent = chunk;
         }
-        
+
         // Look for valid response indicators
         if (chunk.includes('event: message') || chunk.includes('event: progress') || chunk.includes('report-plan')) {
           hasValidContent = true;
@@ -106,17 +106,17 @@ async function runOpenAIModelTests() {
   console.log(`Total models to test: ${openaiModels.length}`);
   console.log(`Test query: "What are the top 3 AI technology trends for investors?"`);
   console.log(`Provider: OpenAI | Search: Tavily\n`);
-  
+
   const results = [];
-  
+
   for (const model of openaiModels) {
     const result = await testOpenAIModel(model);
     results.push(result);
-    
+
     // Wait 1 second between tests to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
-  
+
   // Group results by category
   const categories = {};
   results.forEach(result => {
@@ -125,10 +125,10 @@ async function runOpenAIModelTests() {
     }
     categories[result.category].push(result);
   });
-  
+
   console.log('\n📊 OpenAI Model Test Results:');
   console.log('===============================');
-  
+
   Object.keys(categories).forEach(category => {
     console.log(`\n🏷️  ${category} Models:`);
     categories[category].forEach(result => {
@@ -136,27 +136,27 @@ async function runOpenAIModelTests() {
       console.log(`   ${result.model.padEnd(25)}: ${status}`);
     });
   });
-  
+
   const workingModels = results.filter(r => r.success);
   const failedModels = results.filter(r => !r.success);
-  
+
   console.log(`\n🎯 Summary: ${workingModels.length}/${results.length} OpenAI models working`);
-  
+
   if (workingModels.length > 0) {
     console.log(`\n✨ Working Models:`);
     workingModels.forEach(model => {
       console.log(`   • ${model.model} (${model.category})`);
     });
-    
+
     console.log(`\n💡 Recommended for research:`);
-    const recommended = workingModels.filter(m => 
+    const recommended = workingModels.filter(m =>
       m.model.includes('gpt-4o') || m.model.includes('gpt-4-turbo') || m.model.includes('o1')
     );
     recommended.forEach(model => {
       console.log(`   🌟 ${model.model} - Best for comprehensive analysis`);
     });
   }
-  
+
   if (failedModels.length > 0) {
     console.log(`\n❌ Failed Models:`);
     const errorTypes = {};
@@ -164,7 +164,7 @@ async function runOpenAIModelTests() {
       if (!errorTypes[model.error]) errorTypes[model.error] = [];
       errorTypes[model.error].push(model.model);
     });
-    
+
     Object.keys(errorTypes).forEach(error => {
       console.log(`   ${error}: ${errorTypes[error].join(', ')}`);
     });

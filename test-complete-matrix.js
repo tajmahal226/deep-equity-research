@@ -168,13 +168,13 @@ const providers = [
 async function testCombination(module, provider, model) {
   try {
     const payload = module.createPayload(provider.id, model);
-    
+
     const response = await fetch(`http://localhost:3001${module.endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': module.endpoint.includes('sse') || module.endpoint.includes('research') 
-          ? 'text/event-stream' 
+        'Accept': module.endpoint.includes('sse') || module.endpoint.includes('research')
+          ? 'text/event-stream'
           : 'application/json'
       },
       body: JSON.stringify(payload),
@@ -190,9 +190,9 @@ async function testCombination(module, provider, model) {
       const reader = response.body.getReader();
       try {
         const { value, done } = await reader.read();
-        return { 
+        return {
           success: !done && value && value.length > 0,
-          status: response.status 
+          status: response.status
         };
       } finally {
         reader.releaseLock();
@@ -201,15 +201,15 @@ async function testCombination(module, provider, model) {
 
     // For JSON endpoints
     const data = await response.json();
-    return { 
+    return {
       success: !!data,
-      status: response.status 
+      status: response.status
     };
 
   } catch (error) {
-    return { 
-      success: false, 
-      error: error.name === 'AbortError' ? 'timeout' : error.message 
+    return {
+      success: false,
+      error: error.name === 'AbortError' ? 'timeout' : error.message
     };
   }
 }
@@ -218,31 +218,31 @@ async function testCombination(module, provider, model) {
 async function runMatrixTest() {
   const results = [];
   const startTime = Date.now();
-  
+
   // Test each provider
   for (const provider of providers) {
     console.log(`\n${'='.repeat(80)}`);
     console.log(`🏢 TESTING PROVIDER: ${provider.name.toUpperCase()}`);
     console.log(`${'='.repeat(80)}`);
-    
+
     // Test first model only for speed (can be expanded to test all)
     const model = provider.models[0];
     console.log(`Using model: ${model}\n`);
-    
+
     const providerResults = [];
-    
+
     // Test each module
     for (const module of modules) {
       process.stdout.write(`  ${module.name.padEnd(30)}`);
-      
+
       const result = await testCombination(module, provider, model);
-      
+
       providerResults.push({
         module: module.name,
         moduleId: module.id,
         success: result.success
       });
-      
+
       if (result.success) {
         console.log(`✅ Working`);
       } else if (result.error === 'timeout') {
@@ -252,62 +252,62 @@ async function runMatrixTest() {
       } else {
         console.log(`❌ Failed (${result.status || result.error})`);
       }
-      
+
       results.push({
         provider: provider.name,
         model: model,
         module: module.name,
         ...result
       });
-      
+
       // Small delay between tests
       await new Promise(r => setTimeout(r, 200));
     }
-    
+
     // Provider summary
     const working = providerResults.filter(r => r.success).length;
     console.log(`\n  Provider Summary: ${working}/${modules.length} modules working`);
   }
-  
+
   // Generate compatibility matrix
   console.log('\n' + '='.repeat(80));
   console.log('📊 COMPLETE COMPATIBILITY MATRIX');
   console.log('='.repeat(80));
   console.log('\n' + 'Module'.padEnd(30) + providers.map(p => p.name.padEnd(12)).join(''));
   console.log('-'.repeat(80));
-  
+
   for (const module of modules) {
     process.stdout.write(module.name.padEnd(30));
-    
+
     for (const provider of providers) {
-      const result = results.find(r => 
-        r.provider === provider.name && 
+      const result = results.find(r =>
+        r.provider === provider.name &&
         r.module === module.name
       );
-      
-      const status = result?.success ? '✅' : 
+
+      const status = result?.success ? '✅' :
                     result?.error === 'timeout' ? '⏱️ ' :
                     result?.status === 401 ? '🔑' : '❌';
       process.stdout.write(status.padEnd(12));
     }
     console.log();
   }
-  
+
   // Overall statistics
   console.log('\n' + '='.repeat(80));
   console.log('📈 OVERALL STATISTICS');
   console.log('='.repeat(80));
-  
+
   const totalTests = providers.length * modules.length;
   const successfulTests = results.filter(r => r.success).length;
   const successRate = ((successfulTests / totalTests) * 100).toFixed(1);
-  
+
   console.log(`\nTotal Tests Run: ${totalTests}`);
   console.log(`Successful: ${successfulTests}`);
   console.log(`Failed: ${totalTests - successfulTests}`);
   console.log(`Success Rate: ${successRate}%`);
   console.log(`Test Duration: ${Math.round((Date.now() - startTime) / 1000)}s`);
-  
+
   // Per-provider summary
   console.log('\n📊 Provider Success Rates:');
   for (const provider of providers) {
@@ -316,7 +316,7 @@ async function runMatrixTest() {
     const rate = ((providerSuccess / providerResults.length) * 100).toFixed(0);
     console.log(`  ${provider.name.padEnd(15)}: ${providerSuccess}/${providerResults.length} modules (${rate}%)`);
   }
-  
+
   // Per-module summary
   console.log('\n📊 Module Success Rates:');
   for (const module of modules) {
@@ -325,7 +325,7 @@ async function runMatrixTest() {
     const rate = ((moduleSuccess / moduleResults.length) * 100).toFixed(0);
     console.log(`  ${module.name.padEnd(30)}: ${moduleSuccess}/${moduleResults.length} providers (${rate}%)`);
   }
-  
+
   // Critical issues
   const criticalIssues = [];
   for (const module of modules) {
@@ -335,14 +335,14 @@ async function runMatrixTest() {
       criticalIssues.push(module.name);
     }
   }
-  
+
   if (criticalIssues.length > 0) {
     console.log('\n⚠️  CRITICAL ISSUES:');
     criticalIssues.forEach(issue => {
       console.log(`  - ${issue} not working with ANY provider`);
     });
   }
-  
+
   // Final verdict
   console.log('\n' + '='.repeat(80));
   if (successRate >= 95) {

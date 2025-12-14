@@ -224,4 +224,3 @@ export const useCompanyDiscoveryStore = create<CompanyDiscoveryState>()(
   )
 );
 export { defaultIndustries, defaultLocations, defaultFundingStages };
-

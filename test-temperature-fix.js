@@ -19,7 +19,7 @@ async function testTemperatureFix() {
         language: "en-US",
         thinkingModelConfig: {
           modelId: "gpt-4o",
-          providerId: "openai", 
+          providerId: "openai",
           apiKey: "sk-test-key-123",
         },
         taskModelConfig: {
@@ -44,7 +44,7 @@ async function testTemperatureFix() {
           apiKey: "sk-test-key-123",
         },
         taskModelConfig: {
-          modelId: "o3-mini", 
+          modelId: "o3-mini",
           providerId: "openai",
           apiKey: "sk-test-key-123",
         },
@@ -66,7 +66,7 @@ async function testTemperatureFix() {
         },
         taskModelConfig: {
           modelId: "claude-3-5-haiku-20241022",
-          providerId: "anthropic", 
+          providerId: "anthropic",
           apiKey: "ant-test-key-123",
         },
         onProgress: () => {},
@@ -78,7 +78,7 @@ async function testTemperatureFix() {
       name: 'Missing model config (should use fallbacks)',
       config: {
         companyName: "Test Company",
-        searchDepth: "fast", 
+        searchDepth: "fast",
         language: "en-US",
         thinkingModelConfig: {
           // Missing modelId and providerId
@@ -86,7 +86,7 @@ async function testTemperatureFix() {
         },
         taskModelConfig: {
           // Missing modelId and providerId
-          apiKey: "sk-test-key-123", 
+          apiKey: "sk-test-key-123",
         },
         onProgress: () => {},
         onMessage: () => {},
@@ -97,19 +97,19 @@ async function testTemperatureFix() {
 
   for (const testCase of testCases) {
     console.log(`📋 Testing: ${testCase.name}`);
-    
+
     try {
       const researcher = new CompanyDeepResearch(testCase.config);
-      
+
       // Test the parameter filtering methods directly
       // This should NOT throw temperature parameter errors anymore
       const thinkingSettings = researcher.getThinkingModelSettings({ temperature: 0.5, maxTokens: 1000 });
       const taskSettings = researcher.getTaskModelSettings({ temperature: 0.7, maxTokens: 2000 });
-      
+
       console.log(`   ✅ Parameter filtering working`);
       console.log(`      Thinking settings: ${JSON.stringify(thinkingSettings)}`);
       console.log(`      Task settings: ${JSON.stringify(taskSettings)}\n`);
-      
+
     } catch (error) {
       if (error.message.includes('Unsupported parameter')) {
         console.log(`   ❌ TEMPERATURE ERROR STILL EXISTS: ${error.message}\n`);

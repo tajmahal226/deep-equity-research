@@ -86,7 +86,7 @@ class DeepResearch {
   async getThinkingModel() {
     const { AIProvider } = this.options;
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
-    
+
     // Don't pass temperature for reasoning models like GPT-5
     let settings: any = undefined;
     if (AIProvider.temperature !== undefined) {
@@ -96,9 +96,9 @@ class DeepResearch {
     if (maxTokens !== undefined) {
       settings = { ...(settings || {}), maxTokens };
     }
-    
+
     logger.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", temperature=${AIProvider.temperature}, finalSettings=`, settings);
-    
+
     return await createAIProvider({
       provider: AIProvider.provider,
       model: AIProvider.thinkingModel,
@@ -110,15 +110,15 @@ class DeepResearch {
   async getTaskModel() {
     const { AIProvider } = this.options;
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
-    
+
     // Build settings object
     const settings: any = {};
-    
+
     // Add temperature only if not restricted (don't pass temperature for reasoning models like GPT-5)
     if (AIProvider.temperature !== undefined) {
       settings.temperature = AIProvider.temperature;
     }
-    
+
     // Add Google-specific settings
     if (AIProvider.provider === "google" && isNetworkingModel(AIProvider.taskModel)) {
       settings.useSearchGrounding = true;
@@ -127,10 +127,10 @@ class DeepResearch {
     if (maxTokens !== undefined) {
       settings.maxTokens = maxTokens;
     }
-    
+
     const finalSettings = Object.keys(settings).length > 0 ? settings : undefined;
     logger.log(`[DEBUG] DeepResearch.getTaskModel: model="${AIProvider.taskModel}", temperature=${AIProvider.temperature}, finalSettings=`, finalSettings);
-    
+
     return await createAIProvider({
       provider: AIProvider.provider,
       model: AIProvider.taskModel,

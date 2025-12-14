@@ -9,9 +9,9 @@ console.log('=== Provider Fix Validation ===\n');
 // Simulate the filterModelSettings function behavior
 function simulateFilterModelSettings(provider, model, settings) {
   if (!settings) return undefined;
-  
+
   const filteredSettings = { ...settings };
-  
+
   if (provider === "openai") {
     if (hasTemperatureRestrictions(model)) {
       console.log(`[DEBUG] filterModelSettings: model="${model}", hasRestrictions=true, originalTemp=${settings.temperature}`);
@@ -21,7 +21,7 @@ function simulateFilterModelSettings(provider, model, settings) {
       console.log(`[DEBUG] filterModelSettings: model="${model}", hasRestrictions=false, keepingTemp=${settings.temperature}`);
     }
   }
-  
+
   return Object.keys(filteredSettings).length > 0 ? filteredSettings : undefined;
 }
 
@@ -29,13 +29,13 @@ function simulateFilterModelSettings(provider, model, settings) {
 function simulateProviderCreation(model, originalSettings) {
   console.log(`\n--- Testing Model: ${model} ---`);
   console.log(`Original settings:`, originalSettings);
-  
+
   const isResponsesModel = hasTemperatureRestrictions(model);
   const filteredSettings = simulateFilterModelSettings("openai", model, originalSettings);
-  
+
   console.log(`isResponsesModel: ${isResponsesModel}`);
   console.log(`filteredSettings:`, filteredSettings);
-  
+
   if (isResponsesModel) {
     console.log(`✅ [FIXED] Using openai.responses("${model}") - settings handled at call time`);
     console.log(`   Temperature removed: ${filteredSettings?.temperature === undefined ? 'YES' : 'NO'}`);
@@ -43,7 +43,7 @@ function simulateProviderCreation(model, originalSettings) {
   } else {
     console.log(`✅ Using openai("${model}", filteredSettings) - normal flow`);
   }
-  
+
   return { isResponsesModel, filteredSettings };
 }
 
@@ -54,7 +54,7 @@ const testCases = [
     settings: { temperature: 0.7, reasoningEffort: "high" }
   },
   {
-    model: "Gpt 5", 
+    model: "Gpt 5",
     settings: { temperature: 0.5, reasoningEffort: "medium" }
   },
   {

@@ -10,18 +10,18 @@ console.log('🧪 Testing Reasoning Effort Implementation...\n');
 // Mock the filter function with reasoning_effort support
 function filterModelSettings(provider, model, settings) {
   if (!settings) return settings;
-  
+
   const filteredSettings = { ...settings };
-  
+
   switch (provider) {
     case "openai":
-      if (model.startsWith("o1") || 
-          model.startsWith("o3") || 
+      if (model.startsWith("o1") ||
+          model.startsWith("o3") ||
           model.includes("o3-") ||
           (model.startsWith("gpt-5") && !model.includes("chat"))) {
         // Reasoning models - remove temperature, keep reasoning_effort
         delete filteredSettings.temperature;
-        
+
         if (filteredSettings.reasoning_effort) {
           console.log(`✅ Keeping reasoning_effort: ${filteredSettings.reasoning_effort} for ${model}`);
         }
@@ -33,13 +33,13 @@ function filterModelSettings(provider, model, settings) {
         }
       }
       break;
-      
+
     default:
       // Other providers don't support reasoning_effort
       delete filteredSettings.reasoning_effort;
       break;
   }
-  
+
   return filteredSettings;
 }
 
@@ -54,7 +54,7 @@ const testCases = [
   },
   {
     name: 'o1-mini with reasoning effort',
-    provider: 'openai', 
+    provider: 'openai',
     model: 'o1-mini',
     settings: { temperature: 0.5, reasoning_effort: 'medium', maxTokens: 1000 },
     expected: 'reasoning_effort should be kept, temperature removed'
@@ -69,7 +69,7 @@ const testCases = [
   {
     name: 'gpt-5-chat-latest with effort',
     provider: 'openai',
-    model: 'gpt-5-chat-latest', 
+    model: 'gpt-5-chat-latest',
     settings: { temperature: 0.8, reasoning_effort: 'high', maxTokens: 2000 },
     expected: 'temperature should be kept, reasoning_effort removed'
   },
@@ -97,21 +97,21 @@ let allPassed = true;
 for (const testCase of testCases) {
   console.log(`\n📋 ${testCase.name}:`);
   console.log(`   Input: ${JSON.stringify(testCase.settings)}`);
-  
+
   const result = filterModelSettings(testCase.provider, testCase.model, testCase.settings);
   console.log(`   Output: ${JSON.stringify(result)}`);
-  
+
   const hasTemp = result.hasOwnProperty('temperature');
   const hasEffort = result.hasOwnProperty('reasoning_effort');
-  
+
   // Determine if this is a reasoning model
-  const isReasoningModel = testCase.model.startsWith("o1") || 
-                         testCase.model.startsWith("o3") || 
+  const isReasoningModel = testCase.model.startsWith("o1") ||
+                         testCase.model.startsWith("o3") ||
                          testCase.model.includes("o3-") ||
                          (testCase.model.startsWith("gpt-5") && !testCase.model.includes("chat"));
-  
+
   let passed = true;
-  
+
   if (isReasoningModel) {
     // Should have reasoning_effort, should NOT have temperature
     if (!hasEffort) {
@@ -139,7 +139,7 @@ for (const testCase of testCases) {
       console.log(`   ✅ PASS: Correct parameters for regular model`);
     }
   }
-  
+
   if (!passed) allPassed = false;
 }
 
@@ -152,13 +152,13 @@ if (allPassed) {
   console.log('   ✅ Regular GPT models remove reasoning_effort parameter');
   console.log('   ✅ Temperature handling works correctly for both types');
   console.log('   ✅ gpt-5-chat-latest correctly treated as regular model');
-  
+
   console.log('\n💡 Implementation Summary:');
   console.log('   - UI dropdown added to OpenAI settings');
   console.log('   - Parameter filtering supports reasoning_effort');
   console.log('   - API routes pass reasoning effort to models');
   console.log('   - Automatic model detection enables/disables dropdown');
-  
+
 } else {
   console.log('❌ Some tests failed - check the parameter filtering logic');
 }

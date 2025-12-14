@@ -96,11 +96,11 @@ If you don't specify a model, the app automatically uses:
 // Example: Mix and match based on YOUR available models
 {
   // Use a fast model for initial thinking
-  thinkingModel: "gpt-3.5-turbo",  
-  
+  thinkingModel: "gpt-3.5-turbo",
+
   // Use a powerful model for final analysis
   taskModel: "gpt-4",
-  
+
   // Or use models from different providers
   provider: "openai",
   fallbackProvider: "anthropic"
@@ -123,7 +123,7 @@ If you don't specify a model, the app automatically uses:
 ```javascript
 // Use the best models you have access to
 {
-  provider: "openai",  
+  provider: "openai",
   thinkingModel: "gpt-4-turbo",      // Or "o1-preview", "gpt-4", etc.
   taskModel: "gpt-4-turbo"
 }
@@ -190,7 +190,7 @@ XAI_API_KEY=xai-...
 - **Claude Instant** via Anthropic
 - Research depth: Professional individual use
 
-### **$100/month - Professional**  
+### **$100/month - Professional**
 - **OpenAI** GPT-4 + GPT-3.5
 - **Anthropic** Claude 3 Sonnet
 - Research depth: Small fund/serious investor
@@ -270,7 +270,7 @@ CUSTOM_MODEL_ENDPOINT=https://your-ml-platform.com
 
 **This platform adapts to YOU:**
 - Have only OpenAI? ✅ Works perfectly
-- Have only Anthropic? ✅ Works perfectly  
+- Have only Anthropic? ✅ Works perfectly
 - Have only local Ollama? ✅ Works perfectly
 - Have everything? ✅ Leverage them all
 

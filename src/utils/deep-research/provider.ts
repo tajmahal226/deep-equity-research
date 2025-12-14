@@ -1,4 +1,11 @@
-import { createProvider } from "@/utils/api";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createDeepSeek } from "@ai-sdk/deepseek";
+import { createMistral } from "@ai-sdk/mistral";
+import { createXai } from "@ai-sdk/xai";
+import { createOllama } from "ollama-ai-provider";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { LanguageModel } from "ai";
 
 export interface AIProviderOptions {
@@ -13,7 +20,9 @@ export interface AIProviderOptions {
 
 export async function createAIProvider({
   provider,
+  baseURL,
   apiKey,
+  headers,
   model,
   settings,
 }: AIProviderOptions): Promise<LanguageModel> {
@@ -21,39 +30,52 @@ export async function createAIProvider({
     throw new Error("API key is required.");
   }
 
-  const apiProvider = createProvider(provider, apiKey || "");
-
-  const validatePrompt = (prompt: unknown) => {
-    if (typeof prompt !== "string" || prompt.trim().length === 0) {
-      throw new Error("Prompt must be a non-empty string.");
-    }
-
-    return prompt;
+  const commonOptions = {
+    baseURL: baseURL || undefined,
+    headers: headers || undefined,
+    apiKey: apiKey || undefined,
   };
 
-  return {
-    async doStream(options: any) {
-      const stream = await apiProvider.streamReport(validatePrompt(options.prompt), {
-        ...settings,
-        model,
+  switch (provider) {
+    case "openai":
+      const openai = createOpenAI(commonOptions);
+      return openai(model, settings);
+
+    case "anthropic":
+      const anthropic = createAnthropic(commonOptions);
+      return anthropic(model, settings);
+
+    case "google":
+      const google = createGoogleGenerativeAI(commonOptions);
+      return google(model, settings);
+
+    case "deepseek":
+      const deepseek = createDeepSeek(commonOptions);
+      return deepseek(model, settings);
+
+    case "mistral":
+      const mistral = createMistral(commonOptions);
+      return mistral(model, settings);
+
+    case "xai":
+      const xai = createXai(commonOptions);
+      return xai(model, settings);
+
+    case "ollama":
+      const ollama = createOllama({
+        baseURL: baseURL || "http://localhost:11434/api",
+        headers,
       });
+      return ollama(model, settings);
 
-      return {
-        stream,
-      } as any;
-    },
-    async doGenerate(options: any) {
-      const report = await apiProvider.generateReport(
-        validatePrompt(options.prompt),
-        {
-          ...settings,
-          model,
-        }
-      );
+    case "openrouter":
+      const openrouter = createOpenRouter({
+        ...commonOptions,
+        extraBody: settings, // OpenRouter often takes extra parameters in body
+      });
+      return openrouter(model, settings);
 
-      return {
-        text: report,
-      } as any;
-    },
-  } as any;
+    default:
+      throw new Error(`Unsupported provider: ${provider}`);
+  }
 }

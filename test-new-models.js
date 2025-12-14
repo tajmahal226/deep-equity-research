@@ -46,7 +46,7 @@ async function testModel(config) {
   console.log(`  Provider: ${config.provider}`);
   console.log(`  Thinking Model: ${config.thinking}`);
   console.log(`  Task Model: ${config.task}`);
-  
+
   try {
     // Test SSE endpoint (Free-Form Research)
     const sseResponse = await fetch('http://localhost:3001/api/sse', {
@@ -63,13 +63,13 @@ async function testModel(config) {
       }),
       signal: AbortSignal.timeout(5000)
     });
-    
+
     if (sseResponse.ok) {
       console.log(`  ✅ SSE Endpoint: Working`);
     } else {
       console.log(`  ❌ SSE Endpoint: HTTP ${sseResponse.status}`);
     }
-    
+
     // Test Company Research endpoint
     const companyResponse = await fetch('http://localhost:3001/api/company-research', {
       method: 'POST',
@@ -85,13 +85,13 @@ async function testModel(config) {
       }),
       signal: AbortSignal.timeout(5000)
     });
-    
+
     if (companyResponse.ok) {
       console.log(`  ✅ Company Research: Working`);
     } else {
       console.log(`  ❌ Company Research: HTTP ${companyResponse.status}`);
     }
-    
+
   } catch (error) {
     console.log(`  ❌ Error: ${error.message}`);
   }
@@ -99,12 +99,12 @@ async function testModel(config) {
 
 async function runTests() {
   console.log('\nStarting tests with new model configurations...\n');
-  
+
   for (const config of newModels) {
     await testModel(config);
     await new Promise(r => setTimeout(r, 1000)); // Small delay between tests
   }
-  
+
   console.log('\n' + '='.repeat(80));
   console.log('✅ TESTING COMPLETE');
   console.log('='.repeat(80));

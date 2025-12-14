@@ -11,7 +11,7 @@ console.log('🧪 Testing Deep Research Models Tool Fix...\n');
 function modelRequiresTools(provider, model) {
   if (provider === "openai") {
     // Deep research models that require tools according to OpenAI API
-    return model.includes("deep-research") || 
+    return model.includes("deep-research") ||
            model.includes("research") ||
            model.startsWith("gpt-4o-research") ||
            model.includes("gpt-5-research") ||
@@ -26,7 +26,7 @@ function modelRequiresTools(provider, model) {
 function mockCreateProvider(provider, model, settings) {
   console.log(`🔧 Creating provider for: ${provider}/${model}`);
   console.log(`   Input settings: ${JSON.stringify(settings)}`);
-  
+
   if (provider === "openai" && modelRequiresTools(provider, model)) {
     console.log(`   ✅ Model requires tools - adding web_search_preview`);
     const enhancedSettings = {
@@ -50,7 +50,7 @@ const testCases = [
   {
     name: 'o1-preview model',
     provider: 'openai',
-    model: 'o1-preview', 
+    model: 'o1-preview',
     settings: { temperature: 0.7, maxTokens: 2000 },
     expected: 'Should have web_search_preview tool added'
   },
@@ -62,7 +62,7 @@ const testCases = [
     expected: 'Should have web_search_preview tool added'
   },
   {
-    name: 'o3-mini model', 
+    name: 'o3-mini model',
     provider: 'openai',
     model: 'o3-mini',
     settings: { temperature: 0.3, maxTokens: 3000 },
@@ -105,15 +105,15 @@ let allPassed = true;
 
 for (const testCase of testCases) {
   console.log(`\n📋 Testing: ${testCase.name}`);
-  
+
   try {
     const result = mockCreateProvider(testCase.provider, testCase.model, testCase.settings);
-    
+
     const requiresTools = modelRequiresTools(testCase.provider, testCase.model);
     const hasTools = result.settings && result.settings.tools;
-    
+
     let passed = true;
-    
+
     if (requiresTools && !hasTools) {
       console.log(`   ❌ FAIL: Model should have tools but doesn't`);
       passed = false;
@@ -131,14 +131,14 @@ for (const testCase of testCases) {
     } else {
       console.log(`   ✅ PASS: Correctly handled regular model`);
     }
-    
+
     if (!passed) allPassed = false;
-    
+
   } catch (error) {
     console.log(`   ❌ ERROR: ${error.message}`);
     allPassed = false;
   }
-  
+
   console.log('   ' + '-'.repeat(60));
 }
 
@@ -152,13 +152,13 @@ if (allPassed) {
   console.log('   ✅ Research models get required tools');
   console.log('   ✅ Regular models remain unchanged');
   console.log('   ✅ web_search_preview tool properly configured');
-  
+
   console.log('\n💡 Fix Applied:');
   console.log('   - Added modelRequiresTools() function for detection');
   console.log('   - Enhanced OpenAI provider creation with tool support');
   console.log('   - Added web_search_preview tool for qualifying models');
   console.log('   - Comprehensive model pattern matching');
-  
+
 } else {
   console.log('❌ Some tests failed - check the tool addition logic');
 }

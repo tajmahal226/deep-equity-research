@@ -29,7 +29,7 @@ describe("Company Research Initialization Integration Test", () => {
       },
       taskModelConfig: {
         modelId: "gpt-4o",
-        providerId: "openai", 
+        providerId: "openai",
         apiKey: undefined, // No API key provided
       },
       onProgress: vi.fn(),
@@ -87,7 +87,7 @@ describe("Company Research Initialization Integration Test", () => {
       const config = {
         companyName: "Test Company",
         searchDepth: "fast" as const,
-        language: "en-US", 
+        language: "en-US",
         thinkingModelConfig: {
           modelId: "test-model",
           providerId: testCase.provider,
@@ -99,7 +99,7 @@ describe("Company Research Initialization Integration Test", () => {
           apiKey: undefined,
         },
         onProgress: vi.fn(),
-        onMessage: vi.fn(), 
+        onMessage: vi.fn(),
         onError: vi.fn(),
       };
 
@@ -117,7 +117,7 @@ describe("Company Research Initialization Integration Test", () => {
 
   it("works when API keys are provided", async () => {
     const config = {
-      companyName: "Test Company", 
+      companyName: "Test Company",
       searchDepth: "fast" as const,
       language: "en-US",
       thinkingModelConfig: {
@@ -126,7 +126,7 @@ describe("Company Research Initialization Integration Test", () => {
         apiKey: "sk-test-key-123", // Mock API key provided
       },
       taskModelConfig: {
-        modelId: "gpt-4o", 
+        modelId: "gpt-4o",
         providerId: "openai",
         apiKey: "sk-test-key-123", // Mock API key provided
       },

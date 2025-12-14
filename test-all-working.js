@@ -18,7 +18,7 @@ const tests = [
         }),
         signal: AbortSignal.timeout(5000)
       });
-      
+
       if (response.ok) {
         const reader = response.body.getReader();
         const { value } = await reader.read();
@@ -28,7 +28,7 @@ const tests = [
       return false;
     }
   },
-  
+
   {
     name: '2. Company Deep Dive',
     test: async () => {
@@ -46,7 +46,7 @@ const tests = [
         }),
         signal: AbortSignal.timeout(30000) // Allow 30s for company research
       });
-      
+
       if (response.ok) {
         const reader = response.body.getReader();
         const { value } = await reader.read();
@@ -56,7 +56,7 @@ const tests = [
       return false;
     }
   },
-  
+
   {
     name: '3. Bulk Company Research',
     test: async () => {
@@ -77,7 +77,7 @@ const tests = [
         }),
         signal: AbortSignal.timeout(10000)
       });
-      
+
       if (response.ok) {
         const reader = response.body.getReader();
         const { value } = await reader.read();
@@ -87,7 +87,7 @@ const tests = [
       return false;
     }
   },
-  
+
   {
     name: '4. Financial Data - Stock Price',
     test: async () => {
@@ -100,7 +100,7 @@ const tests = [
         }),
         signal: AbortSignal.timeout(5000)
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         return data && (data.price || data.data || data.error === 'No API key');
@@ -108,7 +108,7 @@ const tests = [
       return false;
     }
   },
-  
+
   {
     name: '5. Financial Data - Company Profile',
     test: async () => {
@@ -121,7 +121,7 @@ const tests = [
         }),
         signal: AbortSignal.timeout(5000)
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         return data && (data.profile || data.data || data.error === 'No API key');
@@ -129,7 +129,7 @@ const tests = [
       return false;
     }
   },
-  
+
   {
     name: '6. Market Research (SSE)',
     test: async () => {
@@ -145,7 +145,7 @@ const tests = [
         }),
         signal: AbortSignal.timeout(5000)
       });
-      
+
       if (response.ok) {
         const reader = response.body.getReader();
         const { value } = await reader.read();
@@ -155,7 +155,7 @@ const tests = [
       return false;
     }
   },
-  
+
   {
     name: '7. Company Discovery (SSE)',
     test: async () => {
@@ -171,7 +171,7 @@ const tests = [
         }),
         signal: AbortSignal.timeout(5000)
       });
-      
+
       if (response.ok) {
         const reader = response.body.getReader();
         const { value } = await reader.read();
@@ -181,7 +181,7 @@ const tests = [
       return false;
     }
   },
-  
+
   {
     name: '8. Document Analysis (SSE)',
     test: async () => {
@@ -197,7 +197,7 @@ const tests = [
         }),
         signal: AbortSignal.timeout(5000)
       });
-      
+
       if (response.ok) {
         const reader = response.body.getReader();
         const { value } = await reader.read();
@@ -211,57 +211,57 @@ const tests = [
 
 async function runAllTests() {
   const results = [];
-  
+
   for (const test of tests) {
     process.stdout.write(`Testing ${test.name}...`);
-    
+
     try {
       const startTime = Date.now();
       const success = await test.test();
       const elapsed = Date.now() - startTime;
-      
-      results.push({ 
-        name: test.name, 
-        success, 
-        time: elapsed 
+
+      results.push({
+        name: test.name,
+        success,
+        time: elapsed
       });
-      
+
       if (success) {
         console.log(` ✅ WORKING (${elapsed}ms)`);
       } else {
         console.log(` ❌ FAILED`);
       }
     } catch (error) {
-      results.push({ 
-        name: test.name, 
-        success: false, 
-        error: error.message 
+      results.push({
+        name: test.name,
+        success: false,
+        error: error.message
       });
       console.log(` ❌ ERROR: ${error.message}`);
     }
-    
+
     // Small delay between tests
     await new Promise(r => setTimeout(r, 1000));
   }
-  
+
   // Summary
   console.log('\n' + '='.repeat(80));
   console.log('📊 FINAL SUMMARY');
   console.log('='.repeat(80));
-  
+
   const working = results.filter(r => r.success).length;
   const total = results.length;
-  
+
   results.forEach(r => {
     const icon = r.success ? '✅' : '❌';
     const time = r.time ? ` (${r.time}ms)` : '';
     const error = r.error ? ` - ${r.error}` : '';
     console.log(`${icon} ${r.name}${time}${error}`);
   });
-  
+
   console.log('\n' + '='.repeat(80));
   console.log(`RESULT: ${working}/${total} modules working`);
-  
+
   if (working === total) {
     console.log('🎉 🎉 🎉 ALL MODULES FULLY OPERATIONAL! 🎉 🎉 🎉');
     console.log('\nYour Deep Equity Research platform is 100% functional!');
@@ -272,7 +272,7 @@ async function runAllTests() {
   } else {
     console.log('⚠️  Some modules need attention.');
   }
-  
+
   console.log('\n💡 Quick Tips:');
   console.log('- Company Deep Dive works but takes 30-60 seconds');
   console.log('- Financial Data needs API keys for real data (uses mock data otherwise)');

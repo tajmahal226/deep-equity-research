@@ -7,14 +7,14 @@
 // Updated mock function with the refined logic
 function filterModelSettings(provider, model, settings) {
   if (!settings) return settings;
-  
+
   const filteredSettings = { ...settings };
-  
+
   switch (provider) {
     case "openai":
       // Only specific reasoning models don't support temperature parameter
-      if (model.startsWith("o1") || 
-          model.startsWith("o3") || 
+      if (model.startsWith("o1") ||
+          model.startsWith("o3") ||
           model.includes("o3-") ||
           (model.startsWith("gpt-5") && !model.includes("chat"))) {
         // Reasoning models only support default temperature=1
@@ -22,11 +22,11 @@ function filterModelSettings(provider, model, settings) {
       }
       // Regular OpenAI models (GPT-4, GPT-4-turbo, gpt-5-chat-latest) support temperature
       break;
-      
+
     default:
       break;
   }
-  
+
   return filteredSettings;
 }
 
@@ -40,13 +40,13 @@ const testCases = [
     expected: 'temperature preserved'
   },
   {
-    name: 'gpt-5 reasoning model (should REMOVE temperature)', 
+    name: 'gpt-5 reasoning model (should REMOVE temperature)',
     model: 'gpt-5',
     expected: 'temperature removed'
   },
   {
     name: 'gpt-5-reasoning (should REMOVE temperature)',
-    model: 'gpt-5-reasoning', 
+    model: 'gpt-5-reasoning',
     expected: 'temperature removed'
   },
   {
@@ -60,7 +60,7 @@ const testCases = [
     expected: 'temperature removed'
   },
   {
-    name: 'o3-mini (should REMOVE temperature)', 
+    name: 'o3-mini (should REMOVE temperature)',
     model: 'o3-mini',
     expected: 'temperature removed'
   },
@@ -79,18 +79,18 @@ let allPassed = true;
 for (const testCase of testCases) {
   const input = { temperature: 0.7, maxTokens: 2000 };
   const result = filterModelSettings('openai', testCase.model, input);
-  
+
   const hasTemp = result.hasOwnProperty('temperature');
   const shouldHaveTemp = testCase.expected === 'temperature preserved';
   const passed = hasTemp === shouldHaveTemp;
-  
+
   console.log(`\n${testCase.name}:`);
   console.log(`   Input:    ${JSON.stringify(input)}`);
   console.log(`   Output:   ${JSON.stringify(result)}`);
   console.log(`   Expected: ${testCase.expected}`);
   console.log(`   Result:   ${hasTemp ? 'temperature kept' : 'temperature removed'}`);
   console.log(`   Status:   ${passed ? '✅ PASS' : '❌ FAIL'}`);
-  
+
   if (!passed) allPassed = false;
 }
 

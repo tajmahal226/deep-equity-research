@@ -10,13 +10,13 @@ console.log('🧪 Testing Temperature Toggle Implementation...\n');
 // Mock the temperature handling functions
 function filterModelSettings(provider, model, settings) {
   if (!settings) return settings;
-  
+
   const filteredSettings = { ...settings };
-  
+
   switch (provider) {
     case "openai":
-      if (model.startsWith("o1") || 
-          model.startsWith("o3") || 
+      if (model.startsWith("o1") ||
+          model.startsWith("o3") ||
           model.includes("o3-") ||
           (model.startsWith("gpt-5") && !model.includes("chat"))) {
         // Reasoning models - remove temperature, keep reasoning_effort
@@ -29,7 +29,7 @@ function filterModelSettings(provider, model, settings) {
         }
       }
       break;
-      
+
     case "anthropic":
       // Anthropic Claude supports temperature 0-1
       if (filteredSettings.temperature !== undefined && filteredSettings.temperature > 1) {
@@ -37,7 +37,7 @@ function filterModelSettings(provider, model, settings) {
         filteredSettings.temperature = 1;
       }
       break;
-      
+
     case "mistral":
       // Mistral models support temperature 0-1
       if (filteredSettings.temperature !== undefined && filteredSettings.temperature > 1) {
@@ -45,12 +45,12 @@ function filterModelSettings(provider, model, settings) {
         filteredSettings.temperature = 1;
       }
       break;
-      
+
     default:
       // Other providers generally support temperature
       break;
   }
-  
+
   return filteredSettings;
 }
 
@@ -122,21 +122,21 @@ let allPassed = true;
 for (const testCase of testCases) {
   console.log(`\n📋 ${testCase.name}:`);
   console.log(`   Input: ${JSON.stringify(testCase.settings)}`);
-  
+
   try {
     const result = filterModelSettings(testCase.provider, testCase.model, testCase.settings);
     console.log(`   Output: ${JSON.stringify(result)}`);
-    
+
     const inputTemp = testCase.settings.temperature;
     const outputTemp = result.temperature;
-    
+
     let passed = true;
-    
+
     // Check specific conditions
-    const isReasoningModel = testCase.model.startsWith("o1") || 
-                           testCase.model.startsWith("o3") || 
+    const isReasoningModel = testCase.model.startsWith("o1") ||
+                           testCase.model.startsWith("o3") ||
                            testCase.model.includes("o3-");
-    
+
     if (testCase.provider === 'openai' && isReasoningModel) {
       // Reasoning models should have temperature removed
       if (outputTemp !== undefined) {
@@ -173,14 +173,14 @@ for (const testCase of testCases) {
       // No temperature input
       console.log(`   ✅ PASS: Correctly handled case with no temperature`);
     }
-    
+
     if (!passed) allPassed = false;
-    
+
   } catch (error) {
     console.log(`   ❌ ERROR: ${error.message}`);
     allPassed = false;
   }
-  
+
   console.log('   ' + '-'.repeat(60));
 }
 
@@ -196,20 +196,20 @@ if (allPassed) {
   console.log('   ✅ API routes pass temperature to AI providers');
   console.log('   ✅ Reasoning models correctly exclude temperature');
   console.log('   ✅ Provider-specific temperature limits enforced');
-  
+
   console.log('\n💡 Temperature Toggle Features:');
   console.log('   - Slider range: 0.0 to 2.0 (step 0.1)');
   console.log('   - Default value: 0.7');
   console.log('   - Real-time value display');
   console.log('   - Helpful tooltips and labels');
   console.log('   - Automatic model compatibility checking');
-  
+
   console.log('\n📋 Usage Guide:');
   console.log('   - Lower values (0.1-0.3): More focused, deterministic responses');
   console.log('   - Medium values (0.5-0.7): Balanced creativity and accuracy');
   console.log('   - Higher values (1.0-2.0): More creative and diverse responses');
   console.log('   - Note: Some models (o1, o3) use fixed temperature internally');
-  
+
 } else {
   console.log('❌ Some tests failed - check the temperature handling logic');
 }

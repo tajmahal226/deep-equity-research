@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * COMPREHENSIVE INTEGRATION TEST 
+ * COMPREHENSIVE INTEGRATION TEST
  * Tests the actual initialization flow to ensure it works correctly
  */
 
@@ -14,7 +14,7 @@ console.log('🚀 COMPREHENSIVE INTEGRATION TEST - Deep Equity Research Platform
 // Test 1: Build Test
 console.log('1️⃣ BUILD TEST');
 console.log('   Testing if the application builds successfully...');
-const buildResult = spawn('npm', ['run', 'build'], { 
+const buildResult = spawn('npm', ['run', 'build'], {
   stdio: 'pipe',
   env: { ...process.env, NODE_ENV: 'production' }
 });
@@ -37,18 +37,18 @@ buildResult.on('close', (code) => {
     console.log('   ❌ Build failed');
     console.log('   Error:', buildError);
   }
-  
+
   // Test 2: Environment Variables Check
   console.log('\n2️⃣ ENVIRONMENT VARIABLES CHECK');
   console.log('   Checking for API key environment variables...');
-  
+
   const envVars = [
     'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_GENERATIVE_AI_API_KEY',
     'DEEPSEEK_API_KEY', 'XAI_API_KEY', 'MISTRAL_API_KEY', 'AZURE_API_KEY',
     'OPENROUTER_API_KEY', 'COHERE_API_KEY', 'TOGETHER_API_KEY', 'GROQ_API_KEY',
     'PERPLEXITY_API_KEY', 'OPENAI_COMPATIBLE_API_KEY'
   ];
-  
+
   let hasKeys = 0;
   envVars.forEach(envVar => {
     const value = process.env[envVar];
@@ -59,22 +59,22 @@ buildResult.on('close', (code) => {
       console.log(`   ❌ ${envVar}: Not set`);
     }
   });
-  
+
   console.log(`   📊 Summary: ${hasKeys}/${envVars.length} API keys configured`);
-  
+
   // Test 3: File Structure Verification
   console.log('\n3️⃣ FILE STRUCTURE VERIFICATION');
   console.log('   Checking if critical files exist...');
-  
+
   const criticalFiles = [
     'src/app/api/utils.ts',
-    'src/utils/company-deep-research/index.ts', 
+    'src/utils/company-deep-research/index.ts',
     'src/utils/deep-research/provider.ts',
     'src/utils/openai-debug.ts',
     'package.json',
     '.env.example'
   ];
-  
+
   let missingFiles = [];
   criticalFiles.forEach(file => {
     if (fs.existsSync(path.join(__dirname, file))) {
@@ -84,18 +84,18 @@ buildResult.on('close', (code) => {
       missingFiles.push(file);
     }
   });
-  
+
   // Test 4: API Routes Check
   console.log('\n4️⃣ API ROUTES VERIFICATION');
   console.log('   Checking if API route files exist...');
-  
+
   const apiRoutes = [
     'src/app/api/health/route.ts',
     'src/app/api/company-research/route.ts',
     'src/app/api/bulk-company-research/route.ts',
     'src/app/api/sse/route.ts'
   ];
-  
+
   apiRoutes.forEach(route => {
     if (fs.existsSync(path.join(__dirname, route))) {
       console.log(`   ✅ ${route}: Exists`);
@@ -104,7 +104,7 @@ buildResult.on('close', (code) => {
       missingFiles.push(route);
     }
   });
-  
+
   // Test 5: Docker Configuration
   console.log('\n5️⃣ DOCKER CONFIGURATION');
   const dockerFiles = ['Dockerfile', '.dockerignore'];
@@ -116,7 +116,7 @@ buildResult.on('close', (code) => {
       missingFiles.push(file);
     }
   });
-  
+
   // Test 6: GitHub Actions
   console.log('\n6️⃣ GITHUB ACTIONS WORKFLOWS');
   const workflowDir = '.github/workflows';
@@ -129,29 +129,29 @@ buildResult.on('close', (code) => {
   } else {
     console.log(`   ❌ Workflows directory: Missing`);
   }
-  
+
   // Final Summary
   console.log('\n🎯 INTEGRATION TEST SUMMARY');
   console.log('=' .repeat(50));
-  
+
   if (code === 0) {
     console.log('✅ Build Status: PASSED');
   } else {
     console.log('❌ Build Status: FAILED');
   }
-  
+
   console.log(`📊 API Keys: ${hasKeys}/${envVars.length} configured`);
-  
+
   if (missingFiles.length === 0) {
     console.log('✅ File Structure: COMPLETE');
   } else {
     console.log(`❌ File Structure: ${missingFiles.length} missing files`);
   }
-  
+
   // Recommendations
   console.log('\n💡 RECOMMENDATIONS');
   console.log('-'.repeat(30));
-  
+
   if (hasKeys === 0) {
     console.log('⚠️  No API keys configured. To test with real API calls:');
     console.log('   1. Copy .env.example to .env.local');
@@ -164,7 +164,7 @@ buildResult.on('close', (code) => {
   } else {
     console.log('✅ All API keys configured! Ready for full functionality.');
   }
-  
+
   if (code === 0 && missingFiles.length === 0) {
     console.log('\n🚀 RESULT: Platform is PRODUCTION READY!');
     console.log('   - Build successful');
@@ -177,6 +177,6 @@ buildResult.on('close', (code) => {
     console.log('   - Clear setup guidance provided');
     console.log('   - Non-blocking warnings for missing components');
   }
-  
+
   console.log('\n🎉 Integration test completed!');
 });
