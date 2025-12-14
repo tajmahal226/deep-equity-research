@@ -15,11 +15,6 @@ import {
   finalReportPrompt,
 } from "@/constants/prompts";
 
-/**
- * Gets the Zod schema for SERP queries.
- *
- * @returns Zod array schema for SERP queries.
- */
 export function getSERPQuerySchema() {
   return z
     .array(
@@ -37,79 +32,35 @@ export function getSERPQuerySchema() {
     .describe(`List of SERP queries.`);
 }
 
-/**
- * Gets the JSON schema string for SERP queries.
- *
- * @returns JSON schema string.
- */
 export function getSERPQueryOutputSchema() {
   const SERPQuerySchema = getSERPQuerySchema();
   return JSON.stringify(zodToJsonSchema(SERPQuerySchema), null, 4);
 }
 
-/**
- * Generates the system prompt with the current date.
- *
- * @returns System prompt string.
- */
 export function getSystemPrompt() {
   return systemInstruction.replace("{now}", new Date().toISOString());
 }
 
-/**
- * Generates the prompt for asking clarifying questions.
- *
- * @param query - The user's query.
- * @returns Prompt string.
- */
 export function generateQuestionsPrompt(query: string) {
   return systemQuestionPrompt.replace("{query}", query);
 }
 
-/**
- * Generates the prompt for writing a report plan.
- *
- * @param query - The user's query.
- * @returns Prompt string.
- */
 export function writeReportPlanPrompt(query: string) {
   return reportPlanPrompt.replace("{query}", query);
 }
 
-/**
- * Generates the prompt for creating SERP queries.
- *
- * @param plan - The research plan.
- * @returns Prompt string.
- */
 export function generateSerpQueriesPrompt(plan: string) {
   return serpQueriesPrompt
     .replace("{plan}", plan)
     .replace("{outputSchema}", getSERPQueryOutputSchema());
 }
 
-/**
- * Generates the prompt for processing search results.
- *
- * @param query - The search query.
- * @param researchGoal - The goal of the research.
- * @returns Prompt string.
- */
 export function processResultPrompt(query: string, researchGoal: string) {
   return queryResultPrompt
     .replace("{query}", query)
     .replace("{researchGoal}", researchGoal);
 }
 
-/**
- * Generates the prompt for processing search results with context.
- *
- * @param query - The search query.
- * @param researchGoal - The research goal.
- * @param results - The search results.
- * @param enableReferences - Whether to include citation rules.
- * @returns Prompt string.
- */
 export function processSearchResultPrompt(
   query: string,
   researchGoal: string,
@@ -145,14 +96,6 @@ function resolveLocationHost() {
   return "knowledge-base";
 }
 
-/**
- * Generates the prompt for processing knowledge base search results.
- *
- * @param query - The search query.
- * @param researchGoal - The research goal.
- * @param results - The knowledge results.
- * @returns Prompt string.
- */
 export function processSearchKnowledgeResultPrompt(
   query: string,
   researchGoal: string,
@@ -171,14 +114,6 @@ export function processSearchKnowledgeResultPrompt(
     .replace("{context}", context.join("\n"));
 }
 
-/**
- * Generates the prompt for reviewing SERP queries.
- *
- * @param plan - The research plan.
- * @param learning - Learnings so far.
- * @param suggestion - User suggestion.
- * @returns Prompt string.
- */
 export function reviewSerpQueriesPrompt(
   plan: string,
   learning: string[],
@@ -194,18 +129,6 @@ export function reviewSerpQueriesPrompt(
     .replace("{outputSchema}", getSERPQueryOutputSchema());
 }
 
-/**
- * Generates the prompt for writing the final report.
- *
- * @param plan - The research plan.
- * @param learning - All learnings.
- * @param source - Sources used.
- * @param images - Images found.
- * @param requirement - User requirements.
- * @param enableCitationImage - Whether to include images.
- * @param enableReferences - Whether to include references.
- * @returns Prompt string.
- */
 export function writeFinalReportPrompt(
   plan: string,
   learning: string[],

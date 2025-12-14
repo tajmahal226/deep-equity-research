@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { streamText, smoothStream, type JSONValue } from "ai";
+import { streamText, smoothStream, type JSONValue, type Tool } from "ai";
 import { parsePartialJson } from "@ai-sdk/ui-utils";
 import { openai } from "@ai-sdk/openai";
 import { type GoogleGenerativeAIProviderMetadata } from "@ai-sdk/google";
@@ -31,6 +31,7 @@ import { pick, flat, unique } from "radash";
 import { logger } from "@/utils/logger";
 
 type ProviderOptions = Record<string, Record<string, JSONValue>>;
+type Tools = Record<string, Tool>;
 
 function getResponseLanguagePrompt() {
   return `\n\n**Respond in the same language as the user's language**`;
@@ -43,12 +44,6 @@ function smoothTextStream(type: "character" | "word" | "line") {
   });
 }
 
-/**
- * Hook for managing the deep research workflow.
- * Handles planning, search execution, review, and report generation.
- *
- * @returns Object with research status and action methods.
- */
 function useDeepResearch() {
   const { t } = useTranslation();
   const taskStore = useTaskStore();
@@ -57,9 +52,6 @@ function useDeepResearch() {
   const { search } = useWebSearch();
   const [status, setStatus] = useState<string>("");
 
-  /**
-   * Generates clarifying questions for the research topic.
-   */
   async function askQuestions() {
     const { question } = useTaskStore.getState();
     const { thinkingModel } = getModel();
@@ -81,7 +73,7 @@ function useDeepResearch() {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.text,
+          part.textDelta,
           (data) => {
             content += data;
             taskStore.updateQuestions(content);
@@ -90,18 +82,13 @@ function useDeepResearch() {
             reasoning += data;
           }
         );
-      } else if (part.type === "reasoning-delta") {
-        reasoning += part.text;
+      } else if (part.type === "reasoning") {
+        reasoning += part.textDelta;
       }
     }
     if (reasoning) logger.log(reasoning);
   }
 
-  /**
-   * Generates a plan for the research report.
-   *
-   * @returns The generated plan content.
-   */
   async function writeReportPlan() {
     const { query } = useTaskStore.getState();
     const { thinkingModel } = getModel();
@@ -121,7 +108,7 @@ function useDeepResearch() {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.text,
+          part.textDelta,
           (data) => {
             content += data;
             taskStore.updateReportPlan(content);
@@ -130,21 +117,14 @@ function useDeepResearch() {
             reasoning += data;
           }
         );
-      } else if (part.type === "reasoning-delta") {
-        reasoning += part.text;
+      } else if (part.type === "reasoning") {
+        reasoning += part.textDelta;
       }
     }
     if (reasoning) logger.log(reasoning);
     return content;
   }
 
-  /**
-   * Searches local knowledge base.
-   *
-   * @param query - Search query.
-   * @param researchGoal - Goal of the research.
-   * @returns Search results from local knowledge.
-   */
   async function searchLocalKnowledges(query: string, researchGoal: string) {
     const { resources } = useTaskStore.getState();
     const knowledgeStore = useKnowledgeStore.getState();
@@ -176,7 +156,7 @@ function useDeepResearch() {
     for await (const part of searchResult.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.text,
+          part.textDelta,
           (data) => {
             content += data;
             taskStore.updateTask(query, { learning: content });
@@ -185,19 +165,14 @@ function useDeepResearch() {
             reasoning += data;
           }
         );
-      } else if (part.type === "reasoning-delta") {
-        reasoning += part.text;
+      } else if (part.type === "reasoning") {
+        reasoning += part.textDelta;
       }
     }
     if (reasoning) logger.log(reasoning);
     return content;
   }
 
-  /**
-   * Executes a list of search tasks.
-   *
-   * @param queries - List of search tasks to execute.
-   */
   async function runSearchTask(queries: SearchTask[]) {
     const {
       provider,
@@ -226,7 +201,7 @@ function useDeepResearch() {
         return createModelProvider(model);
       }
     };
-    const getTools = (model: string): any => {
+    const getTools = (model: string) => {
       // Enable OpenAI's built-in search tool
       if (enableSearch && searchProvider === "model") {
         if (
@@ -238,7 +213,7 @@ function useDeepResearch() {
               // optional configuration:
               searchContextSize: "medium",
             }),
-          } as any;
+          } as Tools;
         }
       }
       return undefined;
@@ -350,7 +325,7 @@ function useDeepResearch() {
                     processResultPrompt(item.query, item.researchGoal),
                     getResponseLanguagePrompt(),
                   ].join("\n\n"),
-                  tools: getTools(networkingModel) as any,
+                  tools: getTools(networkingModel),
                   providerOptions: getProviderOptions(networkingModel),
                   experimental_transform: smoothTextStream(smoothTextStreamType),
                   onError: (error) => handleError(error),
@@ -364,7 +339,7 @@ function useDeepResearch() {
                   processResultPrompt(item.query, item.researchGoal),
                   getResponseLanguagePrompt(),
                 ].join("\n\n"),
-                tools: getTools(networkingModel) as any,
+                tools: getTools(networkingModel),
                 providerOptions: getProviderOptions(networkingModel),
                 experimental_transform: smoothTextStream(smoothTextStreamType),
                 onError: (error) => handleError(error),
@@ -388,7 +363,7 @@ function useDeepResearch() {
           for await (const part of searchResult.fullStream) {
             if (part.type === "text-delta") {
               thinkTagStreamProcessor.processChunk(
-                part.text,
+                part.textDelta,
                 (data) => {
                   content += data;
                   taskStore.updateTask(item.query, { learning: content });
@@ -397,13 +372,13 @@ function useDeepResearch() {
                   reasoning += data;
                 }
               );
-            } else if (part.type === "reasoning-delta") {
-              reasoning += part.text;
+            } else if (part.type === "reasoning") {
+              reasoning += part.textDelta;
             } else if (part.type === "source") {
-              sources.push(part as any);
+              sources.push(part.source);
             } else if (part.type === "finish") {
-              if ((part as any).providerMetadata?.google) {
-                const { groundingMetadata } = (part as any).providerMetadata.google;
+              if (part.providerMetadata?.google) {
+                const { groundingMetadata } = part.providerMetadata.google;
                 const googleGroundingMetadata =
                   groundingMetadata as GoogleGenerativeAIProviderMetadata["groundingMetadata"];
                 if (googleGroundingMetadata?.groundingSupports) {
@@ -421,7 +396,7 @@ function useDeepResearch() {
                     }
                   );
                 }
-              } else if ((part as any).providerMetadata?.openai) {
+              } else if (part.providerMetadata?.openai) {
                 // Fixed the problem that OpenAI cannot generate markdown reference link syntax properly in Chinese context
                 content = content.replaceAll("【", "[").replaceAll("】", "]");
               }
@@ -465,9 +440,6 @@ function useDeepResearch() {
     plimit.clearQueue();
   }
 
-  /**
-   * Reviews search results and generates further queries if needed.
-   */
   async function reviewSearchResult() {
     const { reportPlan, tasks, suggestion } = useTaskStore.getState();
     const { thinkingModel } = getModel();
@@ -524,11 +496,6 @@ function useDeepResearch() {
     }
   }
 
-  /**
-   * Writes the final research report.
-   *
-   * @returns The final report content.
-   */
   async function writeFinalReport() {
     const { citationImage, references } = useSettingStore.getState();
     const {
@@ -583,7 +550,7 @@ function useDeepResearch() {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.text,
+          part.textDelta,
           (data) => {
             content += data;
             updateFinalReport(content);
@@ -592,8 +559,8 @@ function useDeepResearch() {
             reasoning += data;
           }
         );
-      } else if (part.type === "reasoning-delta") {
-        reasoning += part.text;
+      } else if (part.type === "reasoning") {
+        reasoning += part.textDelta;
       }
     }
     if (reasoning) logger.log(reasoning);
@@ -626,10 +593,6 @@ function useDeepResearch() {
     }
   }
 
-  /**
-   * Main function to start deep research.
-   * Generates plan, creates queries, and runs tasks.
-   */
   async function deepResearch() {
     const { reportPlan } = useTaskStore.getState();
     const { thinkingModel } = getModel();

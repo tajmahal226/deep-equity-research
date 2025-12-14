@@ -1,17 +1,9 @@
 "use client";
 
 type Props = {
-  /** Array of image sources to display. */
   data: ImageSource[];
 };
 
-/**
- * Lightbox component.
- * Displays a grid of images.
- *
- * @param props - The component props.
- * @returns The lightbox component.
- */
 function Lightbox(props: Props) {
   const { data = [] } = props;
 

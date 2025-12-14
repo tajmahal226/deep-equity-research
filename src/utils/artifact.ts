@@ -1,11 +1,3 @@
-/**
- * Generates a prompt to modify an artifact based on user instructions.
- *
- * @param content - The original artifact content.
- * @param prompt - The modification instruction.
- * @param systemInstruction - Optional system instruction.
- * @returns The prompt string.
- */
 export function AIWritePrompt(
   content: string,
   prompt: string,
@@ -38,14 +30,6 @@ Rules and guidelines:
 </rules-guidelines>`;
 }
 
-/**
- * Generates a prompt to translate content to a specific language.
- *
- * @param content - The original content.
- * @param lang - The target language.
- * @param systemInstruction - Optional system instruction.
- * @returns The prompt string.
- */
 export function changeLanguagePrompt(
   content: string,
   lang: string,
@@ -72,14 +56,6 @@ Rules and guidelines:
 </rules-guidelines>`;
 }
 
-/**
- * Generates a prompt to adjust the reading level of the content.
- *
- * @param content - The original content.
- * @param level - The target reading level (e.g., "5-year-old", "pirate").
- * @param systemInstruction - Optional system instruction.
- * @returns The prompt string.
- */
 export function changeReadingLevelPrompt(
   content: string,
   level: string,
@@ -115,14 +91,6 @@ Rules and guidelines:
 </rules-guidelines>`;
 }
 
-/**
- * Generates a prompt to adjust the length of the content.
- *
- * @param content - The original content.
- * @param length - The target length instruction (e.g., "shorter", "longer").
- * @param systemInstruction - Optional system instruction.
- * @returns The prompt string.
- */
 export function adjustLengthPrompt(
   content: string,
   length: string,
@@ -149,13 +117,6 @@ Rules and guidelines:
 </rules-guidelines>`;
 }
 
-/**
- * Generates a prompt to add emojis to the content.
- *
- * @param content - The original content.
- * @param systemInstruction - Optional system instruction.
- * @returns The prompt string.
- */
 export function addEmojisPrompt(
   content: string,
   systemInstruction: string = ""
@@ -182,13 +143,6 @@ Rules and guidelines:
 </rules-guidelines>`;
 }
 
-/**
- * Generates a prompt to continue writing the artifact.
- *
- * @param content - The original content.
- * @param systemInstruction - Optional system instruction.
- * @returns The prompt string.
- */
 export function continuationPrompt(
   content: string,
   systemInstruction: string = ""

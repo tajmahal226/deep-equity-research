@@ -95,28 +95,14 @@ const langAlias = {
 } as const;
 
 type Props = {
-  /** The code content to display. */
   children: ReactNode;
-  /** The language of the code block. */
   lang: string;
 };
 
-/**
- * Helper function to get the readable name of a programming language.
- * @param lang - The language code.
- * @returns The readable language name.
- */
 function getLangAlias(lang: string): string {
   return get(langAlias, lang, capitalize(lang)) || "";
 }
 
-/**
- * Code component.
- * Displays a code block with syntax highlighting (via CSS) and a copy button.
- *
- * @param props - The component props.
- * @returns The code block component.
- */
 function Code({ children, lang }: Props) {
   const { t } = useTranslation();
   const codeWrapperRef = useRef<HTMLDivElement>(null);

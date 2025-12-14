@@ -160,12 +160,6 @@ interface UseFinancialDataReturn extends UseFinancialDataState {
   ) => Promise<CompanySearchResponse | null>;
 }
 
-/**
- * Hook for fetching financial data.
- * Provides methods to get stock prices, financials, profiles, and search companies.
- *
- * @returns Object with loading state and data fetching methods.
- */
 export function useFinancialData(): UseFinancialDataReturn {
   const [state, setState] = useState<UseFinancialDataState>({
     loading: false,

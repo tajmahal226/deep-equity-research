@@ -28,7 +28,6 @@ const MAX_MODEL_AGE_MONTHS = parseInt(process.env.NEXT_PUBLIC_MAX_MODEL_AGE_MONT
 
 /**
  * Get valid models for a provider, optionally filtering stale models
- *
  * @param provider - Provider name
  * @param excludeStale - Whether to exclude stale models (defaults to env setting)
  * @returns Set of valid model names
@@ -93,7 +92,6 @@ const API_KEY_PATTERNS: Record<string, RegExp> = {
  * @param provider - Provider name
  * @param model - Model name to validate
  * @param strict - If true, reject stale models entirely
- * @returns True if the model is valid
  */
 export function isValidModel(
   provider: string, 
@@ -201,10 +199,6 @@ function findSimilarModels(model: string, validModels: Set<string>): string[] {
 
 /**
  * Validate API key format
- *
- * @param provider - The provider name
- * @param apiKey - The API key to validate
- * @returns Object with validity status and optional error message
  */
 export function isValidApiKey(provider: string, apiKey: string): {
   valid: boolean;
@@ -259,9 +253,6 @@ function getKeyFormat(provider: string): string {
 
 /**
  * Sanitize API key for logging (show only first/last few characters)
- *
- * @param apiKey - The API key
- * @returns Masked API key
  */
 export function sanitizeApiKey(apiKey: string): string {
   if (!apiKey || apiKey.length < 10) {
@@ -275,9 +266,6 @@ export function sanitizeApiKey(apiKey: string): string {
 
 /**
  * Validate company name
- *
- * @param name - The company name
- * @returns Object with validity status and optional error message
  */
 export function isValidCompanyName(name: string): {
   valid: boolean;
@@ -305,9 +293,6 @@ export function isValidCompanyName(name: string): {
 
 /**
  * Validate search query
- *
- * @param query - The search query
- * @returns Object with validity status and optional error message
  */
 export function isValidSearchQuery(query: string): {
   valid: boolean;
@@ -359,11 +344,6 @@ export const rateLimiter = new RateLimiter();
 
 /**
  * Check if we're rate limited for a specific operation
- *
- * @param operation - The operation identifier
- * @param maxRequests - Max allowed requests
- * @param windowMs - Time window in milliseconds
- * @returns True if allowed, false if rate limited
  */
 export function checkRateLimit(
   operation: string,
