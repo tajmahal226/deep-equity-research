@@ -12,6 +12,14 @@ describe("text utilities", () => {
     expect(chunks).toEqual(["para1", "para2"]);
   });
 
+  it("splits oversized paragraphs to respect the limit", () => {
+    const longParagraph = "abcdefghij".repeat(3); // length 30
+    const chunks = splitText(longParagraph, 12);
+
+    expect(chunks).toEqual(["abcdefghijab", "cdefghijabcd", "efghij"]);
+    expect(chunks.every(chunk => chunk.length <= 12)).toBe(true);
+  });
+
   it("removes json markdown fences", () => {
     const input = "```json\n{\"a\":1}\n```";
     expect(removeJsonMarkdown(input)).toBe('{"a":1}');
