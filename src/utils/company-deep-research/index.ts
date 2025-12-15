@@ -37,7 +37,7 @@ import {
   getAIProviderEnvVarNames
 } from "@/app/api/utils";
 import { streamText, generateText } from "ai";
-import { createAIProvider } from "@/utils/deep-research/provider";
+import { createAIProvider, filterModelSettings } from "@/utils/deep-research/provider";
 import { createSearchProvider } from "@/utils/deep-research/search";
 import { getMaxTokens } from "@/constants/token-limits";
 import { logger } from "@/utils/logger";
@@ -282,8 +282,14 @@ export class CompanyDeepResearch {
       settingsWithReasoning.maxTokens = maxTokens;
     }
 
-    logger.log(`[DEBUG] getThinkingModelSettings: provider="${providerId}", model="${modelId}", settings=`, settingsWithReasoning);
-    return settingsWithReasoning;
+    const filteredSettings = filterModelSettings(
+      providerId,
+      modelId,
+      settingsWithReasoning
+    );
+
+    logger.log(`[DEBUG] getThinkingModelSettings: provider="${providerId}", model="${modelId}", settings=`, filteredSettings);
+    return filteredSettings;
   }
 
   /**
@@ -311,8 +317,14 @@ export class CompanyDeepResearch {
       (settingsWithReasoning as any).useSearchGrounding = true;
     }
 
-    logger.log(`[DEBUG] getTaskModelSettings: provider="${providerId}", model="${modelId}", settings=`, settingsWithReasoning);
-    return settingsWithReasoning;
+    const filteredSettings = filterModelSettings(
+      providerId,
+      modelId,
+      settingsWithReasoning
+    );
+
+    logger.log(`[DEBUG] getTaskModelSettings: provider="${providerId}", model="${modelId}", settings=`, filteredSettings);
+    return filteredSettings;
   }
   
   /**

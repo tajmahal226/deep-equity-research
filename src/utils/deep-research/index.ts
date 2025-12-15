@@ -1,6 +1,6 @@
 import { streamText, generateText } from "ai";
 import { type GoogleGenerativeAIProviderMetadata } from "@ai-sdk/google";
-import { createAIProvider } from "./provider";
+import { createAIProvider, filterModelSettings } from "./provider";
 import { handleError } from "../error";
 import { useTaskStore } from "@/store/task";
 import { createSearchProvider } from "./search";
@@ -87,7 +87,7 @@ class DeepResearch {
     const { AIProvider } = this.options;
     const AIProviderBaseOptions = pick(AIProvider, ["baseURL", "apiKey"]);
 
-    // Don't pass temperature for reasoning models like GPT-5
+    // Build settings and filter out unsupported parameters per provider/model
     let settings: any = undefined;
     if (AIProvider.temperature !== undefined) {
       settings = { temperature: AIProvider.temperature };
@@ -96,13 +96,22 @@ class DeepResearch {
     if (maxTokens !== undefined) {
       settings = { ...(settings || {}), maxTokens };
     }
+    const filteredSettings = filterModelSettings(
+      AIProvider.provider,
+      AIProvider.thinkingModel,
+      settings
+    );
+    const finalSettings =
+      filteredSettings && Object.keys(filteredSettings).length > 0
+        ? filteredSettings
+        : undefined;
 
-    logger.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", temperature=${AIProvider.temperature}, finalSettings=`, settings);
+    logger.log(`[DEBUG] DeepResearch.getThinkingModel: model="${AIProvider.thinkingModel}", temperature=${AIProvider.temperature}, finalSettings=`, finalSettings);
 
     return await createAIProvider({
       provider: AIProvider.provider,
       model: AIProvider.thinkingModel,
-      settings,
+      settings: finalSettings,
       ...AIProviderBaseOptions,
     });
   }
@@ -114,12 +123,10 @@ class DeepResearch {
     // Build settings object
     const settings: any = {};
 
-    // Add temperature only if not restricted (don't pass temperature for reasoning models like GPT-5)
     if (AIProvider.temperature !== undefined) {
       settings.temperature = AIProvider.temperature;
     }
 
-    // Add Google-specific settings
     if (AIProvider.provider === "google" && isNetworkingModel(AIProvider.taskModel)) {
       settings.useSearchGrounding = true;
     }
@@ -128,7 +135,15 @@ class DeepResearch {
       settings.maxTokens = maxTokens;
     }
 
-    const finalSettings = Object.keys(settings).length > 0 ? settings : undefined;
+    const filteredSettings = filterModelSettings(
+      AIProvider.provider,
+      AIProvider.taskModel,
+      settings
+    );
+    const finalSettings =
+      filteredSettings && Object.keys(filteredSettings).length > 0
+        ? filteredSettings
+        : undefined;
     logger.log(`[DEBUG] DeepResearch.getTaskModel: model="${AIProvider.taskModel}", temperature=${AIProvider.temperature}, finalSettings=`, finalSettings);
 
     return await createAIProvider({
