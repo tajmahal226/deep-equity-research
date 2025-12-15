@@ -9,6 +9,22 @@ export function splitText(
   let currentChunk = "";
 
   for (const paragraph of paragraphs) {
+    // When a single paragraph exceeds the max length, split it into
+    // standalone chunks before processing the rest of the text. This ensures
+    // the function always respects the configured limit instead of returning
+    // oversized segments for long paragraphs without line breaks.
+    if (paragraph.length > maxLength) {
+      if (currentChunk.length > 0) {
+        chunks.push(currentChunk);
+        currentChunk = "";
+      }
+
+      for (let i = 0; i < paragraph.length; i += maxLength) {
+        chunks.push(paragraph.slice(i, i + maxLength));
+      }
+      continue;
+    }
+
     if (currentChunk.length + paragraph.length + 1 <= maxLength) {
       // +1 是为了加上换行符
       currentChunk += (currentChunk.length > 0 ? "\n" : "") + paragraph;
