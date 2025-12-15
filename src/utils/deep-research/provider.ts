@@ -18,6 +18,48 @@ export interface AIProviderOptions {
   enableTools?: boolean;
 }
 
+function usesOpenAIResponsesAPI(model: string) {
+  const normalized = model.toLowerCase();
+  return (
+    normalized.startsWith("o3") ||
+    normalized.startsWith("o4") ||
+    normalized.startsWith("gpt-5") ||
+    normalized.startsWith("gpt-4.1")
+  );
+}
+
+export function filterModelSettings(
+  provider: string,
+  model: string,
+  settings?: Record<string, any>
+) {
+  if (!settings) return settings;
+
+  const filteredSettings = { ...settings };
+
+  switch (provider) {
+    case "openai": {
+      if (usesOpenAIResponsesAPI(model) && "temperature" in filteredSettings) {
+        delete filteredSettings.temperature;
+      }
+      break;
+    }
+    case "anthropic": {
+      if (
+        typeof filteredSettings.temperature === "number" &&
+        filteredSettings.temperature > 1
+      ) {
+        filteredSettings.temperature = 1;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+
+  return filteredSettings;
+}
+
 export async function createAIProvider({
   provider,
   baseURL,
