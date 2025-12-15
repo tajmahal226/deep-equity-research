@@ -16,7 +16,7 @@ Deep Research is a comprehensive AI-powered research platform featuring:
 
 ### Install Dependencies
 ```bash
-pnpm install  # Preferred (requires Node.js 18.18.0+ and npm 9.8.0+)
+pnpm install  # Preferred (requires Node.js 22.x and npm 10+)
 # or npm install
 # or yarn install
 ```
