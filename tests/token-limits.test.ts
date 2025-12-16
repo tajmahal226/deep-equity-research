@@ -17,6 +17,12 @@ describe('getMaxTokens', () => {
     expect(getMaxTokens('cohere', 'command-light-nightly')).toBe(16000);
   });
 
+  it('returns GPT-5.2 limits instead of falling back', () => {
+    expect(getMaxTokens('openai', 'gpt-5.2-pro')).toBe(512000);
+    expect(getMaxTokens('openai', 'gpt-5.2-pro-reasoning')).toBe(512000);
+    expect(getMaxTokens('openai', 'gpt-5.2-turbo')).toBe(256000);
+  });
+
   it('covers Groq, Perplexity, and OpenRouter prefixes', () => {
     expect(getMaxTokens('groq', 'mixtral-8x22b-32768')).toBe(65536);
     expect(getMaxTokens('perplexity', 'llama-3.1-sonar-large-128k-online')).toBe(128000);
