@@ -1,5 +1,9 @@
-import { Blob as NodeBlob, File as NodeFile } from "node-fetch";
 import { describe, expect, it, beforeEach, vi } from "vitest";
+
+// Node 18+ ships a global Blob; older environments expose it via the buffer module.
+// Use the native implementation first and fall back to the buffer polyfill to avoid
+// pulling in fetch-based shims during test runs.
+import { Blob as NodeBlob } from "node:buffer";
 
 const BlobPolyfill = typeof Blob === "undefined" ? NodeBlob : Blob;
 
@@ -8,18 +12,16 @@ if (typeof Blob === "undefined") {
 }
 
 if (typeof File === "undefined") {
-  const FilePolyfill =
-    NodeFile ??
-    class TestFile extends BlobPolyfill {
-      name: string;
-      lastModified: number;
+  const FilePolyfill = class TestFile extends BlobPolyfill {
+    name: string;
+    lastModified: number;
 
-      constructor(parts: BlobPart[], name: string, options?: FilePropertyBag) {
-        super(parts, options);
-        this.name = name;
-        this.lastModified = options?.lastModified ?? Date.now();
-      }
-    };
+    constructor(parts: BlobPart[], name: string, options?: FilePropertyBag) {
+      super(parts, options);
+      this.name = name;
+      this.lastModified = options?.lastModified ?? Date.now();
+    }
+  };
 
   (globalThis as any).File = FilePolyfill;
 }
