@@ -11,6 +11,12 @@
  */
 export const MODEL_RELEASE_DATES: Record<string, Record<string, string>> = {
   openai: {
+    // GPT-5.2 Series (2025)
+    'gpt-5.2-pro': '2025-03',
+    'gpt-5.2-pro-reasoning': '2025-03',
+    'gpt-5.2-pro-chat': '2025-03',
+    'gpt-5.2-turbo': '2025-03',
+    'gpt-5.2-turbo-reasoning': '2025-03',
     // GPT-5 Series (2025)
     'gpt-5': '2025-01',
     'gpt-5-turbo': '2025-01',
