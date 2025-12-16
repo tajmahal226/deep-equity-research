@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 export function buildUpstreamURL(
   baseURL: string,
   slugSegments: readonly string[] = [],
@@ -22,4 +24,12 @@ export function buildUpstreamURL(
   }
 
   return url;
+}
+
+export function createProxiedResponse(response: Response): NextResponse {
+  return new NextResponse(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers,
+  });
 }
