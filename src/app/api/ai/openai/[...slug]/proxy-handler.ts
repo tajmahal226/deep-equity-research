@@ -5,6 +5,36 @@ import { rateLimit, RATE_LIMITS } from "@/app/api/middleware/rate-limit";
 
 const API_PROXY_BASE_URL = process.env.OPENAI_API_BASE_URL || OPENAI_BASE_URL;
 
+/**
+ * Map invalid/hypothetical model names to valid OpenAI models.
+ * This handles cases where speculative future model names are used
+ * that don't actually exist in the OpenAI API.
+ */
+const MODEL_MAPPING: Record<string, string> = {
+  // GPT-5.2 series (hypothetical) -> map to best available
+  "gpt-5.2-pro": "o1",
+  "gpt-5.2-pro-reasoning": "o1",
+  "gpt-5.2-pro-chat": "gpt-4o",
+  "gpt-5.2-turbo": "gpt-4o",
+  "gpt-5.2-turbo-reasoning": "o1-mini",
+  // GPT-5 series (hypothetical) -> map to best available
+  "gpt-5": "o1",
+  "gpt-5-turbo": "gpt-4o",
+  "gpt-5-32k": "gpt-4o",
+  "gpt-5-chat-latest": "gpt-4o",
+};
+
+/**
+ * Normalize model name to a valid OpenAI model
+ */
+function normalizeModelName(model: string): string {
+  // Check if model needs to be mapped to a valid name
+  if (MODEL_MAPPING[model]) {
+    return MODEL_MAPPING[model];
+  }
+  return model;
+}
+
 type RouteParams = {
   slug?: string[];
 };
@@ -39,6 +69,15 @@ export async function proxyHandler(
           { code: 400, message: "Model name is required" },
           { status: 400 }
         );
+      }
+
+      // Normalize model name to handle hypothetical/invalid models
+      const normalizedModel = normalizeModelName(model);
+      if (normalizedModel !== model) {
+        if (isDev) {
+          console.log(`OpenAI API: Mapped model "${model}" -> "${normalizedModel}"`);
+        }
+        body.model = normalizedModel;
       }
     }
 
