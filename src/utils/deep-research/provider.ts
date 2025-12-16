@@ -7,6 +7,7 @@ import { createXai } from "@ai-sdk/xai";
 import { createOllama } from "ollama-ai-provider";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { LanguageModel } from "ai";
+import { normalizeOpenAIModel, usesOpenAIResponsesAPI } from "../openai-models";
 
 export interface AIProviderOptions {
   provider: string;
@@ -16,16 +17,6 @@ export interface AIProviderOptions {
   model: string;
   settings?: any;
   enableTools?: boolean;
-}
-
-function usesOpenAIResponsesAPI(model: string) {
-  const normalized = model.toLowerCase();
-  return (
-    normalized.startsWith("o3") ||
-    normalized.startsWith("o4") ||
-    normalized.startsWith("gpt-5") ||
-    normalized.startsWith("gpt-4.1")
-  );
 }
 
 export function filterModelSettings(
@@ -39,7 +30,11 @@ export function filterModelSettings(
 
   switch (provider) {
     case "openai": {
-      if (usesOpenAIResponsesAPI(model) && "temperature" in filteredSettings) {
+      const normalizedModel = normalizeOpenAIModel(model);
+      if (
+        usesOpenAIResponsesAPI(normalizedModel) &&
+        "temperature" in filteredSettings
+      ) {
         delete filteredSettings.temperature;
       }
       break;
@@ -80,11 +75,12 @@ export async function createAIProvider({
 
   switch (provider) {
     case "openai":
+      const normalizedModel = normalizeOpenAIModel(model);
       const openai = createOpenAI({
         ...commonOptions,
         compatibility: "strict",
       });
-      return openai(model, settings);
+      return openai(normalizedModel, settings);
 
     case "anthropic":
       const anthropic = createAnthropic(commonOptions);
