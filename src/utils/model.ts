@@ -8,7 +8,9 @@ export function isThinkingModel(model: string) {
   return (
     model.includes("thinking") ||
     model.startsWith("gemini-2.5-pro") ||
-    model.startsWith("gemini-2.5-flash")
+    model.startsWith("gemini-2.5-flash") ||
+    model.startsWith("gemini-3-pro") ||
+    model.startsWith("gemini-3-flash")
   );
 }
 
@@ -19,7 +21,9 @@ export function isNetworkingModel(model: string) {
       !model.includes("thinking") &&
       !model.includes("image")) ||
     model.startsWith("gemini-2.5-pro") ||
-    model.startsWith("gemini-2.5-flash")
+    model.startsWith("gemini-2.5-flash") ||
+    model.startsWith("gemini-3-pro") ||
+    model.startsWith("gemini-3-flash")
   );
 }
 

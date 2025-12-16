@@ -9,6 +9,8 @@ describe('getMaxTokens', () => {
   it('returns large context for Gemini models', () => {
     expect(getMaxTokens('google', 'gemini-1.5-pro-latest')).toBe(2000000);
     expect(getMaxTokens('Gemini', 'Gemini-1.5-Flash-001')).toBe(1000000);
+    expect(getMaxTokens('google', 'gemini-3-pro')).toBe(2000000);
+    expect(getMaxTokens('google', 'gemini-3-flash-thinking')).toBe(1000000);
   });
 
   it('supports Mistral and Cohere limits', () => {
