@@ -80,7 +80,10 @@ export async function createAIProvider({
 
   switch (provider) {
     case "openai":
-      const openai = createOpenAI(commonOptions);
+      const openai = createOpenAI({
+        ...commonOptions,
+        compatibility: "strict",
+      });
       return openai(model, settings);
 
     case "anthropic":

@@ -10,7 +10,10 @@ export class OpenAIProvider implements Provider {
   private openai: any;
 
   constructor(apiKey: string) {
-    this.openai = createOpenAI({ apiKey });
+    this.openai = createOpenAI({
+      apiKey,
+      compatibility: "strict",
+    });
   }
 
   async generateReport(prompt: string, options: any): Promise<string> {
