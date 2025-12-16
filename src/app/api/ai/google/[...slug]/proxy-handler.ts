@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { GEMINI_BASE_URL } from "@/constants/urls";
-import { buildUpstreamURL } from "../../helpers";
+import { buildUpstreamURL, createProxiedResponse } from "../../helpers";
 import { rateLimit, RATE_LIMITS } from "@/app/api/middleware/rate-limit";
 
 const API_PROXY_BASE_URL =
@@ -42,7 +42,7 @@ export async function proxyHandler(
     };
     if (body) payload.body = JSON.stringify(body);
     const response = await fetch(url, payload);
-    return new NextResponse(response.body, response);
+    return createProxiedResponse(response);
   } catch (error) {
     if (error instanceof Error) {
       console.error(error);
