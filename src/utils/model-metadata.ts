@@ -59,8 +59,14 @@ export const MODEL_RELEASE_DATES: Record<string, Record<string, string>> = {
     'claude-2.1': '2023-11',
     'claude-2.0': '2023-07',
   },
-  
+
   google: {
+    // Gemini 3 Series (2025)
+    'gemini-3-pro': '2025-11',
+    'gemini-3-pro-vision': '2025-11',
+    'gemini-3-flash': '2025-11',
+    'gemini-3-flash-vision': '2025-11',
+    'gemini-3-flash-thinking': '2025-11',
     // Gemini 2.5 Series (2025)
     'gemini-2.5-pro': '2025-02',
     'gemini-2.5-flash': '2025-02',

@@ -37,6 +37,12 @@ export const GOOGLE_GEMINI_MODEL_TOKEN_LIMITS: Record<string, number> = {
   // Gemini 2.0 experimental models currently inherit the 1M token context.
   "gemini-2.0-flash": 1000000,
   "gemini-2.0-flash-lite": 1000000,
+  // Gemini 3 models continue to advertise 2M (Pro) and 1M (Flash) windows.
+  "gemini-3-pro": 2000000,
+  "gemini-3-pro-vision": 2000000,
+  "gemini-3-flash": 1000000,
+  "gemini-3-flash-vision": 1000000,
+  "gemini-3-flash-thinking": 1000000,
 };
 
 // Mistral lists 32K context windows for their text models unless otherwise
