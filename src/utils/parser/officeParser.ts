@@ -119,7 +119,7 @@ type ZipEntryWithData = Entry & {
 };
 
 function hasReadableData(entry: Entry): entry is ZipEntryWithData {
-  // Type guard: if directory is false, entry is a FileEntry which has getData
+  // Type guard: if the directory is false, the entry is a FileEntry which has getData
   if (entry.directory) {
     return false;
   }
