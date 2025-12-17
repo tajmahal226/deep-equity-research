@@ -119,7 +119,12 @@ type ZipEntryWithData = Entry & {
 };
 
 function hasReadableData(entry: Entry): entry is ZipEntryWithData {
-  return !entry.directory && typeof (entry as FileEntry).getData === "function";
+  // Type guard: if directory is false, entry is a FileEntry which has getData
+  if (entry.directory) {
+    return false;
+  }
+  // At this point, TypeScript knows entry is FileEntry (not DirectoryEntry)
+  return typeof entry.getData === "function";
 }
 
 async function readEntryData(entry: ZipEntryWithData): Promise<Blob> {
