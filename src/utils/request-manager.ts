@@ -104,7 +104,11 @@ class RequestManager {
       previousLock.then(() => currentLock).catch(() => currentLock)
     );
 
-    await previousLock;
+    try {
+      await previousLock;
+    } catch {
+      // If a previous lock failed, do not block this request; continue and ensure our lock is released in finally.
+    }
     this.requestSequence.set(activeKey, mySeq);
 
     try {
