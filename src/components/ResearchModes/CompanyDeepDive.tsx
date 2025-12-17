@@ -315,13 +315,15 @@ export default function CompanyDeepDive() {
       }
       
     } catch (error: any) {
-      // Don't log abort errors (they're intentional)
-      if (error?.name !== 'AbortError') {
-        console.error("Company research error:", error);
-        setError(error.message);
-      } else {
+      if (error?.name === "AbortError") {
+        logger.log("Company research aborted");
         setStatus("idle");
+        setAbortController(null); // Clear controller
+        return;
       }
+
+      console.error("Company research error:", error);
+      setError(error.message);
       setAbortController(null); // Clear controller
       setSearchResults({
         error: error instanceof Error ? error.message : "Research failed",
