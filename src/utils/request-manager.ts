@@ -11,6 +11,7 @@ interface PendingRequest {
 class RequestManager {
   private pendingRequests = new Map<string, PendingRequest>();
   private requestSequence = new Map<string, number>();
+  private sequenceLocks = new Map<string, Promise<void>>();
   private readonly CACHE_DURATION = 5000; // 5 seconds cache for duplicate requests
 
   /**
@@ -87,30 +88,30 @@ class RequestManager {
     queueName: string,
     requestFn: () => Promise<T>
   ): Promise<T> {
-    // Get current sequence number
     const currentSeq = this.requestSequence.get(queueName) || 0;
     const mySeq = currentSeq + 1;
+    const activeKey = `${queueName}_active`;
     this.requestSequence.set(queueName, mySeq);
 
-    // Wait for previous requests to complete
-    while (true) {
-      const activeSeq = this.requestSequence.get(queueName + '_active') || 0;
-      if (activeSeq < mySeq - 1) {
-        // Previous request still running, wait
-        await new Promise(resolve => setTimeout(resolve, 100));
-      } else {
-        break;
-      }
-    }
+    const previousLock = this.sequenceLocks.get(queueName) || Promise.resolve();
+    let release: () => void;
+    const currentLock = new Promise<void>(resolve => {
+      release = resolve;
+    });
 
-    // Mark this request as active
-    this.requestSequence.set(queueName + '_active', mySeq);
+    this.sequenceLocks.set(
+      queueName,
+      previousLock.then(() => currentLock).catch(() => currentLock)
+    );
+
+    await previousLock;
+    this.requestSequence.set(activeKey, mySeq);
 
     try {
       return await requestFn();
     } finally {
-      // Mark as complete
-      this.requestSequence.set(queueName + '_active', mySeq + 1);
+      this.requestSequence.set(activeKey, mySeq + 1);
+      release?.();
     }
   }
 
@@ -148,6 +149,14 @@ class RequestManager {
   reset() {
     this.abortRequests();
     this.requestSequence.clear();
+    this.sequenceLocks.clear();
+  }
+
+  /**
+   * Introspection helper for tests and debugging
+   */
+  getActiveSequence(queueName: string): number | undefined {
+    return this.requestSequence.get(`${queueName}_active`);
   }
 }
 
