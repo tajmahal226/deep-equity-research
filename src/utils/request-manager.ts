@@ -11,6 +11,8 @@ interface PendingRequest {
 class RequestManager {
   private pendingRequests = new Map<string, PendingRequest>();
   private requestSequence = new Map<string, number>();
+  // Map of per-queue promise chains used to serialize request execution; unlike requestSequence,
+  // which only tracks numeric sequence counters, sequenceLocks holds the active lock for each queue.
   private sequenceLocks = new Map<string, Promise<void>>();
   private readonly CACHE_DURATION = 5000; // 5 seconds cache for duplicate requests
 
