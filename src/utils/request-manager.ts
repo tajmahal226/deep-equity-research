@@ -93,24 +93,25 @@ class RequestManager {
     this.requestSequence.set(queueName, mySeq);
 
     // Wait for previous requests to complete
+    const activeKey = `${queueName}_active`;
     while (true) {
-      const activeSeq = this.requestSequence.get(queueName + '_active') || 0;
+      const activeSeq = this.requestSequence.get(activeKey) || 0;
       if (activeSeq < mySeq - 1) {
-        // Previous request still running, wait
+        // Previous requests have not finished; wait until the last completed
+        // sequence is strictly behind this request's sequence number.
         await new Promise(resolve => setTimeout(resolve, 100));
       } else {
         break;
       }
     }
 
-    // Mark this request as active
-    this.requestSequence.set(queueName + '_active', mySeq);
-
     try {
       return await requestFn();
     } finally {
-      // Mark as complete
-      this.requestSequence.set(queueName + '_active', mySeq + 1);
+      // Mark as complete. `_active` always reflects the latest finished
+      // sequence to prevent later callers from advancing before prior
+      // requests resolve.
+      this.requestSequence.set(activeKey, mySeq);
     }
   }
 
