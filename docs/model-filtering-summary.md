@@ -18,8 +18,9 @@ A comprehensive model filtering system that automatically excludes AI models old
    - Usage guide
    - Troubleshooting section
 
-3. **`test-model-filtering.js`** (25 lines)
-   - Quick test script to verify filtering works
+3. **`tests/model-metadata.test.ts`**
+   - Verifies active model sets stay current (e.g., Gemini 3 variants)
+   - Confirms stale-model detection logic
 
 ### Modified Files
 1. **`src/utils/validation.ts`** (320 lines)
@@ -221,16 +222,19 @@ Future improvements could include:
 
 ```bash
 # Lint check
-npm run lint
+pnpm lint
 
-# Test filtering (manual)
-node test-model-filtering.js
+# Unit tests for model metadata and validation safeguards
+pnpm vitest run tests/model-metadata.test.ts tests/utils/validation.test.ts
+
+# Middleware model filtering coverage (provider/model list enforcement)
+pnpm vitest run tests/middleware/provider-filtering.test.ts
 
 # Dev server (filtering enabled)
-NEXT_PUBLIC_EXCLUDE_STALE_MODELS=true npm run dev
+NEXT_PUBLIC_EXCLUDE_STALE_MODELS=true pnpm dev
 
 # Dev server (filtering disabled)
-NEXT_PUBLIC_EXCLUDE_STALE_MODELS=false npm run dev
+NEXT_PUBLIC_EXCLUDE_STALE_MODELS=false pnpm dev
 ```
 
 ## Documentation
