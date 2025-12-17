@@ -1,7 +1,13 @@
 /**
  * Modified from https://github.com/harshankur/officeParser
  */
-import { ZipReader, BlobReader, BlobWriter, type Entry } from "@zip.js/zip.js";
+import {
+  ZipReader,
+  BlobReader,
+  BlobWriter,
+  type Entry,
+  type FileEntry,
+} from "@zip.js/zip.js";
 
 /**
  * Resolves to an array of object
@@ -109,11 +115,11 @@ async function mergeXmlBlobs(blobs: Blob[]): Promise<Blob> {
 }
 
 type ZipEntryWithData = Entry & {
-  getData?: Entry["getData"];
+  getData?: FileEntry["getData"];
 };
 
 function hasReadableData(entry: Entry): entry is ZipEntryWithData {
-  return typeof entry.getData === "function";
+  return !entry.directory && typeof (entry as FileEntry).getData === "function";
 }
 
 async function readEntryData(entry: ZipEntryWithData): Promise<Blob> {
