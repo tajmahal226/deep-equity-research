@@ -94,4 +94,63 @@ describe("RequestManager", () => {
     expect(requestFn).toHaveBeenCalledTimes(1);
     expect(requestManager.getPendingCount()).toBe(0);
   });
+
+  it("runs queued requests sequentially for the same queueName", async () => {
+    const events: string[] = [];
+
+    const firstPromise = requestManager.sequentialRequest(
+      "queue",
+      async () => {
+        events.push("first-start");
+        await new Promise(resolve => setTimeout(resolve, 30));
+        events.push("first-end");
+        return "first";
+      }
+    );
+
+    const secondPromise = requestManager.sequentialRequest(
+      "queue",
+      async () => {
+        events.push("second-start");
+        events.push("second-end");
+        return "second";
+      }
+    );
+
+    // Allow the first request to start and finish before the second begins
+    await Promise.all([firstPromise, secondPromise]);
+
+    expect(events).toEqual([
+      "first-start",
+      "first-end",
+      "second-start",
+      "second-end",
+    ]);
+  });
+
+  it("does not advance active sequence numbers until a request completes", async () => {
+    const timestamps: Record<string, number> = {};
+
+    const firstPromise = requestManager.sequentialRequest(
+      "queue",
+      async () => {
+        timestamps["first-start"] = Date.now();
+        await new Promise(resolve => setTimeout(resolve, 40));
+        timestamps["first-end"] = Date.now();
+      }
+    );
+
+    const secondPromise = requestManager.sequentialRequest(
+      "queue",
+      async () => {
+        timestamps["second-start"] = Date.now();
+      }
+    );
+
+    await Promise.all([firstPromise, secondPromise]);
+
+    expect(timestamps["second-start"]).toBeGreaterThanOrEqual(
+      timestamps["first-end"]
+    );
+  });
 });
