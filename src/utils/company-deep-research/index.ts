@@ -277,10 +277,12 @@ export class CompanyDeepResearch {
       settingsWithReasoning.reasoning_effort = this.config.thinkingModelConfig.reasoningEffort;
     }
 
-    const maxTokens = getMaxTokens(providerId, modelId);
-    if (maxTokens !== undefined) {
-      settingsWithReasoning.maxTokens = maxTokens;
-    }
+    const modelMaxTokens = getMaxTokens(providerId, modelId);
+    const requestedMaxTokens = settingsWithReasoning.maxTokens;
+    settingsWithReasoning.maxTokens = Math.min(
+      requestedMaxTokens ?? modelMaxTokens,
+      modelMaxTokens
+    );
 
     const filteredSettings = filterModelSettings(
       providerId,
@@ -307,10 +309,12 @@ export class CompanyDeepResearch {
       settingsWithReasoning.reasoning_effort = this.config.taskModelConfig.reasoningEffort;
     }
 
-    const maxTokens = getMaxTokens(providerId, modelId);
-    if (maxTokens !== undefined) {
-      settingsWithReasoning.maxTokens = maxTokens;
-    }
+    const modelMaxTokens = getMaxTokens(providerId, modelId);
+    const requestedMaxTokens = settingsWithReasoning.maxTokens;
+    settingsWithReasoning.maxTokens = Math.min(
+      requestedMaxTokens ?? modelMaxTokens,
+      modelMaxTokens
+    );
 
     // Enable Google search grounding for supported models
     if (providerId === 'google' && isNetworkingModel(modelId)) {

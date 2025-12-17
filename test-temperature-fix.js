@@ -128,4 +128,51 @@ async function testTemperatureFix() {
   console.log('   - Parameter filtering should work even with missing configs');
 }
 
-testTemperatureFix().catch(console.error);
+async function testMaxTokensCapping() {
+  console.log('🧪 Testing Max Tokens Capping...\n');
+
+  const config = {
+    companyName: "Test Company",
+    searchDepth: "fast",
+    language: "en-US",
+    thinkingModelConfig: {
+      modelId: "gpt-4o",
+      providerId: "openai",
+      apiKey: "sk-test-key-123",
+    },
+    taskModelConfig: {
+      modelId: "gpt-4o",
+      providerId: "openai",
+      apiKey: "sk-test-key-123",
+    },
+    onProgress: () => {},
+    onMessage: () => {},
+    onError: () => {},
+  };
+
+  try {
+    const researcher = new CompanyDeepResearch(config);
+    const thinkingSettings = researcher.getThinkingModelSettings({ temperature: 0.5, maxTokens: 4000 });
+    const taskSettings = researcher.getTaskModelSettings({ temperature: 0.7, maxTokens: 4000 });
+
+    if (thinkingSettings.maxTokens !== 4000 || taskSettings.maxTokens !== 4000) {
+      throw new Error(`Expected maxTokens to remain at 4000, got thinking=${thinkingSettings.maxTokens}, task=${taskSettings.maxTokens}`);
+    }
+
+    console.log('   ✅ Max tokens are capped to the requested value when under the model limit');
+    console.log(`      Thinking maxTokens: ${thinkingSettings.maxTokens}`);
+    console.log(`      Task maxTokens: ${taskSettings.maxTokens}\n`);
+  } catch (error) {
+    console.error('   ❌ Max tokens capping failed:', error.message);
+    throw error;
+  }
+
+  console.log('🎯 Max Tokens Capping Test Complete!\n');
+}
+
+async function main() {
+  await testTemperatureFix();
+  await testMaxTokensCapping();
+}
+
+main().catch(console.error);
