@@ -6,7 +6,6 @@ import {
   BlobReader,
   BlobWriter,
   type Entry,
-  type FileEntry,
 } from "@zip.js/zip.js";
 
 /**
@@ -114,9 +113,7 @@ async function mergeXmlBlobs(blobs: Blob[]): Promise<Blob> {
   return stringToBlob(mergedXmlString);
 }
 
-type ZipEntryWithData = Entry & {
-  getData?: FileEntry["getData"];
-};
+type ZipEntryWithData = Entry & Pick<Entry, "getData">;
 
 function hasReadableData(entry: Entry): entry is ZipEntryWithData {
   // Type guard: if the directory is false, the entry is a FileEntry which has getData
