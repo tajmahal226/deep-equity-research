@@ -238,6 +238,7 @@ export default function CompanyDeepDive() {
       // Set up Server-Sent Events to receive real-time updates
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
+      let buffer = "";
       
       if (!reader) {
         throw new Error("No response body");
@@ -247,68 +248,81 @@ export default function CompanyDeepDive() {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
-        
-        for (const line of lines) {
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
           if (line.startsWith("event: ")) {
             const eventType = line.substring(7);
-            
+
             // Get the data line (next line after event)
-            const dataLine = lines[lines.indexOf(line) + 1];
-            if (dataLine?.startsWith("data: ")) {
-              const data = JSON.parse(dataLine.substring(6));
-              
-              // Handle different event types
-              switch (eventType) {
-                case "progress":
-                  logger.log("Progress:", data);
-                  // You could update a progress indicator here
-                  break;
+            const dataLine = lines[i + 1];
+            if (!dataLine?.startsWith("data: ")) {
+              buffer = `event: ${eventType}\n${buffer}`;
+              break;
+            }
 
-                case "message":
-                  logger.log("Message:", data);
-                  // You could stream partial results here
-                  break;
+            let data;
+            try {
+              data = JSON.parse(dataLine.substring(6));
+            } catch (parseError) {
+              buffer = `event: ${eventType}\n${dataLine}\n${buffer}`;
+              break;
+            }
 
-                case "complete":
-                  logger.log("Research complete:", data);
-                  setStatus("success");
-                  setSearchResults(data);
-                  setAbortController(null); // Clear controller
+            i += 1; // Skip the data line we just processed
+            
+            // Handle different event types
+            switch (eventType) {
+              case "progress":
+                logger.log("Progress:", data);
+                // You could update a progress indicator here
+                break;
 
-                  // Cache the successful result
-                  if (isCacheEnabled && data.report) {
-                    setCachedResearch({
-                      type: "company-research",
-                      companyName,
-                      searchDepth,
-                      provider: currentProvider,
-                      model: thinkingModel,
-                      additionalContext,
-                      industry,
-                      competitors,
-                      data: {
-                        report: data.report,
-                        sources: data.sources,
-                        images: data.images,
-                        metadata: data.metadata,
-                      },
-                    });
-                    logger.log("[Cache] Stored research result for:", companyName);
-                  }
+              case "message":
+                logger.log("Message:", data);
+                // You could stream partial results here
+                break;
 
-                  await reader.cancel();
-                  return;
+              case "complete":
+                logger.log("Research complete:", data);
+                setStatus("success");
+                setSearchResults(data);
+                setAbortController(null); // Clear controller
 
-                case "error":
-                  console.error("Research error:", data);
-                  setError(data.message || "Research failed");
-                  setAbortController(null); // Clear controller
-                  await reader.cancel();
-                  throw new Error(data.message || "Research failed");
-              }
+                // Cache the successful result
+                if (isCacheEnabled && data.report) {
+                  setCachedResearch({
+                    type: "company-research",
+                    companyName,
+                    searchDepth,
+                    provider: currentProvider,
+                    model: thinkingModel,
+                    additionalContext,
+                    industry,
+                    competitors,
+                    data: {
+                      report: data.report,
+                      sources: data.sources,
+                      images: data.images,
+                      metadata: data.metadata,
+                    },
+                  });
+                  logger.log("[Cache] Stored research result for:", companyName);
+                }
+
+                await reader.cancel();
+                return;
+
+              case "error":
+                console.error("Research error:", data);
+                setError(data.message || "Research failed");
+                setAbortController(null); // Clear controller
+                await reader.cancel();
+                throw new Error(data.message || "Research failed");
             }
           }
         }
