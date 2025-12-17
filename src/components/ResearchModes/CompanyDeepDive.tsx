@@ -232,7 +232,34 @@ export default function CompanyDeepDive() {
       clearTimeout(timeoutId);
       
       if (!response.ok) {
-        throw new Error(`Research failed: ${response.statusText}`);
+        let errorDetail = "";
+
+        try {
+          const contentType = response.headers.get("content-type") || "";
+          const rawBody = await response.text();
+
+          if (rawBody) {
+            if (contentType.includes("application/json")) {
+              const parsed = JSON.parse(rawBody);
+
+              if (parsed && typeof parsed === "object" && "message" in parsed) {
+                errorDetail = String((parsed as { message?: string }).message || rawBody);
+              } else {
+                errorDetail = rawBody;
+              }
+            } else {
+              errorDetail = rawBody;
+            }
+          }
+        } catch (parseError) {
+          console.error("Error parsing research error response:", parseError);
+        }
+
+        const statusInfo = `${response.status} ${response.statusText}`.trim();
+        const fallbackMessage = "Research request failed without a response body.";
+        const message = `Research failed: ${statusInfo}${errorDetail ? ` - ${errorDetail}` : ` - ${fallbackMessage}`}`;
+
+        throw new Error(message);
       }
       
       // Set up Server-Sent Events to receive real-time updates
