@@ -1,6 +1,16 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { requestManager } from "@/utils/request-manager";
 
+const createDeferred = <T>() => {
+  let resolve: (value: T | PromiseLike<T>) => void;
+  let reject: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve: resolve!, reject: reject! };
+};
+
 describe("RequestManager", () => {
   afterEach(() => {
     requestManager.reset();
@@ -93,5 +103,55 @@ describe("RequestManager", () => {
     ]);
     expect(requestFn).toHaveBeenCalledTimes(1);
     expect(requestManager.getPendingCount()).toBe(0);
+  });
+
+  it("queues sequential requests and advances the active sequence counter", async () => {
+    const firstDeferred = createDeferred<void>();
+    const secondDeferred = createDeferred<void>();
+    const events: string[] = [];
+    const sequenceState = requestManager as unknown as {
+      requestSequence: Map<string, number>;
+    };
+
+    const firstPromise = requestManager.sequentialRequest("queue", async () => {
+      events.push("first-start");
+      await firstDeferred.promise;
+      events.push("first-finish");
+      return "first-result";
+    });
+
+    const secondPromise = requestManager.sequentialRequest(
+      "queue",
+      async () => {
+        events.push("second-start");
+        await secondDeferred.promise;
+        events.push("second-finish");
+        return "second-result";
+      }
+    );
+
+    await new Promise(resolve => setTimeout(resolve, 20));
+
+    expect(events).toEqual(["first-start"]);
+    expect(sequenceState.requestSequence.get("queue_active")).toBe(1);
+
+    firstDeferred.resolve();
+    await firstPromise;
+
+    expect(sequenceState.requestSequence.get("queue_active")).toBe(2);
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(events).toEqual(["first-start", "first-finish", "second-start"]);
+
+    secondDeferred.resolve();
+    await secondPromise;
+
+    expect(events).toEqual([
+      "first-start",
+      "first-finish",
+      "second-start",
+      "second-finish",
+    ]);
+    expect(sequenceState.requestSequence.get("queue_active")).toBe(3);
   });
 });
