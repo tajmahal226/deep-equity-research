@@ -295,7 +295,7 @@ export default function CompanyDeepDive() {
             let data;
             try {
               data = JSON.parse(dataLine.substring(6));
-            } catch (parseError) {
+            } catch {
               buffer = `event: ${eventType}\n${dataLine}\n${buffer}`;
               break;
             }
