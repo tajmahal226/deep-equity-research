@@ -148,11 +148,11 @@ function useModelProvider() {
     };
 
     const config = getProviderConfig(provider);
-    const state = useSettingStore.getState() as Record<string, any>;
+    const state = useSettingStore.getState() as SettingStore;
 
     if (mode === "local") {
-      const apiProxy = config.apiProxyField ? state[config.apiProxyField] : "";
-      const apiKey = config.apiKeyField ? state[config.apiKeyField] : "";
+      const apiProxy = config.apiProxyField ? (state[config.apiProxyField] as string) : "";
+      const apiKey = config.apiKeyField ? (state[config.apiKeyField] as string) : "";
       if (provider === "openrouter") {
         const base = (apiProxy || config.baseURL).replace(/\/+$/, "");
         const normalizedBase = base.endsWith("/api") ? base : `${base}/api`;
@@ -184,7 +184,7 @@ function useModelProvider() {
   function getModel() {
     const { provider } = useSettingStore.getState();
     const config = getProviderConfig(provider);
-    const state = useSettingStore.getState() as Record<string, any>;
+    const state = useSettingStore.getState() as SettingStore;
     const models = resolveProviderModels(state, provider);
 
     return {
@@ -199,7 +199,7 @@ function useModelProvider() {
     const { provider } = useSettingStore.getState();
     const config = getProviderConfig(provider);
     if (config.requiresApiKey === false) return true;
-    const state = useSettingStore.getState() as Record<string, any>;
+    const state = useSettingStore.getState() as SettingStore;
     const apiKey = config.apiKeyField ? (state[config.apiKeyField] as string) : "";
     return (apiKey || "").length > 0;
   }
