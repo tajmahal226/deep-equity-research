@@ -167,6 +167,8 @@ export function estimateCostSavings(params: {
     deepseek: 0.1, // Very cheap
     xai: 1.2,
     mistral: 0.8,
+    fireworks: 1.0,
+    moonshot: 1.0,
     cohere: 1.0,
     together: 0.5,
     groq: 0.3,

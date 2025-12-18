@@ -116,6 +116,14 @@ export async function createAIProvider({
       });
       return openrouter(model, settings);
 
+    case "fireworks":
+    case "moonshot":
+      const fireworksCompatible = createOpenAI({
+        ...commonOptions,
+        compatibility: "strict",
+      });
+      return fireworksCompatible(model, settings);
+
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }

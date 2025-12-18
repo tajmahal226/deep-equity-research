@@ -13,6 +13,10 @@ const ANTHROPIC_API_BASE_URL =
 const DEEPSEEK_API_BASE_URL =
   process.env.DEEPSEEK_API_BASE_URL || "https://api.deepseek.com";
 const XAI_API_BASE_URL = process.env.XAI_API_BASE_URL || "https://api.x.ai/v1";
+const FIREWORKS_API_BASE_URL =
+  process.env.FIREWORKS_API_BASE_URL || "https://api.fireworks.ai";
+const MOONSHOT_API_BASE_URL =
+  process.env.MOONSHOT_API_BASE_URL || "https://api.moonshot.cn";
 const MISTRAL_API_BASE_URL =
   process.env.MISTRAL_API_BASE_URL || "https://api.mistral.ai";
 const COHERE_API_BASE_URL =
@@ -49,6 +53,8 @@ const AI_PROVIDER_ENV_VARS: Record<string, string[]> = {
   anthropic: ["ANTHROPIC_API_KEY"],
   deepseek: ["DEEPSEEK_API_KEY"],
   xai: ["XAI_API_KEY"],
+  fireworks: ["FIREWORKS_API_KEY"],
+  moonshot: ["MOONSHOT_API_KEY"],
   mistral: ["MISTRAL_API_KEY"],
   cohere: ["COHERE_API_KEY"],
   together: ["TOGETHER_API_KEY"],
@@ -77,6 +83,10 @@ export function getAIProviderBaseURL(provider: string) {
       return completePath(DEEPSEEK_API_BASE_URL, "/v1");
     case "xai":
       return completePath(XAI_API_BASE_URL, "/v1");
+    case "fireworks":
+      return completePath(FIREWORKS_API_BASE_URL, "/inference/v1");
+    case "moonshot":
+      return completePath(MOONSHOT_API_BASE_URL, "/v1");
     case "mistral":
       return completePath(MISTRAL_API_BASE_URL, "/v1");
     case "cohere":

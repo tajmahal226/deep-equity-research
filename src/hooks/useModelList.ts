@@ -8,6 +8,8 @@ import {
   DEEPSEEK_BASE_URL,
   XAI_BASE_URL,
   MISTRAL_BASE_URL,
+  FIREWORKS_BASE_URL,
+  MOONSHOT_BASE_URL,
   OLLAMA_BASE_URL,
 } from "@/constants/urls";
 import { multiApiKeyPolling } from "@/utils/model";
@@ -165,10 +167,11 @@ function useModelList() {
         return [];
       }
       const apiKey = multiApiKeyPolling(openRouterApiKey);
+      const base = (openRouterApiProxy || OPENROUTER_BASE_URL).replace(/\/+$/, "");
+      const normalizedBase = base.endsWith("/api") ? base : `${base}/api`;
       const response = await fetch(
         mode === "local"
-          ? completePath(openRouterApiProxy || OPENROUTER_BASE_URL, "/api/v1") +
-              "/models"
+          ? completePath(normalizedBase, "/v1") + "/models"
           : "/api/ai/openrouter/v1/models",
         {
           headers: {
@@ -313,6 +316,54 @@ function useModelList() {
         })
         .filter((id) => !id.includes("image"));
       setModelTokenMap(tokenMap);
+      setModelList(newModelList);
+      return newModelList;
+    } else if (provider === "fireworks") {
+      const { fireworksApiKey = "", fireworksApiProxy } =
+        useSettingStore.getState();
+      if (mode === "local" && !fireworksApiKey) {
+        return [];
+      }
+      const apiKey = multiApiKeyPolling(fireworksApiKey);
+      const response = await fetch(
+        mode === "local"
+          ? completePath(
+              fireworksApiProxy || FIREWORKS_BASE_URL,
+              "/inference/v1"
+            ) + "/models"
+          : "/api/ai/fireworks/inference/v1/models",
+        {
+          headers: {
+            authorization: `Bearer ${mode === "local" ? apiKey : accessKey}`,
+          },
+        }
+      );
+      const { data = [] } = await response.json();
+      const newModelList = (data as OpenAIModel[]).map((item) => item.id);
+      setModelTokenMap({});
+      setModelList(newModelList);
+      return newModelList;
+    } else if (provider === "moonshot") {
+      const { moonshotApiKey = "", moonshotApiProxy } =
+        useSettingStore.getState();
+      if (mode === "local" && !moonshotApiKey) {
+        return [];
+      }
+      const apiKey = multiApiKeyPolling(moonshotApiKey);
+      const response = await fetch(
+        mode === "local"
+          ? completePath(moonshotApiProxy || MOONSHOT_BASE_URL, "/v1") +
+              "/models"
+          : "/api/ai/moonshot/v1/models",
+        {
+          headers: {
+            authorization: `Bearer ${mode === "local" ? apiKey : accessKey}`,
+          },
+        }
+      );
+      const { data = [] } = await response.json();
+      const newModelList = (data as OpenAIModel[]).map((item) => item.id);
+      setModelTokenMap({});
       setModelList(newModelList);
       return newModelList;
     } else if (provider === "mistral") {

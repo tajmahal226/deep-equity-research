@@ -13,6 +13,8 @@ const getEnvConfig = () => ({
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || "",
   deepSeekApiKey: process.env.DEEPSEEK_API_KEY || "",
   xaiApiKey: process.env.XAI_API_KEY || "",
+  fireworksApiKey: process.env.FIREWORKS_API_KEY || "",
+  moonshotApiKey: process.env.MOONSHOT_API_KEY || "",
   mistralApiKey: process.env.MISTRAL_API_KEY || "",
   tavilyApiKey: process.env.TAVILY_API_KEY || "",
   firecrawlApiKey: process.env.FIRECRAWL_API_KEY || "",
@@ -54,6 +56,8 @@ export async function middleware(request: NextRequest) {
     exaApiKey,
     firecrawlApiKey,
     googleGenerativeAIKey,
+    fireworksApiKey,
+    moonshotApiKey,
     mistralApiKey,
     modelList,
     openRouterApiKey,
@@ -141,6 +145,86 @@ export async function middleware(request: NextRequest) {
           request.headers.get("x-goog-api-client") || "genai-js/0.24.0"
         );
         requestHeaders.set("x-goog-api-key", apiKey);
+        return NextResponse.next({
+          request: {
+            headers: requestHeaders,
+          },
+        });
+      } else {
+        return NextResponse.json(
+          {
+            error: ERRORS.NO_API_KEY,
+          },
+          { status: 500 }
+        );
+      }
+    }
+  }
+  if (request.nextUrl.pathname.startsWith("/api/ai/fireworks")) {
+    const authorization = request.headers.get("authorization") || "";
+    const isDisabledModel = hasDisabledAIModel(requestBody);
+    if (
+      !verifySignature(
+        authorization.substring(7),
+        accessPassword,
+        Date.now()
+      ) ||
+      disabledAIProviders.includes("fireworks") ||
+      isDisabledModel
+    ) {
+      return NextResponse.json(
+        { error: ERRORS.NO_PERMISSIONS },
+        { status: 403 }
+      );
+    } else {
+      const apiKey = multiApiKeyPolling(fireworksApiKey);
+      if (apiKey) {
+        const requestHeaders = new Headers(request.headers);
+        requestHeaders.set(
+          "Content-Type",
+          request.headers.get("Content-Type") || "application/json"
+        );
+        requestHeaders.set("Authorization", `Bearer ${apiKey}`);
+        return NextResponse.next({
+          request: {
+            headers: requestHeaders,
+          },
+        });
+      } else {
+        return NextResponse.json(
+          {
+            error: ERRORS.NO_API_KEY,
+          },
+          { status: 500 }
+        );
+      }
+    }
+  }
+  if (request.nextUrl.pathname.startsWith("/api/ai/moonshot")) {
+    const authorization = request.headers.get("authorization") || "";
+    const isDisabledModel = hasDisabledAIModel(requestBody);
+    if (
+      !verifySignature(
+        authorization.substring(7),
+        accessPassword,
+        Date.now()
+      ) ||
+      disabledAIProviders.includes("moonshot") ||
+      isDisabledModel
+    ) {
+      return NextResponse.json(
+        { error: ERRORS.NO_PERMISSIONS },
+        { status: 403 }
+      );
+    } else {
+      const apiKey = multiApiKeyPolling(moonshotApiKey);
+      if (apiKey) {
+        const requestHeaders = new Headers(request.headers);
+        requestHeaders.set(
+          "Content-Type",
+          request.headers.get("Content-Type") || "application/json"
+        );
+        requestHeaders.set("Authorization", `Bearer ${apiKey}`);
         return NextResponse.next({
           request: {
             headers: requestHeaders,

@@ -56,6 +56,8 @@ import {
   ANTHROPIC_BASE_URL,
   DEEPSEEK_BASE_URL,
   XAI_BASE_URL,
+  FIREWORKS_BASE_URL,
+  MOONSHOT_BASE_URL,
   MISTRAL_BASE_URL,
   OLLAMA_BASE_URL,
   TAVILY_BASE_URL,
@@ -109,6 +111,14 @@ const formSchema = z.object({
   xAIApiProxy: z.string().optional(),
   xAIThinkingModel: z.string().optional(),
   xAINetworkingModel: z.string().optional(),
+  fireworksApiKey: z.string().optional(),
+  fireworksApiProxy: z.string().optional(),
+  fireworksThinkingModel: z.string().optional(),
+  fireworksNetworkingModel: z.string().optional(),
+  moonshotApiKey: z.string().optional(),
+  moonshotApiProxy: z.string().optional(),
+  moonshotThinkingModel: z.string().optional(),
+  moonshotNetworkingModel: z.string().optional(),
   mistralApiKey: z.string().optional(),
   mistralApiProxy: z.string().optional(),
   mistralThinkingModel: z.string().optional(),
@@ -417,6 +427,12 @@ function Setting({ open, onClose }: SettingProps) {
                             ) : null}
                             {!isDisabledAIProvider("xai") ? (
                               <SelectItem value="xai">xAI Grok</SelectItem>
+                            ) : null}
+                            {!isDisabledAIProvider("fireworks") ? (
+                              <SelectItem value="fireworks">Fireworks</SelectItem>
+                            ) : null}
+                            {!isDisabledAIProvider("moonshot") ? (
+                              <SelectItem value="moonshot">Moonshot (Kimi)</SelectItem>
                             ) : null}
                             {!isDisabledAIProvider("mistral") ? (
                               <SelectItem value="mistral">Mistral</SelectItem>
@@ -764,6 +780,118 @@ function Setting({ open, onClose }: SettingProps) {
                                 updateSetting(
                                   "xAIApiProxy",
                                   form.getValues("xAIApiProxy")
+                                )
+                              }
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div
+                    className={cn("space-y-4", {
+                      hidden: provider !== "fireworks",
+                    })}
+                  >
+                    <FormField
+                      control={form.control}
+                      name="fireworksApiKey"
+                      render={({ field }) => (
+                        <FormItem className="from-item">
+                          <FormLabel className="from-label">
+                            {t("setting.apiKeyLabel")}
+                            <span className="ml-1 text-red-500 max-sm:hidden">
+                              *
+                            </span>
+                          </FormLabel>
+                          <FormControl className="form-field">
+                            <Password
+                              type="text"
+                              placeholder={t("setting.apiKeyPlaceholder")}
+                              {...field}
+                              onBlur={() =>
+                                updateSetting(
+                                  "fireworksApiKey",
+                                  form.getValues("fireworksApiKey")
+                                )
+                              }
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="fireworksApiProxy"
+                      render={({ field }) => (
+                        <FormItem className="from-item">
+                          <FormLabel className="from-label">
+                            {t("setting.apiUrlLabel")}
+                          </FormLabel>
+                          <FormControl className="form-field">
+                            <Input
+                              placeholder={`${FIREWORKS_BASE_URL}/inference`}
+                              {...field}
+                              onBlur={() =>
+                                updateSetting(
+                                  "fireworksApiProxy",
+                                  form.getValues("fireworksApiProxy")
+                                )
+                              }
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div
+                    className={cn("space-y-4", {
+                      hidden: provider !== "moonshot",
+                    })}
+                  >
+                    <FormField
+                      control={form.control}
+                      name="moonshotApiKey"
+                      render={({ field }) => (
+                        <FormItem className="from-item">
+                          <FormLabel className="from-label">
+                            {t("setting.apiKeyLabel")}
+                            <span className="ml-1 text-red-500 max-sm:hidden">
+                              *
+                            </span>
+                          </FormLabel>
+                          <FormControl className="form-field">
+                            <Password
+                              type="text"
+                              placeholder={t("setting.apiKeyPlaceholder")}
+                              {...field}
+                              onBlur={() =>
+                                updateSetting(
+                                  "moonshotApiKey",
+                                  form.getValues("moonshotApiKey")
+                                )
+                              }
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="moonshotApiProxy"
+                      render={({ field }) => (
+                        <FormItem className="from-item">
+                          <FormLabel className="from-label">
+                            {t("setting.apiUrlLabel")}
+                          </FormLabel>
+                          <FormControl className="form-field">
+                            <Input
+                              placeholder={MOONSHOT_BASE_URL}
+                              {...field}
+                              onBlur={() =>
+                                updateSetting(
+                                  "moonshotApiProxy",
+                                  form.getValues("moonshotApiProxy")
                                 )
                               }
                             />
@@ -1863,6 +1991,352 @@ function Setting({ open, onClose }: SettingProps) {
                               </SelectTrigger>
                               <SelectContent className="max-sm:max-h-72">
                                 {modelList.map(renderModelItem)}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              className={cn("w-full", {
+                                hidden: modelList.length > 0,
+                              })}
+                              type="button"
+                              variant="outline"
+                              disabled={isRefreshing}
+                              onClick={() => fetchModelList()}
+                            >
+                              {isRefreshing ? (
+                                <>
+                                  <RefreshCw className="animate-spin" />{" "}
+                                  {t("setting.modelListLoading")}
+                                </>
+                              ) : (
+                                <>
+                                  <RefreshCw /> {t("setting.refresh")}
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="temperature"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
+                            Temperature
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <div className="space-y-2">
+                              <Slider
+                                value={[field.value || 0.7]}
+                                onValueChange={(value) => {
+                                  field.onChange(value[0]);
+                                  updateSetting("temperature", value[0]);
+                                }}
+                                max={2}
+                                min={0}
+                                step={0.1}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>More focused (0)</span>
+                                <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
+                                <span>More creative (2)</span>
+                              </div>
+                            </div>
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div
+                  className={cn("space-y-4", {
+                    hidden: provider !== "fireworks",
+                  })}
+                >
+                  <FormField
+                    control={form.control}
+                    name="fireworksThinkingModel"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip={t("setting.thinkingModelTip")}>
+                            {t("setting.thinkingModel")}
+                            <span className="ml-1 text-red-500 max-sm:hidden">
+                              *
+                            </span>
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger
+                                className={cn({
+                                  hidden: modelList.length === 0,
+                                })}
+                              >
+                                <SelectValue
+                                  placeholder={t(
+                                    "setting.modelListLoadingPlaceholder"
+                                  )}
+                                />
+                              </SelectTrigger>
+                              <SelectContent className="max-sm:max-h-72">
+                                {modelList.length > 0 ? (
+                                  <SelectGroup>
+                                    <SelectLabel>
+                                      {t("setting.recommendedModels")}
+                                    </SelectLabel>
+                                    {modelList.map(renderModelItem)}
+                                  </SelectGroup>
+                                ) : null}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              className={cn("w-full", {
+                                hidden: modelList.length > 0,
+                              })}
+                              type="button"
+                              variant="outline"
+                              disabled={isRefreshing}
+                              onClick={() => fetchModelList()}
+                            >
+                              {isRefreshing ? (
+                                <>
+                                  <RefreshCw className="animate-spin" />{" "}
+                                  {t("setting.modelListLoading")}
+                                </>
+                              ) : (
+                                <>
+                                  <RefreshCw /> {t("setting.refresh")}
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="fireworksNetworkingModel"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip={t("setting.networkingModelTip")}>
+                            {t("setting.networkingModel")}
+                            <span className="ml-1 text-red-500 max-sm:hidden">
+                              *
+                            </span>
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger
+                                className={cn({
+                                  hidden: modelList.length === 0,
+                                })}
+                              >
+                                <SelectValue
+                                  placeholder={t(
+                                    "setting.modelListLoadingPlaceholder"
+                                  )}
+                                />
+                              </SelectTrigger>
+                              <SelectContent className="max-sm:max-h-72">
+                                {modelList.length > 0 ? (
+                                  <SelectGroup>
+                                    <SelectLabel>
+                                      {t("setting.recommendedModels")}
+                                    </SelectLabel>
+                                    {modelList.map(renderModelItem)}
+                                  </SelectGroup>
+                                ) : null}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              className={cn("w-full", {
+                                hidden: modelList.length > 0,
+                              })}
+                              type="button"
+                              variant="outline"
+                              disabled={isRefreshing}
+                              onClick={() => fetchModelList()}
+                            >
+                              {isRefreshing ? (
+                                <>
+                                  <RefreshCw className="animate-spin" />{" "}
+                                  {t("setting.modelListLoading")}
+                                </>
+                              ) : (
+                                <>
+                                  <RefreshCw /> {t("setting.refresh")}
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="temperature"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip="Controls randomness in responses. Lower values (0.1) make output more focused and deterministic, higher values (1.5) make it more creative and random. Range: 0-2, recommended: 0.7">
+                            Temperature
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <div className="space-y-2">
+                              <Slider
+                                value={[field.value || 0.7]}
+                                onValueChange={(value) => {
+                                  field.onChange(value[0]);
+                                  updateSetting("temperature", value[0]);
+                                }}
+                                max={2}
+                                min={0}
+                                step={0.1}
+                                className="w-full"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>More focused (0)</span>
+                                <span className="font-medium">{(field.value || 0.7).toFixed(1)}</span>
+                                <span>More creative (2)</span>
+                              </div>
+                            </div>
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div
+                  className={cn("space-y-4", {
+                    hidden: provider !== "moonshot",
+                  })}
+                >
+                  <FormField
+                    control={form.control}
+                    name="moonshotThinkingModel"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip={t("setting.thinkingModelTip")}>
+                            {t("setting.thinkingModel")}
+                            <span className="ml-1 text-red-500 max-sm:hidden">
+                              *
+                            </span>
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger
+                                className={cn({
+                                  hidden: modelList.length === 0,
+                                })}
+                              >
+                                <SelectValue
+                                  placeholder={t(
+                                    "setting.modelListLoadingPlaceholder"
+                                  )}
+                                />
+                              </SelectTrigger>
+                              <SelectContent className="max-sm:max-h-72">
+                                {modelList.length > 0 ? (
+                                  <SelectGroup>
+                                    <SelectLabel>
+                                      {t("setting.recommendedModels")}
+                                    </SelectLabel>
+                                    {modelList.map(renderModelItem)}
+                                  </SelectGroup>
+                                ) : null}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              className={cn("w-full", {
+                                hidden: modelList.length > 0,
+                              })}
+                              type="button"
+                              variant="outline"
+                              disabled={isRefreshing}
+                              onClick={() => fetchModelList()}
+                            >
+                              {isRefreshing ? (
+                                <>
+                                  <RefreshCw className="animate-spin" />{" "}
+                                  {t("setting.modelListLoading")}
+                                </>
+                              ) : (
+                                <>
+                                  <RefreshCw /> {t("setting.refresh")}
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="moonshotNetworkingModel"
+                    render={({ field }) => (
+                      <FormItem className="from-item">
+                        <FormLabel className="from-label">
+                          <HelpTip tip={t("setting.networkingModelTip")}>
+                            {t("setting.networkingModel")}
+                            <span className="ml-1 text-red-500 max-sm:hidden">
+                              *
+                            </span>
+                          </HelpTip>
+                        </FormLabel>
+                        <FormControl>
+                          <div className="form-field w-full">
+                            <Select
+                              value={field.value}
+                              onValueChange={field.onChange}
+                            >
+                              <SelectTrigger
+                                className={cn({
+                                  hidden: modelList.length === 0,
+                                })}
+                              >
+                                <SelectValue
+                                  placeholder={t(
+                                    "setting.modelListLoadingPlaceholder"
+                                  )}
+                                />
+                              </SelectTrigger>
+                              <SelectContent className="max-sm:max-h-72">
+                                {modelList.length > 0 ? (
+                                  <SelectGroup>
+                                    <SelectLabel>
+                                      {t("setting.recommendedModels")}
+                                    </SelectLabel>
+                                    {modelList.map(renderModelItem)}
+                                  </SelectGroup>
+                                ) : null}
                               </SelectContent>
                             </Select>
                             <Button

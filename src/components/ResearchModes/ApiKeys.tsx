@@ -94,6 +94,20 @@ const providers: ProviderInfo[] = [
     compatibility: "full",
     compatibilityText: "Access to multiple providers",
     recommendedModels: "Any available model"
+  },
+  {
+    name: "Fireworks AI",
+    url: "https://app.fireworks.ai/users/api-keys",
+    compatibility: "full",
+    compatibilityText: "OpenAI-compatible endpoints",
+    recommendedModels: "firefunction-v2 or llama models"
+  },
+  {
+    name: "Moonshot (Kimi)",
+    url: "https://kimi.moonshot.cn/account/keys",
+    compatibility: "partial",
+    compatibilityText: "Chat completions compatible",
+    recommendedModels: "moonshot-v1-32k + moonshot-v1-8k"
   }
 ];
 
