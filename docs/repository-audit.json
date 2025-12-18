@@ -1,0 +1,57 @@
+[
+  {
+    "id": "SEC-001",
+    "severity": "high",
+    "category": "Dependency Vulnerability",
+    "component": "Tooling (Vite dev server)",
+    "files": ["package.json", "pnpm-lock.yaml"],
+    "description": "Vite <7.3.0 allowed public dir traversal when symlinks were present and server was network-exposed.",
+    "root_cause": "Upstream middleware failed to guard public file resolution when publicFiles was undefined.",
+    "resolution": "Forced vite@7.3.0 via pnpm overrides.",
+    "status": "fixed"
+  },
+  {
+    "id": "SEC-002",
+    "severity": "moderate",
+    "category": "Dependency Vulnerability",
+    "component": "Markdown pipeline",
+    "files": ["package.json", "pnpm-lock.yaml"],
+    "description": "mdast-util-to-hast <13.2.1 allowed unsanitized class injection via character references in fenced code blocks.",
+    "root_cause": "Parser failed to prefix or sanitize class names before rendering.",
+    "resolution": "Pinned mdast-util-to-hast@13.2.1 through overrides.",
+    "status": "fixed"
+  },
+  {
+    "id": "SEC-003",
+    "severity": "moderate",
+    "category": "Dependency Vulnerability",
+    "component": "Configuration parsing",
+    "files": ["package.json", "pnpm-lock.yaml"],
+    "description": "js-yaml <4.1.1 susceptible to prototype pollution when parsing untrusted YAML.",
+    "root_cause": "Insufficient schema restrictions in safeLoad equivalents.",
+    "resolution": "Forced js-yaml@4.1.1 via pnpm overrides.",
+    "status": "fixed"
+  },
+  {
+    "id": "SEC-004",
+    "severity": "high",
+    "category": "Dependency Vulnerability",
+    "component": "Build tooling CLI",
+    "files": ["package.json", "pnpm-lock.yaml"],
+    "description": "glob CLI <10.5.0 allowed command injection through -c/--cmd when shell expansion was enabled.",
+    "root_cause": "CLI passed matches to shell:true without sanitization.",
+    "resolution": "Pinned glob@10.5.0 via pnpm overrides.",
+    "status": "fixed"
+  },
+  {
+    "id": "SEC-005",
+    "severity": "low",
+    "category": "Dependency Vulnerability",
+    "component": "AI SDK",
+    "files": ["package.json", "pnpm-lock.yaml"],
+    "description": "ai <5.0.52 allowed filetype whitelist bypass on uploads.",
+    "root_cause": "Insufficient validation of uploaded file metadata in SDK.",
+    "resolution": "Upgraded ai to 5.0.115 and aligned zod peer dependency.",
+    "status": "fixed"
+  }
+]
