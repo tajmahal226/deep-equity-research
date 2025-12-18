@@ -1,0 +1,6 @@
+id,severity,category,component,files,description,resolution,status
+SEC-001,high,Dependency Vulnerability,"Tooling (Vite dev server)","package.json; pnpm-lock.yaml","Vite <7.3.0 allowed public directory traversal when symlinks and network exposure were present.","Pinned vite@7.3.0 via pnpm overrides.",fixed
+SEC-002,moderate,Dependency Vulnerability,"Markdown pipeline","package.json; pnpm-lock.yaml","mdast-util-to-hast <13.2.1 could inject unsanitized classes in rendered markdown.","Pinned mdast-util-to-hast@13.2.1 via overrides.",fixed
+SEC-003,moderate,Dependency Vulnerability,"Configuration parsing","package.json; pnpm-lock.yaml","js-yaml <4.1.1 vulnerable to prototype pollution when parsing untrusted YAML.","Forced js-yaml@4.1.1 through overrides.",fixed
+SEC-004,high,Dependency Vulnerability,"Build tooling CLI","package.json; pnpm-lock.yaml","glob CLI <10.5.0 allowed command injection through -c/--cmd.","Forced glob@10.5.0 via overrides.",fixed
+SEC-005,low,Dependency Vulnerability,"AI SDK","package.json; pnpm-lock.yaml","ai <5.0.52 permitted filetype whitelist bypass on uploads.","Upgraded ai to 5.0.115 and aligned zod peer version.",fixed
