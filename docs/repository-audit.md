@@ -16,7 +16,7 @@
 - Static scan of API code confirmed no additional exploitable input paths beyond dependency issues; tests already covered primary flows.
 
 ## Phase 3 – Prioritization
-- All findings categorized as **security vulnerabilities**; prioritized by upstream CVSS and application exposure. Dev-server-only issues (vite) still upgraded to avoid transitive risk in tooling. Markdown sanitation and file whitelist issues treated as user-impacting due to rich text rendering and future file support.
+- All findings categorized as **security vulnerabilities**; prioritized by upstream CVSS and application exposure. Dev-server-only issues (vite) still upgraded to avoid transitive risk in tooling. Markdown sanitization and file whitelist issues treated as user-impacting due to rich text rendering and future file support.
 
 ## Phase 4 – Fix Implementation
 - **Dependency upgrades:** Raised `ai` to `5.0.115` and `zod` to `^3.25.76` to satisfy peer requirements and pull patched security fixes.
