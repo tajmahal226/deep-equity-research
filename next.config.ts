@@ -18,6 +18,10 @@ const ANTHROPIC_API_BASE_URL =
 const DEEPSEEK_API_BASE_URL =
   process.env.DEEPSEEK_API_BASE_URL || "https://api.deepseek.com";
 const XAI_API_BASE_URL = process.env.XAI_API_BASE_URL || "https://api.x.ai/v1";
+const FIREWORKS_API_BASE_URL =
+  process.env.FIREWORKS_API_BASE_URL || "https://api.fireworks.ai";
+const MOONSHOT_API_BASE_URL =
+  process.env.MOONSHOT_API_BASE_URL || "https://api.moonshot.cn";
 const MISTRAL_API_BASE_URL =
   process.env.MISTRAL_API_BASE_URL || "https://api.mistral.ai";
 const OLLAMA_API_BASE_URL =
@@ -70,6 +74,14 @@ export default async function Config(phase: string) {
         {
           source: "/api/ai/xai/:path*",
           destination: `${XAI_API_BASE_URL}/:path*`,
+        },
+        {
+          source: "/api/ai/fireworks/:path*",
+          destination: `${FIREWORKS_API_BASE_URL}/:path*`,
+        },
+        {
+          source: "/api/ai/moonshot/:path*",
+          destination: `${MOONSHOT_API_BASE_URL}/:path*`,
         },
         {
           source: "/api/ai/mistral/:path*",

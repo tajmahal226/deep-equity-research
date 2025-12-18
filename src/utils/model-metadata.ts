@@ -157,6 +157,9 @@ export const MODEL_RELEASE_DATES: Record<string, Record<string, string>> = {
     'llama-3.1-sonar-large-128k-chat': '2024-07',
     'llama-3.1-sonar-small-128k-chat': '2024-07',
   },
+
+  fireworks: {},
+  moonshot: {},
 };
 
 /**

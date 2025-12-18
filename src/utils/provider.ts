@@ -55,6 +55,8 @@ export function resolveActiveProvider(
     "deepseek",
     "xai",
     "mistral",
+    "fireworks",
+    "moonshot",
     "openrouter",
     "google",
     "cohere",
@@ -114,6 +116,14 @@ const PROVIDER_MODEL_DEFAULTS: Record<string, ProviderModelPair> = {
     thinkingModel: "gpt-4o",
     taskModel: "gpt-4o-mini",
   },
+  fireworks: {
+    thinkingModel: "accounts/fireworks/models/firefunction-v2",
+    taskModel: "accounts/fireworks/models/firefunction-v2",
+  },
+  moonshot: {
+    thinkingModel: "moonshot-v1-32k",
+    taskModel: "moonshot-v1-8k",
+  },
 };
 
 function getProviderModelFromStore(
@@ -124,7 +134,16 @@ function getProviderModelFromStore(
   const providerKey = getProviderStateKey(provider);
   const key = `${providerKey}${role}Model` as keyof SettingStore;
   const value = store[key];
-  return typeof value === "string" ? value.trim() : "";
+
+  if (typeof value === "string" && value.trim()) {
+    return value.trim();
+  }
+
+  // Legacy fallback for providers that historically used unprefixed keys
+  const legacyKey =
+    role === "Thinking" ? ("thinkingModel" as keyof SettingStore) : ("networkingModel" as keyof SettingStore);
+  const legacyValue = store[legacyKey];
+  return typeof legacyValue === "string" ? legacyValue.trim() : "";
 }
 
 /**

@@ -20,6 +20,8 @@ const ALL_MODELS: Record<string, Set<string>> = {
   together: new Set(Object.keys(MODEL_RELEASE_DATES.together)),
   cohere: new Set(Object.keys(MODEL_RELEASE_DATES.cohere)),
   perplexity: new Set(Object.keys(MODEL_RELEASE_DATES.perplexity)),
+  fireworks: new Set(),
+  moonshot: new Set(),
 };
 
 // Get stale model exclusion setting from environment
@@ -63,6 +65,8 @@ export const VALID_MODELS: Record<string, Set<string>> = {
   together: getValidModels('together'),
   cohere: getValidModels('cohere'),
   perplexity: getValidModels('perplexity'),
+  fireworks: getValidModels('fireworks'),
+  moonshot: getValidModels('moonshot'),
 };
 
 // API key format patterns
@@ -78,6 +82,8 @@ const API_KEY_PATTERNS: Record<string, RegExp> = {
   together: /^[A-Za-z0-9\-]{40,}$/,
   perplexity: /^pplx-[A-Za-z0-9]{40,}$/,
   openrouter: /^sk-or-[A-Za-z0-9\-]{40,}$/,
+  fireworks: /^[A-Za-z0-9_-]{20,}$/,
+  moonshot: /^sk-[A-Za-z0-9_-]{20,}$/,
   tavily: /^tvly-[A-Za-z0-9]{20,}$/,
   firecrawl: /^fc-[A-Za-z0-9]{20,}$/,
   exa: /^[A-Za-z0-9\-]{36}$/,

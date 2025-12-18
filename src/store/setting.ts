@@ -30,6 +30,14 @@ export interface SettingStore {
   mistralApiProxy: string;
   mistralThinkingModel: string;
   mistralNetworkingModel: string;
+  fireworksApiKey: string;
+  fireworksApiProxy: string;
+  fireworksThinkingModel: string;
+  fireworksNetworkingModel: string;
+  moonshotApiKey: string;
+  moonshotApiProxy: string;
+  moonshotThinkingModel: string;
+  moonshotNetworkingModel: string;
   cohereApiKey: string;
   cohereApiProxy: string;
   cohereThinkingModel: string;
@@ -133,6 +141,14 @@ export const defaultValues: SettingStore = {
   mistralApiProxy: "",
   mistralThinkingModel: "mistral-large-latest",
   mistralNetworkingModel: "mistral-medium-latest",
+  fireworksApiKey: "",
+  fireworksApiProxy: "",
+  fireworksThinkingModel: "accounts/fireworks/models/firefunction-v2",
+  fireworksNetworkingModel: "accounts/fireworks/models/firefunction-v2",
+  moonshotApiKey: "",
+  moonshotApiProxy: "",
+  moonshotThinkingModel: "moonshot-v1-32k",
+  moonshotNetworkingModel: "moonshot-v1-8k",
   cohereApiKey: "",
   cohereApiProxy: "",
   cohereThinkingModel: "command-r-plus",
