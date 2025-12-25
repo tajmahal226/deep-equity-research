@@ -1,3 +1,4 @@
+"use client";
 import dynamic from "next/dynamic";
 import { memo, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -19,7 +20,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { useTaskStore } from "@/store/task";
 import { downloadFile } from "@/utils/file";
-import { addQuoteBeforeAllLine } from "@/utils/text";
+import { addQuoteBeforeAllLines } from "@/utils/text";
 
 const MagicDown = dynamic(() => import("@/components/MagicDown"));
 const MagicDownView = dynamic(() => import("@/components/MagicDown/View"));
@@ -153,7 +154,7 @@ const TaskItem = memo(
         </AccordionTrigger>
         <AccordionContent className="prose prose-slate dark:prose-invert max-w-full min-h-20">
           <MagicDownView>
-            {addQuoteBeforeAllLine(item.researchGoal)}
+            {addQuoteBeforeAllLines(item.researchGoal)}
           </MagicDownView>
           <Separator className="mb-4" />
           <MagicDown
