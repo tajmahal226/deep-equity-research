@@ -58,6 +58,13 @@ export function removeJsonMarkdown(text: string) {
   return text.trim();
 }
 
+export function addQuoteBeforeAllLine(text: string = "") {
+  return text
+    .split("\n")
+    .map((line) => `> ${line}`)
+    .join("\n");
+}
+
 /**
  * Check if a text contains XML or HTML tags.
  * Consider various scenarios, including:
