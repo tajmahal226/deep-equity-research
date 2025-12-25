@@ -22,7 +22,7 @@ import useDeepResearch from "@/hooks/useDeepResearch";
 import useKnowledge from "@/hooks/useKnowledge";
 import { useTaskStore } from "@/store/task";
 import { useKnowledgeStore } from "@/store/knowledge";
-import { addQuoteBeforeAllLine } from "@/utils/text";
+import { addQuoteBeforeAllLines } from "@/utils/text";
 
 const TaskItem = dynamic(() => import("./TaskItem"));
 
@@ -59,7 +59,7 @@ function SearchResult() {
     (item: SearchTask) => {
       return [
         `## ${item.query}`,
-        addQuoteBeforeAllLine(item.researchGoal),
+        addQuoteBeforeAllLines(item.researchGoal),
         "---",
         item.learning,
         item.images?.length > 0
