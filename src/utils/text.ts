@@ -58,7 +58,7 @@ export function removeJsonMarkdown(text: string) {
   return text.trim();
 }
 
-export function addQuoteBeforeAllLine(text: string = "") {
+export function addQuoteBeforeAllLines(text: string = "") {
   return text
     .split("\n")
     .map((line) => `> ${line}`)
