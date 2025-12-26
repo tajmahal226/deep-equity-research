@@ -66,7 +66,7 @@ export interface DeepResearchSearchResult {
   }[];
 }
 
-function addQuoteBeforeAllLines(text: string = "") {
+function addQuoteBeforeAllLine(text: string = "") {
   return text
     .split("\n")
     .map((line) => `> ${line}`)
@@ -337,7 +337,7 @@ class DeepResearch {
       this.onMessage("message", { type: "text", text: `## ${item.query}\n\n` });
       this.onMessage("message", {
         type: "text",
-        text: `${addQuoteBeforeAllLines(item.researchGoal)}\n\n`,
+        text: `${addQuoteBeforeAllLine(item.researchGoal)}\n\n`,
       });
       for await (const part of searchResult.fullStream) {
         if (part.type === "text-delta") {

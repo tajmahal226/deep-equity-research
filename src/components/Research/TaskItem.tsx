@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { memo, useMemo, useCallback } from "react";
+import { memo, useMemo, useCallback, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   LoaderCircle,
@@ -54,6 +54,12 @@ const TaskItem = memo(
   }: TaskItemProps) => {
     const { t } = useTranslation();
     const updateTask = useTaskStore((state) => state.updateTask);
+    const itemRef = useRef(item);
+
+    // Keep itemRef in sync with latest item
+    useEffect(() => {
+      itemRef.current = item;
+    }, [item]);
 
     const handleLearningChange = useCallback(
       (value: string) => {
@@ -63,24 +69,27 @@ const TaskItem = memo(
     );
 
     const handleRetry = useCallback(() => {
-      onRetry(item.query, item.researchGoal);
-    }, [item.query, item.researchGoal, onRetry]);
+      const currentItem = itemRef.current;
+      onRetry(currentItem.query, currentItem.researchGoal);
+    }, [onRetry]);
 
     const handleRemove = useCallback(() => {
-      onRemove(item.query);
-    }, [item.query, onRemove]);
+      const currentItem = itemRef.current;
+      onRemove(currentItem.query);
+    }, [onRemove]);
 
     const handleAddToKnowledgeBase = useCallback(() => {
-      onAddToKnowledgeBase(item);
-    }, [item, onAddToKnowledgeBase]);
+      onAddToKnowledgeBase(itemRef.current);
+    }, [onAddToKnowledgeBase]);
 
     const handleExport = useCallback(() => {
+      const currentItem = itemRef.current;
       downloadFile(
-        getSearchResultContent(item),
-        `${item.query}.md`,
+        getSearchResultContent(currentItem),
+        `${currentItem.query}.md`,
         "text/markdown;charset=utf-8"
       );
-    }, [item, getSearchResultContent]);
+    }, [getSearchResultContent]);
 
     const tools = useMemo(
       () => (
@@ -176,8 +185,15 @@ const TaskItem = memo(
               <ol>
                 {item.sources.map((source, idx) => {
                   return (
-                    <li className="ml-2" key={idx}>
-                      <a href={source.url} target="_blank">
+                    <li
+                      className="ml-2"
+                      key={source.url || `${source.title}-${idx}`}
+                    >
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         {source.title || source.url}
                       </a>
                     </li>
