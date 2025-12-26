@@ -1,6 +1,6 @@
 // tests/utils/api.test.ts
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createProvider } from "@/utils/api";
 import { OpenAIProvider } from "@/utils/api/openai";
 import { AnthropicProvider } from "@/utils/api/anthropic";
@@ -15,7 +15,7 @@ const { mockGenerateText, mockStreamText } = vi.hoisted(() => {
 
 vi.mock("ai", async (importOriginal) => {
   return {
-    // @ts-ignore
+    // @ts-expect-error
     ...await importOriginal(),
     generateText: mockGenerateText,
     streamText: mockStreamText,
