@@ -449,14 +449,15 @@ export default function CompanyDeepDive() {
                 {subIndustries.map((tag, index) => (
                   <Badge key={index} variant="secondary" className="flex items-center gap-1">
                     {tag}
-                    <button
-                      type="button"
-                      className="cursor-pointer hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-sm"
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-3 w-3 p-0 hover:bg-transparent text-muted-foreground hover:text-destructive ml-1"
                       onClick={() => handleRemoveTag(index, subIndustries, setSubIndustries)}
                       aria-label={`Remove ${tag}`}
                     >
                       <X className="h-3 w-3" />
-                    </button>
+                    </Button>
                   </Badge>
                 ))}
               </div>
@@ -482,14 +483,15 @@ export default function CompanyDeepDive() {
                 {competitors.map((tag, index) => (
                   <Badge key={index} variant="secondary" className="flex items-center gap-1">
                     {tag}
-                    <button
-                      type="button"
-                      className="cursor-pointer hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-sm"
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-3 w-3 p-0 hover:bg-transparent text-muted-foreground hover:text-destructive ml-1"
                       onClick={() => handleRemoveTag(index, competitors, setCompetitors)}
                       aria-label={`Remove ${tag}`}
                     >
                       <X className="h-3 w-3" />
-                    </button>
+                    </Button>
                   </Badge>
                 ))}
               </div>
@@ -515,14 +517,15 @@ export default function CompanyDeepDive() {
                 {researchSources.map((tag, index) => (
                   <Badge key={index} variant="outline" className="flex items-center gap-1">
                     {tag}
-                    <button
-                      type="button"
-                      className="cursor-pointer hover:text-destructive focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-sm"
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-3 w-3 p-0 hover:bg-transparent text-muted-foreground hover:text-destructive ml-1"
                       onClick={() => handleRemoveTag(index, researchSources, setResearchSources)}
                       aria-label={`Remove ${tag}`}
                     >
                       <X className="h-3 w-3" />
-                    </button>
+                    </Button>
                   </Badge>
                 ))}
               </div>
