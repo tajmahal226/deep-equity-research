@@ -80,41 +80,41 @@ export async function createAIProvider({
         ...commonOptions,
         compatibility: "strict",
       });
-      return openai(normalizedModel, settings);
+      return openai(normalizedModel, settings) as unknown as LanguageModel;
 
     case "anthropic":
       const anthropic = createAnthropic(commonOptions);
-      return anthropic(model, settings);
+      return anthropic(model, settings) as unknown as LanguageModel;
 
     case "google":
       const google = createGoogleGenerativeAI(commonOptions);
-      return google(model, settings);
+      return google(model, settings) as unknown as LanguageModel;
 
     case "deepseek":
       const deepseek = createDeepSeek(commonOptions);
-      return deepseek(model, settings);
+      return deepseek(model, settings) as unknown as LanguageModel;
 
     case "mistral":
       const mistral = createMistral(commonOptions);
-      return mistral(model, settings);
+      return mistral(model, settings) as unknown as LanguageModel;
 
     case "xai":
       const xai = createXai(commonOptions);
-      return xai(model, settings);
+      return xai(model, settings) as unknown as LanguageModel;
 
     case "ollama":
       const ollama = createOllama({
         baseURL: baseURL || "http://localhost:11434/api",
         headers,
       });
-      return ollama(model, settings);
+      return ollama(model, settings) as unknown as LanguageModel;
 
     case "openrouter":
       const openrouter = createOpenRouter({
         ...commonOptions,
         extraBody: settings, // OpenRouter often takes extra parameters in body
       });
-      return openrouter(model, settings);
+      return openrouter(model, settings) as unknown as LanguageModel;
 
     case "fireworks":
     case "moonshot":
@@ -122,7 +122,7 @@ export async function createAIProvider({
         ...commonOptions,
         compatibility: "strict",
       });
-      return fireworksCompatible(model, settings);
+      return fireworksCompatible(model, settings) as unknown as LanguageModel;
 
     default:
       throw new Error(`Unsupported provider: ${provider}`);

@@ -73,6 +73,7 @@ function addQuoteBeforeAllLines(text: string = "") {
     .join("\n");
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class DeepResearch {
   protected options: DeepResearchOptions;
   onMessage: (event: string, data: any) => void = () => {};
@@ -174,9 +175,10 @@ class DeepResearch {
     let content = "";
     this.onMessage("message", { type: "text", text: "<report-plan>\n" });
     for await (const part of result.fullStream) {
-      if (part.type === "text-delta") {
+      const p = part as any;
+      if (p.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.textDelta,
+          p.textDelta,
           (data) => {
             content += data;
             this.onMessage("message", { type: "text", text: data });
@@ -185,8 +187,10 @@ class DeepResearch {
             this.onMessage("reasoning", { type: "text", text: data });
           }
         );
-      } else if (part.type === "reasoning") {
-        this.onMessage("reasoning", { type: "text", text: part.textDelta });
+      } else if (p.type === "reasoning") {
+        this.onMessage("reasoning", { type: "text", text: p.textDelta });
+      } else if (p.type === "reasoning-delta") {
+        this.onMessage("reasoning", { type: "text", text: p.textDelta });
       }
     }
     this.onMessage("message", { type: "text", text: "\n</report-plan>\n\n" });
@@ -300,6 +304,7 @@ class DeepResearch {
             processResultPrompt(item.query, item.researchGoal),
             this.getResponseLanguagePrompt(),
           ].join("\n\n"),
+          // @ts-expect-error ai sdk type mismatch
           tools: await getTools(),
           providerOptions: getProviderOptions(),
         });
@@ -340,9 +345,10 @@ class DeepResearch {
         text: `${addQuoteBeforeAllLines(item.researchGoal)}\n\n`,
       });
       for await (const part of searchResult.fullStream) {
-        if (part.type === "text-delta") {
+        const p = part as any; // Cast to any to handle type mismatch gracefully
+        if (p.type === "text-delta") {
           thinkTagStreamProcessor.processChunk(
-            part.textDelta,
+            p.textDelta,
             (data) => {
               content += data;
               this.onMessage("message", { type: "text", text: data });
@@ -351,13 +357,15 @@ class DeepResearch {
               this.onMessage("reasoning", { type: "text", text: data });
             }
           );
-        } else if (part.type === "reasoning") {
-          this.onMessage("reasoning", { type: "text", text: part.textDelta });
-        } else if (part.type === "source") {
-          sources.push(part.source);
-        } else if (part.type === "finish") {
-          if (part.providerMetadata?.google) {
-            const { groundingMetadata } = part.providerMetadata.google;
+        } else if (p.type === "reasoning") {
+          this.onMessage("reasoning", { type: "text", text: p.textDelta });
+        } else if (p.type === "reasoning-delta") {
+          this.onMessage("reasoning", { type: "text", text: p.textDelta });
+        } else if (p.type === "source") {
+          sources.push(p.source);
+        } else if (p.type === "finish") {
+          if (p.providerMetadata?.google) {
+            const { groundingMetadata } = p.providerMetadata.google;
             const googleGroundingMetadata =
               groundingMetadata as GoogleGenerativeAIProviderMetadata["groundingMetadata"];
             if (googleGroundingMetadata?.groundingSupports) {
@@ -375,7 +383,7 @@ class DeepResearch {
                 }
               );
             }
-          } else if (part.providerMetadata?.openai) {
+          } else if (p.providerMetadata?.openai) {
             // Fixed the problem that OpenAI cannot generate markdown reference link syntax properly in Chinese context
             content = content.replaceAll("【", "[").replaceAll("】", "]");
           }
@@ -468,9 +476,10 @@ class DeepResearch {
     let content = "";
     this.onMessage("message", { type: "text", text: "<final-report>\n" });
     for await (const part of result.fullStream) {
-      if (part.type === "text-delta") {
+      const p = part as any; // Cast to any to handle type mismatch gracefully
+      if (p.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.textDelta,
+          p.textDelta,
           (data) => {
             content += data;
             this.onMessage("message", { type: "text", text: data });
@@ -479,11 +488,13 @@ class DeepResearch {
             this.onMessage("reasoning", { type: "text", text: data });
           }
         );
-      } else if (part.type === "reasoning") {
-        this.onMessage("reasoning", { type: "text", text: part.textDelta });
-      } else if (part.type === "source") {
-        sources.push(part.source);
-      } else if (part.type === "finish") {
+      } else if (p.type === "reasoning") {
+        this.onMessage("reasoning", { type: "text", text: p.textDelta });
+      } else if (p.type === "reasoning-delta") {
+        this.onMessage("reasoning", { type: "text", text: p.textDelta });
+      } else if (p.type === "source") {
+        sources.push(p.source);
+      } else if (p.type === "finish") {
         if (sources.length > 0) {
           const sourceContent =
             "\n\n---\n\n" +

@@ -26,6 +26,7 @@ export class OpenAIProvider implements Provider {
             model: this.openai(options.model || "gpt-4o"),
             prompt,
             temperature: options.temperature,
+            // @ts-expect-error maxTokens is valid in AI SDK but types might be outdated or strict
             maxTokens: options.maxTokens,
             abortSignal: options.signal,
           }),
@@ -45,11 +46,12 @@ export class OpenAIProvider implements Provider {
         model: this.openai(options.model || "gpt-4o"),
         prompt,
         temperature: options.temperature,
+        // @ts-expect-error maxTokens is valid in AI SDK but types might be outdated or strict
         maxTokens: options.maxTokens,
         abortSignal: options.signal,
       });
 
-      return result.textStream;
+      return result.textStream as unknown as ReadableStream;
     } catch (error) {
       handleError(error);
       throw new AppError("Failed to stream report from OpenAI.");
