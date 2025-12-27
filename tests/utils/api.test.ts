@@ -129,10 +129,10 @@ describe("API Adapter", () => {
       });
 
       it("should handle network errors", async () => {
-          mockFetch.mockRejectedValue(new Error("Network Error"));
-          await expect(provider.getModels()).rejects.toThrow(
-            "Failed to get models from OpenAI."
-          );
+        mockFetch.mockRejectedValue(new Error("Network Error"));
+        await expect(provider.getModels()).rejects.toThrow(
+          "Failed to get models from OpenAI."
+        );
       });
     });
   });
