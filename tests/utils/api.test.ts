@@ -110,9 +110,9 @@ describe("API Adapter", () => {
         const models = await provider.getModels();
         expect(models).toEqual(["gpt-4o", "gpt-3.5-turbo"]);
         expect(mockFetch).toHaveBeenCalledWith("https://api.openai.com/v1/models", expect.objectContaining({
-            headers: {
-                "Authorization": `Bearer ${apiKey}`
-            }
+          headers: {
+            "Authorization": `Bearer ${apiKey}`
+          }
         }));
       });
 
