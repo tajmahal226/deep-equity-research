@@ -83,7 +83,7 @@ describe("API Adapter", () => {
         const result = await provider.streamReport("Test prompt", { model: "gpt-4o" });
         expect(result).toBe(mockStream);
         expect(mockStreamText).toHaveBeenCalledWith(expect.objectContaining({
-            prompt: "Test prompt"
+          prompt: "Test prompt"
         }));
       });
 
