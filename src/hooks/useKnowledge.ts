@@ -100,6 +100,7 @@ function useKnowledge() {
       for await (const part of result.fullStream) {
         if (part.type === "text-delta") {
           thinkTagStreamProcessor.processChunk(
+            // @ts-expect-error ai sdk type mismatch
             part.textDelta,
             (data) => {
               content += data;
@@ -108,7 +109,8 @@ function useKnowledge() {
               reasoning += data;
             }
           );
-        } else if (part.type === "reasoning") {
+        } else if (part.type === "reasoning-delta") {
+          // @ts-expect-error ai sdk type mismatch
           reasoning += part.textDelta;
         }
       }

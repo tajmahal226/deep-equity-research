@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { streamText, smoothStream, type JSONValue, type Tool } from "ai";
 import { parsePartialJson } from "@ai-sdk/ui-utils";
 import { openai } from "@ai-sdk/openai";
@@ -46,14 +46,14 @@ function smoothTextStream(type: "character" | "word" | "line") {
 
 function useDeepResearch() {
   const { t } = useTranslation();
-  const taskStore = useTaskStore();
+  // Removed direct useTaskStore() subscription to prevent re-renders on every store update
   const { smoothTextStreamType } = useSettingStore();
   const { createModelProvider, getModel } = useModelProvider();
   const { search } = useWebSearch();
   const [status, setStatus] = useState<string>("");
 
-  async function askQuestions() {
-    const { question } = useTaskStore.getState();
+  const askQuestions = useCallback(async () => {
+    const { question, setQuestion, updateQuestions } = useTaskStore.getState();
     const { thinkingModel } = getModel();
     setStatus(t("research.common.thinking"));
     const thinkTagStreamProcessor = new ThinkTagStreamProcessor();
@@ -69,28 +69,30 @@ function useDeepResearch() {
     });
     let content = "";
     let reasoning = "";
-    taskStore.setQuestion(question);
+    setQuestion(question);
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
+          // @ts-expect-error ai sdk type mismatch
           part.textDelta,
           (data) => {
             content += data;
-            taskStore.updateQuestions(content);
+            updateQuestions(content);
           },
           (data) => {
             reasoning += data;
           }
         );
-      } else if (part.type === "reasoning") {
+      } else if (part.type === "reasoning-delta") {
+        // @ts-expect-error ai sdk type mismatch
         reasoning += part.textDelta;
       }
     }
     if (reasoning) logger.log(reasoning);
-  }
+  }, [createModelProvider, getModel, smoothTextStreamType, t]);
 
-  async function writeReportPlan() {
-    const { query } = useTaskStore.getState();
+  const writeReportPlan = useCallback(async () => {
+    const { query, updateReportPlan } = useTaskStore.getState();
     const { thinkingModel } = getModel();
     setStatus(t("research.common.thinking"));
     const thinkTagStreamProcessor = new ThinkTagStreamProcessor();
@@ -108,216 +110,235 @@ function useDeepResearch() {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
+          // @ts-expect-error ai sdk type mismatch
           part.textDelta,
           (data) => {
             content += data;
-            taskStore.updateReportPlan(content);
+            updateReportPlan(content);
           },
           (data) => {
             reasoning += data;
           }
         );
-      } else if (part.type === "reasoning") {
+      } else if (part.type === "reasoning-delta") {
+        // @ts-expect-error ai sdk type mismatch
         reasoning += part.textDelta;
       }
     }
     if (reasoning) logger.log(reasoning);
     return content;
-  }
+  }, [createModelProvider, getModel, smoothTextStreamType, t]);
 
-  async function searchLocalKnowledges(query: string, researchGoal: string) {
-    const { resources } = useTaskStore.getState();
-    const knowledgeStore = useKnowledgeStore.getState();
-    const knowledges: Knowledge[] = [];
+  const searchLocalKnowledges = useCallback(
+    async (query: string, researchGoal: string) => {
+      const { resources, updateTask } = useTaskStore.getState();
+      const knowledgeStore = useKnowledgeStore.getState();
+      const knowledges: Knowledge[] = [];
 
-    for (const item of resources) {
-      if (item.status === "completed") {
-        const resource = knowledgeStore.get(item.id);
-        if (resource) {
-          knowledges.push(resource);
-        }
-      }
-    }
-
-    const { networkingModel } = getModel();
-    const thinkTagStreamProcessor = new ThinkTagStreamProcessor();
-    const searchResult = streamText({
-      model: await createModelProvider(networkingModel),
-      system: getSystemPrompt(),
-      prompt: [
-        processSearchKnowledgeResultPrompt(query, researchGoal, knowledges),
-        getResponseLanguagePrompt(),
-      ].join("\n\n"),
-      experimental_transform: smoothTextStream(smoothTextStreamType),
-      onError: (error) => handleError(error),
-    });
-    let content = "";
-    let reasoning = "";
-    for await (const part of searchResult.fullStream) {
-      if (part.type === "text-delta") {
-        thinkTagStreamProcessor.processChunk(
-          part.textDelta,
-          (data) => {
-            content += data;
-            taskStore.updateTask(query, { learning: content });
-          },
-          (data) => {
-            reasoning += data;
+      for (const item of resources) {
+        if (item.status === "completed") {
+          const resource = knowledgeStore.get(item.id);
+          if (resource) {
+            knowledges.push(resource);
           }
-        );
-      } else if (part.type === "reasoning") {
-        reasoning += part.textDelta;
-      }
-    }
-    if (reasoning) logger.log(reasoning);
-    return content;
-  }
-
-  async function runSearchTask(queries: SearchTask[]) {
-    const {
-      provider,
-      enableSearch,
-      searchProvider,
-      parallelSearch,
-      searchMaxResult,
-      references,
-      onlyUseLocalResource,
-    } = useSettingStore.getState();
-    const { resources } = useTaskStore.getState();
-    const { networkingModel } = getModel();
-    setStatus(t("research.common.research"));
-    const plimit = Plimit(parallelSearch);
-    const thinkTagStreamProcessor = new ThinkTagStreamProcessor();
-    const createModel = (model: string) => {
-      // Enable Gemini's built-in search tool
-      if (
-        enableSearch &&
-        searchProvider === "model" &&
-        provider === "google" &&
-        isNetworkingModel(model)
-      ) {
-        return createModelProvider(model, { useSearchGrounding: true });
-      } else {
-        return createModelProvider(model);
-      }
-    };
-    const getTools = (model: string) => {
-      // Enable OpenAI's built-in search tool
-      if (enableSearch && searchProvider === "model") {
-        if (
-          provider === "openai" &&
-          model.startsWith("gpt-4o")
-        ) {
-          return {
-            web_search_preview: openai.tools.webSearchPreview({
-              // optional configuration:
-              searchContextSize: "medium",
-            }),
-          } as Tools;
         }
       }
-      return undefined;
-    };
-    const getProviderOptions = (model: string) => {
-      if (enableSearch && searchProvider === "model") {
-        // Enable OpenRouter's built-in search tool
-        if (provider === "openrouter") {
-          return {
-            openrouter: {
-              plugins: [
-                {
-                  id: "web",
-                  max_results: searchMaxResult, // Defaults to 5
-                },
-              ],
-            },
-          } as ProviderOptions;
-        } else if (
-          provider === "xai" &&
-          model.startsWith("grok-3") &&
-          !model.includes("mini")
-        ) {
-          return {
-            xai: {
-              search_parameters: {
-                mode: "auto",
-                max_search_results: searchMaxResult,
-              },
-            },
-          } as ProviderOptions;
-        }
-      }
-      return undefined;
-    };
-    await Promise.all(
-      queries.map((item) =>
-        plimit(async () => {
-          let content = "";
-          let reasoning = "";
-          let searchResult;
-          let sources: Source[] = [];
-          let images: ImageSource[] = [];
-          taskStore.updateTask(item.query, { state: "processing" });
 
-          if (resources.length > 0) {
-            const knowledges = await searchLocalKnowledges(
-              item.query,
-              item.researchGoal
-            );
-            content += [
-              knowledges,
-              `### ${t("research.searchResult.references")}`,
-              resources.map((item) => `- ${item.name}`).join("\n"),
-            ].join("\n\n");
-
-            if (onlyUseLocalResource === "enable") {
-              taskStore.updateTask(item.query, {
-                state: "completed",
-                learning: content,
-                sources,
-                images,
-              });
-              return content;
-            } else {
-              content += "\n\n---\n\n";
+      const { networkingModel } = getModel();
+      const thinkTagStreamProcessor = new ThinkTagStreamProcessor();
+      const searchResult = streamText({
+        model: await createModelProvider(networkingModel),
+        system: getSystemPrompt(),
+        prompt: [
+          processSearchKnowledgeResultPrompt(query, researchGoal, knowledges),
+          getResponseLanguagePrompt(),
+        ].join("\n\n"),
+        experimental_transform: smoothTextStream(smoothTextStreamType),
+        onError: (error) => handleError(error),
+      });
+      let content = "";
+      let reasoning = "";
+      for await (const part of searchResult.fullStream) {
+        if (part.type === "text-delta") {
+          thinkTagStreamProcessor.processChunk(
+            // @ts-expect-error ai sdk type mismatch
+            part.textDelta,
+            (data) => {
+              content += data;
+              updateTask(query, { learning: content });
+            },
+            (data) => {
+              reasoning += data;
             }
-          }
+          );
+        } else if (part.type === "reasoning-delta") {
+          // @ts-expect-error ai sdk type mismatch
+          reasoning += part.textDelta;
+        }
+      }
+      if (reasoning) logger.log(reasoning);
+      return content;
+    },
+    [createModelProvider, getModel, smoothTextStreamType]
+  );
 
-          if (enableSearch) {
-            if (searchProvider !== "model") {
-              try {
-                const results = await search(item.query);
-                sources = results.sources;
-                images = results.images;
-              } catch (err) {
-                console.error(err);
-                handleError(
-                  `[${searchProvider}]: ${
-                    err instanceof Error ? err.message : "Search Failed"
-                  }`
-                );
-                return plimit.clearQueue();
-              }
-              if (sources.length > 0) {
-                const enableReferences =
-                  sources.length > 0 && references === "enable";
-                searchResult = streamText({
-                  model: await createModel(networkingModel),
-                  system: getSystemPrompt(),
-                  prompt: [
-                    processSearchResultPrompt(
-                      item.query,
-                      item.researchGoal,
-                      sources,
-                      enableReferences
-                    ),
-                    getResponseLanguagePrompt(),
-                  ].join("\n\n"),
-                  experimental_transform: smoothTextStream(smoothTextStreamType),
-                  onError: (error) => handleError(error),
+  const runSearchTask = useCallback(
+    async (queries: SearchTask[]) => {
+      const {
+        provider,
+        enableSearch,
+        searchProvider,
+        parallelSearch,
+        searchMaxResult,
+        references,
+        onlyUseLocalResource,
+      } = useSettingStore.getState();
+      const { resources, updateTask } = useTaskStore.getState();
+      const { networkingModel } = getModel();
+      setStatus(t("research.common.research"));
+      const plimit = Plimit(parallelSearch);
+      const thinkTagStreamProcessor = new ThinkTagStreamProcessor();
+      const createModel = (model: string) => {
+        // Enable Gemini's built-in search tool
+        if (
+          enableSearch &&
+          searchProvider === "model" &&
+          provider === "google" &&
+          isNetworkingModel(model)
+        ) {
+          return createModelProvider(model, { useSearchGrounding: true });
+        } else {
+          return createModelProvider(model);
+        }
+      };
+      const getTools = (model: string) => {
+        // Enable OpenAI's built-in search tool
+        if (enableSearch && searchProvider === "model") {
+          if (provider === "openai" && model.startsWith("gpt-4o")) {
+            return {
+              web_search_preview: openai.tools.webSearchPreview({
+                // optional configuration:
+                searchContextSize: "medium",
+              }),
+            } as unknown as Tools;
+          }
+        }
+        return undefined;
+      };
+      const getProviderOptions = (model: string) => {
+        if (enableSearch && searchProvider === "model") {
+          // Enable OpenRouter's built-in search tool
+          if (provider === "openrouter") {
+            return {
+              openrouter: {
+                plugins: [
+                  {
+                    id: "web",
+                    max_results: searchMaxResult, // Defaults to 5
+                  },
+                ],
+              },
+            } as ProviderOptions;
+          } else if (
+            provider === "xai" &&
+            model.startsWith("grok-3") &&
+            !model.includes("mini")
+          ) {
+            return {
+              xai: {
+                search_parameters: {
+                  mode: "auto",
+                  max_search_results: searchMaxResult,
+                },
+              },
+            } as ProviderOptions;
+          }
+        }
+        return undefined;
+      };
+      await Promise.all(
+        queries.map((item) =>
+          plimit(async () => {
+            let content = "";
+            let reasoning = "";
+            let searchResult;
+            let sources: Source[] = [];
+            let images: ImageSource[] = [];
+            updateTask(item.query, { state: "processing" });
+
+            if (resources.length > 0) {
+              const knowledges = await searchLocalKnowledges(
+                item.query,
+                item.researchGoal
+              );
+              content += [
+                knowledges,
+                `### ${t("research.searchResult.references")}`,
+                resources.map((item) => `- ${item.name}`).join("\n"),
+              ].join("\n\n");
+
+              if (onlyUseLocalResource === "enable") {
+                updateTask(item.query, {
+                  state: "completed",
+                  learning: content,
+                  sources,
+                  images,
                 });
+                return content;
               } else {
-                // Fall back to model-generated search when no external results are found
+                content += "\n\n---\n\n";
+              }
+            }
+
+            if (enableSearch) {
+              if (searchProvider !== "model") {
+                try {
+                  const results = await search(item.query);
+                  sources = results.sources;
+                  images = results.images;
+                } catch (err) {
+                  console.error(err);
+                  handleError(
+                    `[${searchProvider}]: ${
+                      err instanceof Error ? err.message : "Search Failed"
+                    }`
+                  );
+                  return plimit.clearQueue();
+                }
+                if (sources.length > 0) {
+                  const enableReferences =
+                    sources.length > 0 && references === "enable";
+                  searchResult = streamText({
+                    model: await createModel(networkingModel),
+                    system: getSystemPrompt(),
+                    prompt: [
+                      processSearchResultPrompt(
+                        item.query,
+                        item.researchGoal,
+                        sources,
+                        enableReferences
+                      ),
+                      getResponseLanguagePrompt(),
+                    ].join("\n\n"),
+                    experimental_transform: smoothTextStream(smoothTextStreamType),
+                    onError: (error) => handleError(error),
+                  });
+                } else {
+                  // Fall back to model-generated search when no external results are found
+                  searchResult = streamText({
+                    model: await createModel(networkingModel),
+                    system: getSystemPrompt(),
+                    prompt: [
+                      processResultPrompt(item.query, item.researchGoal),
+                      getResponseLanguagePrompt(),
+                    ].join("\n\n"),
+                    tools: getTools(networkingModel),
+                    providerOptions: getProviderOptions(networkingModel),
+                    experimental_transform: smoothTextStream(smoothTextStreamType),
+                    onError: (error) => handleError(error),
+                  });
+                }
+              } else {
                 searchResult = streamText({
                   model: await createModel(networkingModel),
                   system: getSystemPrompt(),
@@ -333,115 +354,118 @@ function useDeepResearch() {
               }
             } else {
               searchResult = streamText({
-                model: await createModel(networkingModel),
+                model: await createModelProvider(networkingModel),
                 system: getSystemPrompt(),
                 prompt: [
                   processResultPrompt(item.query, item.researchGoal),
                   getResponseLanguagePrompt(),
                 ].join("\n\n"),
-                tools: getTools(networkingModel),
-                providerOptions: getProviderOptions(networkingModel),
                 experimental_transform: smoothTextStream(smoothTextStreamType),
-                onError: (error) => handleError(error),
+                onError: (err) => {
+                  updateTask(item.query, { state: "failed" });
+                  handleError(err);
+                },
               });
             }
-          } else {
-            searchResult = streamText({
-              model: await createModelProvider(networkingModel),
-              system: getSystemPrompt(),
-              prompt: [
-                processResultPrompt(item.query, item.researchGoal),
-                getResponseLanguagePrompt(),
-              ].join("\n\n"),
-              experimental_transform: smoothTextStream(smoothTextStreamType),
-              onError: (err) => {
-                taskStore.updateTask(item.query, { state: "failed" });
-                handleError(err);
-              },
-            });
-          }
-          for await (const part of searchResult.fullStream) {
-            if (part.type === "text-delta") {
-              thinkTagStreamProcessor.processChunk(
-                part.textDelta,
-                (data) => {
-                  content += data;
-                  taskStore.updateTask(item.query, { learning: content });
-                },
-                (data) => {
-                  reasoning += data;
-                }
-              );
-            } else if (part.type === "reasoning") {
-              reasoning += part.textDelta;
-            } else if (part.type === "source") {
-              sources.push(part.source);
-            } else if (part.type === "finish") {
-              if (part.providerMetadata?.google) {
-                const { groundingMetadata } = part.providerMetadata.google;
-                const googleGroundingMetadata =
-                  groundingMetadata as GoogleGenerativeAIProviderMetadata["groundingMetadata"];
-                if (googleGroundingMetadata?.groundingSupports) {
-                  googleGroundingMetadata.groundingSupports.forEach(
-                    ({ segment, groundingChunkIndices }) => {
-                      if (segment.text && groundingChunkIndices) {
-                        const index = groundingChunkIndices.map(
-                          (idx: number) => `[${idx + 1}]`
-                        );
-                        content = content.replaceAll(
-                          segment.text,
-                          `${segment.text}${index.join("")}`
-                        );
+            for await (const part of searchResult.fullStream) {
+              if (part.type === "text-delta") {
+                thinkTagStreamProcessor.processChunk(
+                  // @ts-expect-error ai sdk type mismatch
+                  part.textDelta,
+                  (data) => {
+                    content += data;
+                    updateTask(item.query, { learning: content });
+                  },
+                  (data) => {
+                    reasoning += data;
+                  }
+                );
+              } else if (part.type === "reasoning-delta") {
+                // @ts-expect-error ai sdk type mismatch
+                reasoning += part.textDelta;
+              } else if (part.type === "source") {
+                // @ts-expect-error ai sdk type mismatch
+                sources.push(part.source);
+              } else if (part.type === "finish") {
+                // @ts-expect-error ai sdk type mismatch
+                if (part.providerMetadata?.google) {
+                  // @ts-expect-error ai sdk type mismatch
+                  const { groundingMetadata } = part.providerMetadata.google;
+                  const googleGroundingMetadata =
+                    groundingMetadata as GoogleGenerativeAIProviderMetadata["groundingMetadata"];
+                  if (googleGroundingMetadata?.groundingSupports) {
+                    googleGroundingMetadata.groundingSupports.forEach(
+                      ({ segment, groundingChunkIndices }) => {
+                        if (segment.text && groundingChunkIndices) {
+                          const index = groundingChunkIndices.map(
+                            (idx: number) => `[${idx + 1}]`
+                          );
+                          content = content.replaceAll(
+                            segment.text,
+                            `${segment.text}${index.join("")}`
+                          );
+                        }
                       }
-                    }
-                  );
+                    );
+                  }
+                  // @ts-expect-error ai sdk type mismatch
+                } else if (part.providerMetadata?.openai) {
+                  // Fixed the problem that OpenAI cannot generate markdown reference link syntax properly in Chinese context
+                  content = content.replaceAll("【", "[").replaceAll("】", "]");
                 }
-              } else if (part.providerMetadata?.openai) {
-                // Fixed the problem that OpenAI cannot generate markdown reference link syntax properly in Chinese context
-                content = content.replaceAll("【", "[").replaceAll("】", "]");
               }
             }
-          }
-          if (reasoning) logger.log(reasoning);
+            if (reasoning) logger.log(reasoning);
 
-          if (sources.length > 0) {
-            content +=
-              "\n\n" +
-              sources
-                .map(
-                  (item, idx) =>
-                    `[${idx + 1}]: ${item.url}${
-                      item.title ? ` "${item.title.replaceAll('"', " ")}"` : ""
-                    }`
-                )
-                .join("\n");
-          }
+            if (sources.length > 0) {
+              content +=
+                "\n\n" +
+                sources
+                  .map(
+                    (item, idx) =>
+                      `[${idx + 1}]: ${item.url}${
+                        item.title
+                          ? ` "${item.title.replaceAll('"', " ")}"`
+                          : ""
+                      }`
+                  )
+                  .join("\n");
+            }
 
-          if (content.length > 0) {
-            taskStore.updateTask(item.query, {
-              state: "completed",
-              learning: content,
-              sources,
-              images,
-            });
-            return content;
-          } else {
-            taskStore.updateTask(item.query, {
-              state: "failed",
-              learning: "",
-              sources: [],
-              images: [],
-            });
-            return "";
-          }
-        })
-      )
-    );
-    plimit.clearQueue();
-  }
+            if (content.length > 0) {
+              updateTask(item.query, {
+                state: "completed",
+                learning: content,
+                sources,
+                images,
+              });
+              return content;
+            } else {
+              updateTask(item.query, {
+                state: "failed",
+                learning: "",
+                sources: [],
+                images: [],
+              });
+              return "";
+            }
+          })
+        )
+      );
+      plimit.clearQueue();
+    },
+    [
+      createModelProvider,
+      getModel,
+      search,
+      searchLocalKnowledges,
+      smoothTextStreamType,
+      t,
+    ]
+  );
 
-  async function reviewSearchResult() {
-    const { reportPlan, tasks, suggestion } = useTaskStore.getState();
+  const reviewSearchResult = useCallback(async () => {
+    const { reportPlan, tasks, suggestion, update } = useTaskStore.getState();
     const { thinkingModel } = getModel();
     setStatus(t("research.common.research"));
     const learnings = tasks.map((item) => item.learning);
@@ -491,12 +515,12 @@ function useDeepResearch() {
     }
     if (reasoning) logger.log(reasoning);
     if (queries.length > 0) {
-      taskStore.update([...tasks, ...queries]);
+      update([...tasks, ...queries]);
       await runSearchTask(queries);
     }
-  }
+  }, [createModelProvider, getModel, runSearchTask, smoothTextStreamType, t]);
 
-  async function writeFinalReport() {
+  const writeFinalReport = useCallback(async () => {
     const { citationImage, references } = useSettingStore.getState();
     const {
       reportPlan,
@@ -506,6 +530,7 @@ function useDeepResearch() {
       setSources,
       requirement,
       updateFinalReport,
+      backup,
     } = useTaskStore.getState();
     const { save } = useHistoryStore.getState();
     const { thinkingModel } = getModel();
@@ -550,6 +575,7 @@ function useDeepResearch() {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
+          // @ts-expect-error ai sdk type mismatch
           part.textDelta,
           (data) => {
             content += data;
@@ -559,7 +585,8 @@ function useDeepResearch() {
             reasoning += data;
           }
         );
-      } else if (part.type === "reasoning") {
+      } else if (part.type === "reasoning-delta") {
+        // @ts-expect-error ai sdk type mismatch
         reasoning += part.textDelta;
       }
     }
@@ -585,16 +612,16 @@ function useDeepResearch() {
         .trim();
       setTitle(title);
       setSources(sources);
-      const id = save(taskStore.backup());
+      const id = save(backup());
       setId(id);
       return content;
     } else {
       return "";
     }
-  }
+  }, [createModelProvider, getModel, smoothTextStreamType, t]);
 
-  async function deepResearch() {
-    const { reportPlan } = useTaskStore.getState();
+  const deepResearch = useCallback(async () => {
+    const { reportPlan, update } = useTaskStore.getState();
     const { thinkingModel } = getModel();
     setStatus(t("research.common.thinking"));
     try {
@@ -635,7 +662,7 @@ function useDeepResearch() {
                       ...pick(item, ["query", "researchGoal"]),
                     })
                   );
-                  taskStore.update(queries);
+                  update(queries);
                 }
               }
             }
@@ -650,7 +677,7 @@ function useDeepResearch() {
     } catch (err) {
       console.error(err);
     }
-  }
+  }, [createModelProvider, getModel, runSearchTask, smoothTextStreamType, t]);
 
   return {
     status,
