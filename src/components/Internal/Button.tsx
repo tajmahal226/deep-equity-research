@@ -1,5 +1,5 @@
 "use client";
-import { forwardRef, type ForwardedRef } from "react";
+import React, { forwardRef, type ForwardedRef } from "react";
 import {
   Button as OriginalButton,
   type ButtonProps,
