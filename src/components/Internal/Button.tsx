@@ -1,5 +1,5 @@
 "use client";
-import { forwardRef, type ForwardedRef } from "react";
+import React, { forwardRef, type ForwardedRef } from "react";
 import {
   Button as OriginalButton,
   type ButtonProps,
@@ -23,11 +23,15 @@ function ButtonWithTooltip(
 ) {
   if (props.title) {
     const { side = "top", sideoffset = 0 } = props;
+    const buttonProps = omit(props, ["title"]);
+    if (!buttonProps["aria-label"]) {
+      buttonProps["aria-label"] = props.title;
+    }
     return (
       <TooltipProvider>
         <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
-            <OriginalButton ref={forwardedRef} {...omit(props, ["title"])} />
+            <OriginalButton ref={forwardedRef} {...buttonProps} />
           </TooltipTrigger>
           <TooltipContent
             side={side}
