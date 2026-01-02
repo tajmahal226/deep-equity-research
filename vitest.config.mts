@@ -12,7 +12,11 @@ export default defineConfig({
     // The suite relies on `vi.doMock`, which isn't supported by the default forks pool
     // and crashes the worker with "Channel closed" errors.
     pool: "threads",
-    environment: "jsdom",
+    // Default to a Node environment; opt into jsdom only for React/component tests.
+    environment: "node",
+    environmentMatchGlobs: [
+      ["tests/components/**", "jsdom"],
+    ],
     globals: true,
     setupFiles: ["./tests/setup.ts"],
     exclude: [
