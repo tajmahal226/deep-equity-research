@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, beforeEach, vi } from 'vitest';
+import '@testing-library/jest-dom';
 
 // Setup global test environment
 beforeEach(() => {
