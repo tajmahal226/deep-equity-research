@@ -130,10 +130,23 @@ pnpm lint
 pnpm test
 ```
 
-## Deployment Tips
-- **Vercel**: configure environment variables in project settings. To opt into the experimental React Compiler, set `REACT_COMPILER=true`.
-- **Docker/Standalone**: build with `pnpm build:standalone` and run the resulting image.
-- **Static Hosting**: generate static export with `pnpm build:export`.
+## Deployment
+
+### Recommended: Railway ⭐
+
+**Railway is recommended for this app** because it supports long-running Server-Sent Events (SSE) connections required for AI research operations that can take 3-10 minutes. Vercel's serverless functions timeout at 60 seconds.
+
+👉 **See [RAILWAY.md](./RAILWAY.md) for step-by-step Railway deployment guide**
+
+### Other Platforms
+
+| Platform | SSE Support | Notes |
+|----------|-------------|-------|
+| **Railway** ✅ | Full (15+ min) | **Recommended** for this app |
+| **Vercel** | 60 seconds | Will timeout on deep research |
+| **Render** | Full (15+ min) | Good alternative |
+| **Fly.io** | Full | Good alternative |
+| **Docker/VPS** | Full | Full control |
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions and security model.
 
