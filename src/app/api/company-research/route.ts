@@ -152,52 +152,40 @@ export async function POST(req: NextRequest) {
       
       // AI provider configuration with smart defaults for all providers
       thinkingModelConfig: (() => {
-        logger.log(`[DEBUG] Company Research API: thinkingModelId=${body.thinkingModelId}, thinkingProviderId=${body.thinkingProviderId}`);
-        
         if (body.thinkingModelId && body.thinkingProviderId) {
-          const config = {
+          return {
             modelId: body.thinkingModelId,
             providerId: body.thinkingProviderId,
             apiKey: body.thinkingApiKey,
             reasoningEffort: body.thinkingReasoningEffort,
           };
-          logger.log(`[DEBUG] Company Research API: Using explicit thinking config:`, config);
-          return config;
         } else {
           const defaults = getDefaultModelConfig(body.thinkingProviderId);
-          const config = {
+          return {
             modelId: defaults.thinkingModel,
             providerId: body.thinkingProviderId || "openai",
             apiKey: undefined, // Will use server-side API key
             reasoningEffort: body.thinkingReasoningEffort,
           };
-          logger.log(`[DEBUG] Company Research API: Using default thinking config:`, config);
-          return config;
         }
       })(),
-      
+
       taskModelConfig: (() => {
-        logger.log(`[DEBUG] Company Research API: taskModelId=${body.taskModelId}, taskProviderId=${body.taskProviderId}`);
-        
         if (body.taskModelId && body.taskProviderId) {
-          const config = {
+          return {
             modelId: body.taskModelId,
             providerId: body.taskProviderId,
             apiKey: body.taskApiKey,
             reasoningEffort: body.taskReasoningEffort,
           };
-          logger.log(`[DEBUG] Company Research API: Using explicit task config:`, config);
-          return config;
         } else {
           const defaults = getDefaultModelConfig(body.taskProviderId);
-          const config = {
+          return {
             modelId: defaults.networkingModel,
             providerId: body.taskProviderId || "openai",
             apiKey: undefined, // Will use server-side API key
             reasoningEffort: body.taskReasoningEffort,
           };
-          logger.log(`[DEBUG] Company Research API: Using default task config:`, config);
-          return config;
         }
       })(),
       

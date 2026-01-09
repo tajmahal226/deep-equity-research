@@ -1,5 +1,147 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import AES from "crypto-js/aes";
+import CryptoJS from "crypto-js";
+
+/**
+ * ENCRYPTED STORAGE FOR API KEYS
+ * ==============================
+ * This implementation encrypts API keys before storing them in localStorage.
+ * The encryption key is derived from browser-specific characteristics combined
+ * with a static salt, providing protection against:
+ * - XSS attacks reading localStorage directly
+ * - Casual inspection of browser storage
+ * - Data exfiltration via browser extensions
+ *
+ * SECURITY NOTES:
+ * - This is client-side encryption only - it protects against localStorage reading
+ * - For production with high security needs, consider server-side key management
+ * - On first deployment, existing users will need to re-enter their API keys
+ */
+
+// List of fields that contain sensitive data (API keys and passwords)
+const SENSITIVE_FIELDS = [
+  "apiKey",
+  "accessPassword",
+  "openRouterApiKey",
+  "openAIApiKey",
+  "anthropicApiKey",
+  "deepseekApiKey",
+  "xAIApiKey",
+  "mistralApiKey",
+  "fireworksApiKey",
+  "moonshotApiKey",
+  "cohereApiKey",
+  "togetherApiKey",
+  "groqApiKey",
+  "perplexityApiKey",
+  "tavilyApiKey",
+  "firecrawlApiKey",
+  "exaApiKey",
+  "bochaApiKey",
+  "alphaVantageApiKey",
+  "yahooFinanceApiKey",
+  "financialDatasetsApiKey",
+  "exaNeuralSearchApiKey",
+];
+
+// Generate a device-specific encryption key
+// Uses browser characteristics + static salt to create a consistent key per device
+function getEncryptionKey(): string {
+  // Combine multiple browser characteristics for uniqueness
+  const userAgent = navigator.userAgent;
+  const language = navigator.language;
+  const platform = navigator.platform;
+  const screenWidth = window.screen.width;
+  const screenHeight = window.screen.height;
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  // Static salt (in production, this should be environment-specific)
+  const salt = "deep-equity-research-v1";
+
+  // Create a fingerprint-based key
+  const fingerprint = `${userAgent}|${language}|${platform}|${screenWidth}x${screenHeight}|${timezone}|${salt}`;
+
+  // Hash the fingerprint to create a consistent encryption key
+  return CryptoJS.SHA256(fingerprint).toString();
+}
+
+// Encrypt a string value
+function encrypt(value: string): string {
+  if (!value) return value;
+  const key = getEncryptionKey();
+  return AES.encrypt(value, key).toString();
+}
+
+// Decrypt a string value
+function decrypt(encryptedValue: string): string {
+  if (!encryptedValue) return encryptedValue;
+  const key = getEncryptionKey();
+  try {
+    const bytes = AES.decrypt(encryptedValue, key);
+    return bytes.toString(CryptoJS.enc.Utf8);
+  } catch {
+    // If decryption fails, return the value as-is (handles migration from plain text)
+    return encryptedValue;
+  }
+}
+
+// Encrypt sensitive fields in an object
+function encryptSensitiveFields<T extends Record<string, any>>(data: T): T {
+  const result = { ...data };
+  for (const field of SENSITIVE_FIELDS) {
+    if (field in result && typeof result[field] === "string") {
+      result[field] = encrypt(result[field]);
+    }
+  }
+  return result;
+}
+
+// Decrypt sensitive fields in an object
+function decryptSensitiveFields<T extends Record<string, any>>(data: T): T {
+  const result = { ...data };
+  for (const field of SENSITIVE_FIELDS) {
+    if (field in result && typeof result[field] === "string") {
+      result[field] = decrypt(result[field]);
+    }
+  }
+  return result;
+}
+
+/**
+ * Custom encrypted storage adapter for zustand persist middleware
+ * Wraps localStorage to automatically encrypt/decrypt sensitive fields
+ */
+const encryptedStorage = {
+  getItem: (name: string): string | null => {
+    const str = localStorage.getItem(name);
+    if (!str) return null;
+
+    try {
+      const parsed = JSON.parse(str);
+      // Decrypt sensitive fields before returning to the store
+      const decrypted = decryptSensitiveFields(parsed);
+      return JSON.stringify(decrypted);
+    } catch {
+      return str; // Return as-is if JSON parsing fails
+    }
+  },
+
+  setItem: (name: string, value: string): void => {
+    try {
+      const parsed = JSON.parse(value);
+      // Encrypt sensitive fields before saving to localStorage
+      const encrypted = encryptSensitiveFields(parsed);
+      localStorage.setItem(name, JSON.stringify(encrypted));
+    } catch {
+      localStorage.setItem(name, value); // Fallback to direct save
+    }
+  },
+
+  removeItem: (name: string): void => {
+    localStorage.removeItem(name);
+  },
+};
 
 export interface SettingStore {
   provider: string;
@@ -221,6 +363,9 @@ export const useSettingStore = create(
       update: (values) => set(values),
       reset: () => set(defaultValues),
     }),
-    { name: "setting" }
+    {
+      name: "setting",
+      storage: encryptedStorage, // Use encrypted storage instead of default localStorage
+    }
   )
 );

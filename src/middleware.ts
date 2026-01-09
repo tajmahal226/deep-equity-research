@@ -133,7 +133,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(googleGenerativeAIKey);
+      const apiKey = multiApiKeyPolling(googleGenerativeAIKey, "google");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -177,7 +177,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(fireworksApiKey);
+      const apiKey = multiApiKeyPolling(fireworksApiKey, "fireworks");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -217,7 +217,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(moonshotApiKey);
+      const apiKey = multiApiKeyPolling(moonshotApiKey, "moonshot");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -257,7 +257,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(openRouterApiKey);
+      const apiKey = multiApiKeyPolling(openRouterApiKey, "openrouter");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -297,7 +297,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(openaiApiKey);
+      const apiKey = multiApiKeyPolling(openaiApiKey, "openai");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -333,7 +333,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(anthropicApiKey);
+      const apiKey = multiApiKeyPolling(anthropicApiKey, "anthropic");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -377,7 +377,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(deepSeekApiKey);
+      const apiKey = multiApiKeyPolling(deepSeekApiKey, "deepseek");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -417,7 +417,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(xaiApiKey);
+      const apiKey = multiApiKeyPolling(xaiApiKey, "xai");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -457,7 +457,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(mistralApiKey);
+      const apiKey = multiApiKeyPolling(mistralApiKey, "mistral");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -526,7 +526,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(tavilyApiKey);
+      const apiKey = multiApiKeyPolling(tavilyApiKey, "tavily");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -565,7 +565,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(firecrawlApiKey);
+      const apiKey = multiApiKeyPolling(firecrawlApiKey, "firecrawl");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -604,7 +604,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(exaApiKey);
+      const apiKey = multiApiKeyPolling(exaApiKey, "exa");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
@@ -643,7 +643,7 @@ export async function middleware(request: NextRequest) {
         { status: 403 }
       );
     } else {
-      const apiKey = multiApiKeyPolling(bochaApiKey);
+      const apiKey = multiApiKeyPolling(bochaApiKey, "bocha");
       if (apiKey) {
         const requestHeaders = new Headers(request.headers);
         requestHeaders.set(
