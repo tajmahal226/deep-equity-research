@@ -30,11 +30,17 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Debug and test scripts (keep existing ones for reference)
-# Add new debug/test scripts here to prevent accidental commits
-# test-*.js
-# debug-*.js
-# mock-*.js
+# Debug and test scripts in root (prevent accidental commits)
+test-*.js
+debug-*.js
+mock-*.js
+integration-test.js
+
+# Temporary/empty files
+1-year
+next
+*.tmp
+*.log
 
 # env files (can opt-in for committing if needed)
 .env*
