@@ -90,10 +90,15 @@ export function handleAIProvider(
   }
 
   // Extract and verify authorization
-  const authHeader = request.headers.get(authHeaderType) || "";
+  // Note: For providers with authHeaderType="none" (like Ollama), we still
+  // need to verify the signature from the "authorization" header
+  const authHeaderKey = authHeaderType === "none" ? "authorization" : authHeaderType;
+  const authHeader = request.headers.get(authHeaderKey) || "";
   const signature = stripBearerPrefix && authHeaderType === "authorization"
     ? authHeader.substring(7)
-    : authHeader;
+    : authHeaderType === "none"
+      ? authHeader.substring(7)  // Strip "Bearer " for signature verification
+      : authHeader;
 
   if (!verifySignature(signature, accessPassword, Date.now())) {
     return NextResponse.json({ error: ERRORS.NO_PERMISSIONS }, { status: 403 });
