@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, PersistStorage, StorageValue } from "zustand/middleware";
 import AES from "crypto-js/aes";
 import CryptoJS from "crypto-js";
 
@@ -106,7 +106,7 @@ function decrypt(encryptedValue: string): string {
 
 // Encrypt sensitive fields in an object
 function encryptSensitiveFields<T extends Record<string, any>>(data: T): T {
-  const result = { ...data };
+  const result = { ...data } as any;
   for (const field of SENSITIVE_FIELDS) {
     if (field in result && typeof result[field] === "string") {
       result[field] = encrypt(result[field]);
@@ -117,7 +117,7 @@ function encryptSensitiveFields<T extends Record<string, any>>(data: T): T {
 
 // Decrypt sensitive fields in an object
 function decryptSensitiveFields<T extends Record<string, any>>(data: T): T {
-  const result = { ...data };
+  const result = { ...data } as any;
   for (const field of SENSITIVE_FIELDS) {
     if (field in result && typeof result[field] === "string") {
       result[field] = decrypt(result[field]);
@@ -130,29 +130,28 @@ function decryptSensitiveFields<T extends Record<string, any>>(data: T): T {
  * Custom encrypted storage adapter for zustand persist middleware
  * Wraps localStorage to automatically encrypt/decrypt sensitive fields
  */
-const encryptedStorage = {
-  getItem: (name: string): string | null => {
+const encryptedStorage: PersistStorage<SettingStore & SettingFunction> = {
+  getItem: (name: string): StorageValue<SettingStore & SettingFunction> | null => {
     const str = localStorage.getItem(name);
     if (!str) return null;
 
     try {
-      const parsed = JSON.parse(str);
+      const parsed = JSON.parse(str) as SettingStore & SettingFunction;
       // Decrypt sensitive fields before returning to the store
       const decrypted = decryptSensitiveFields(parsed);
-      return JSON.stringify(decrypted);
+      return { state: decrypted, version: 0 };
     } catch {
-      return str; // Return as-is if JSON parsing fails
+      return null; // Return as-is if JSON parsing fails
     }
   },
 
-  setItem: (name: string, value: string): void => {
+  setItem: (name: string, value: StorageValue<SettingStore & SettingFunction>): void => {
     try {
-      const parsed = JSON.parse(value);
       // Encrypt sensitive fields before saving to localStorage
-      const encrypted = encryptSensitiveFields(parsed);
+      const encrypted = encryptSensitiveFields(value.state as any);
       localStorage.setItem(name, JSON.stringify(encrypted));
     } catch {
-      localStorage.setItem(name, value); // Fallback to direct save
+      localStorage.setItem(name, JSON.stringify(value.state)); // Fallback to direct save
     }
   },
 
