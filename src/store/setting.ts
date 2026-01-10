@@ -4,6 +4,24 @@ import AES from "crypto-js/aes";
 import CryptoJS from "crypto-js";
 
 /**
+ * CACHE CONFIGURATION CONSTANTS
+ * ==============================
+ * Centralized cache TTL values for maintainability
+ */
+export const CACHE_CONFIG = {
+  /** Time-to-live for company research cache (in hours) */
+  TTL_COMPANY_RESEARCH: 24,
+  /** Time-to-live for market research cache (in hours) */
+  TTL_MARKET_RESEARCH: 12,
+  /** Time-to-live for bulk research cache (in hours) */
+  TTL_BULK_RESEARCH: 24,
+  /** Time-to-live for free-form research cache (in hours) */
+  TTL_FREE_FORM: 6,
+  /** Maximum number of cache entries to store */
+  MAX_ENTRIES: 500,
+} as const;
+
+/**
  * ENCRYPTED STORAGE FOR API KEYS
  * ==============================
  * This implementation encrypts API keys before storing them in localStorage.
@@ -346,13 +364,13 @@ export const defaultValues: SettingStore = {
   onlyUseLocalResource: "disable",
   openAIReasoningEffort: "medium",
   temperature: 0.7,
-  // Cache defaults
+  // Cache defaults (using centralized constants)
   cacheEnabled: "enable",
-  cacheTTLCompanyResearch: 24, // 24 hours
-  cacheTTLMarketResearch: 12, // 12 hours
-  cacheTTLBulkResearch: 24, // 24 hours
-  cacheTTLFreeForm: 6, // 6 hours
-  cacheMaxEntries: 500,
+  cacheTTLCompanyResearch: CACHE_CONFIG.TTL_COMPANY_RESEARCH,
+  cacheTTLMarketResearch: CACHE_CONFIG.TTL_MARKET_RESEARCH,
+  cacheTTLBulkResearch: CACHE_CONFIG.TTL_BULK_RESEARCH,
+  cacheTTLFreeForm: CACHE_CONFIG.TTL_FREE_FORM,
+  cacheMaxEntries: CACHE_CONFIG.MAX_ENTRIES,
   cacheAutoCleanup: "enable",
 };
 

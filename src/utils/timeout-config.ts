@@ -101,7 +101,45 @@ export const MODEL_TIMEOUTS: Record<string, TimeoutConfig> = {
     search: 30000,     // 30 seconds
     total: 180000      // 3 minutes total
   },
-  
+
+  // Ollama/local models - Speed varies by hardware
+  'llama3.1:70b': {
+    thinking: 120000,  // 2 minutes (large model on local hardware)
+    task: 90000,       // 1.5 minutes
+    search: 30000,     // 30 seconds
+    total: 300000      // 5 minutes total
+  },
+  'llama3.1:8b': {
+    thinking: 45000,   // 45 seconds (smaller model is faster)
+    task: 30000,       // 30 seconds
+    search: 30000,     // 30 seconds
+    total: 120000      // 2 minutes total
+  },
+  'llama3.1': {
+    thinking: 45000,   // 45 seconds
+    task: 30000,       // 30 seconds
+    search: 30000,     // 30 seconds
+    total: 120000      // 2 minutes total
+  },
+  'llama3': {
+    thinking: 45000,   // 45 seconds
+    task: 30000,       // 30 seconds
+    search: 30000,     // 30 seconds
+    total: 120000      // 2 minutes total
+  },
+  'mistral': {
+    thinking: 45000,   // 45 seconds
+    task: 30000,       // 30 seconds
+    search: 30000,     // 30 seconds
+    total: 120000      // 2 minutes total
+  },
+  'codellama': {
+    thinking: 60000,   // 1 minute (code models can be slower)
+    task: 45000,       // 45 seconds
+    search: 30000,     // 30 seconds
+    total: 180000      // 3 minutes total
+  },
+
   // Default configuration for unknown models
   'default': {
     thinking: 90000,   // 1.5 minutes
@@ -123,6 +161,7 @@ export const PROVIDER_MULTIPLIERS: Record<string, number> = {
   'cohere': 1.0,      // Normal speed
   'together': 1.1,    // 10% slower
   'perplexity': 1.2,  // 20% slower (includes web search)
+  'ollama': 1.5,      // 50% slower (local hardware, varies greatly)
   'default': 1.0
 };
 
