@@ -113,8 +113,8 @@ const PROVIDER_MODEL_DEFAULTS: Record<string, ProviderModelPair> = {
     taskModel: "anthropic/claude-sonnet-4-5",
   },
   openai: {
-    thinkingModel: "gpt-5.2-pro",
-    taskModel: "gpt-5.2",
+    thinkingModel: "gpt-4o",
+    taskModel: "gpt-4o-mini",
   },
   fireworks: {
     thinkingModel: "accounts/fireworks/models/kimi-k2p5",
