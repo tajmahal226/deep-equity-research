@@ -1,4 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
+import { createCustomOpenAIProvider } from "../openai-provider";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createDeepSeek } from "@ai-sdk/deepseek";
@@ -89,11 +90,11 @@ export async function createAIProvider({
   switch (provider) {
     case "openai":
       const normalizedModel = normalizeOpenAIModel(model);
-      const openai = createOpenAI({
+      // Use custom provider to bypass AI SDK 5 model validation for new models like gpt-5.2
+      const openaiProvider = createCustomOpenAIProvider({
         ...commonOptions,
-        compatibility: "strict",
       });
-      return openai(normalizedModel, settings) as unknown as LanguageModel;
+      return openaiProvider(normalizedModel, settings) as unknown as LanguageModel;
 
     case "anthropic":
       const anthropic = createAnthropic(commonOptions);
