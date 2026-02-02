@@ -1,14 +1,10 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { createCustomOpenAIProvider } from "../openai-provider";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createMistral } from "@ai-sdk/mistral";
-// Note: @ai-sdk/xai uses v1 spec which is incompatible with AI SDK 5
-// Using createOpenAI instead since xAI has OpenAI-compatible API
 import { createOllama } from "ollama-ai-provider";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { createXAIProvider } from "../xai-provider";
 import { LanguageModel } from "ai";
 import { normalizeOpenAIModel, usesOpenAIResponsesAPI } from "../openai-models";
 import { normalizeXAIModel, isXAIReasoningModel } from "../xai-models";
@@ -88,81 +84,90 @@ export async function createAIProvider({
   };
 
   switch (provider) {
-    case "openai":
+    case "openai": {
       const normalizedModel = normalizeOpenAIModel(model);
-      // Use custom provider to bypass AI SDK 5 model validation for new models like gpt-5.2
-      const openaiProvider = createCustomOpenAIProvider({
+      // Use compatibility mode to support new models not yet in AI SDK
+      const openai = createOpenAI({
         ...commonOptions,
+        compatibility: "compatible",
       });
-      return openaiProvider(normalizedModel, settings) as unknown as LanguageModel;
+      return openai(normalizedModel, settings) as unknown as LanguageModel;
+    }
 
-    case "anthropic":
+    case "anthropic": {
       const anthropic = createAnthropic(commonOptions);
       return anthropic(model, settings) as unknown as LanguageModel;
+    }
 
-    case "google":
+    case "google": {
       const google = createGoogleGenerativeAI(commonOptions);
       return google(model, settings) as unknown as LanguageModel;
+    }
 
-    case "deepseek":
+    case "deepseek": {
       const deepseek = createDeepSeek(commonOptions);
       return deepseek(model, settings) as unknown as LanguageModel;
+    }
 
-    case "mistral":
+    case "mistral": {
       const mistral = createMistral(commonOptions);
       return mistral(model, settings) as unknown as LanguageModel;
+    }
 
-    case "xai":
-      // xAI uses OpenAI-compatible API, use custom provider to bypass AI SDK 5 validation
+    case "xai": {
+      // xAI uses OpenAI-compatible API
+      // Use compatibility mode to bypass model validation
       const normalizedXAIModel = normalizeXAIModel(model);
-      const xaiProvider = createXAIProvider({
+      const xai = createOpenAI({
         ...commonOptions,
+        compatibility: "compatible",
       });
-      return xaiProvider(normalizedXAIModel, settings) as unknown as LanguageModel;
+      return xai(normalizedXAIModel, settings) as unknown as LanguageModel;
+    }
 
-    case "ollama":
+    case "ollama": {
       const ollama = createOllama({
         baseURL: baseURL || "http://localhost:11434/api",
         headers,
       });
       return ollama(model, settings) as unknown as LanguageModel;
+    }
 
-    case "openrouter":
+    case "openrouter": {
       const openrouter = createOpenRouter({
         ...commonOptions,
-        extraBody: settings, // OpenRouter often takes extra parameters in body
+        extraBody: settings,
       });
       return openrouter(model, settings) as unknown as LanguageModel;
+    }
 
     case "fireworks":
     case "moonshot":
     case "together":
-    case "perplexity":
+    case "perplexity": {
       // These providers use OpenAI-compatible APIs
-      // Use "compatible" mode to skip strict model validation (non-OpenAI model names)
       const openaiCompatible = createOpenAI({
         ...commonOptions,
         compatibility: "compatible",
       });
       return openaiCompatible(model, settings) as unknown as LanguageModel;
+    }
 
-    case "groq":
-      // Groq uses OpenAI-compatible API
-      // Use "compatible" mode to skip strict model validation (non-OpenAI model names)
+    case "groq": {
       const groq = createOpenAI({
         ...commonOptions,
         compatibility: "compatible",
       });
       return groq(model, settings) as unknown as LanguageModel;
+    }
 
-    case "cohere":
-      // Cohere uses OpenAI-compatible API for chat completions
-      // Use "compatible" mode to skip strict model validation (non-OpenAI model names)
+    case "cohere": {
       const cohere = createOpenAI({
         ...commonOptions,
         compatibility: "compatible",
       });
       return cohere(model, settings) as unknown as LanguageModel;
+    }
 
     default:
       throw new Error(`Unsupported provider: ${provider}`);
