@@ -15,10 +15,12 @@ interface OpenAIConfig {
 // Custom OpenAI provider that bypasses AI SDK model validation
 // This allows using new models like gpt-5.2-pro that aren't in the SDK's known model list
 class OpenAILanguageModel {
-  readonly specificationVersion = "v1" as const;
+  readonly specificationVersion = "v2" as const;
   readonly modelId: string;
   readonly provider = "openai";
   readonly defaultObjectGenerationMode = "json";
+  readonly supportsImageUrls = false;
+  readonly supportsStructuredOutputs = true;
 
   private config: OpenAIConfig;
 

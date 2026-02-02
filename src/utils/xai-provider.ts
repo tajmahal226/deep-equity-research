@@ -13,10 +13,12 @@ interface XAIConfig {
 // xAI provider that implements LanguageModelV1 interface directly
 // This bypasses AI SDK 5 validation issues with the official @ai-sdk/xai package
 class XAILanguageModel {
-  readonly specificationVersion = "v1" as const;
+  readonly specificationVersion = "v2" as const;
   readonly modelId: string;
   readonly provider = "xai";
   readonly defaultObjectGenerationMode = "json";
+  readonly supportsImageUrls = false;
+  readonly supportsStructuredOutputs = true;
 
   private config: XAIConfig;
 
