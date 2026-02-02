@@ -8,6 +8,7 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { LanguageModel } from "ai";
 import { normalizeOpenAIModel, usesOpenAIResponsesAPI } from "../openai-models";
 import { normalizeXAIModel, isXAIReasoningModel } from "../xai-models";
+import { createOpenAIResponsesProvider, requiresResponsesAPI } from "../openai-responses-provider";
 
 export interface AIProviderOptions {
   provider: string;
@@ -86,7 +87,16 @@ export async function createAIProvider({
   switch (provider) {
     case "openai": {
       const normalizedModel = normalizeOpenAIModel(model);
-      // Use compatibility mode to support new models not yet in AI SDK
+      
+      // Use Responses API for models that require it (GPT-5.2, o1, o3, etc.)
+      if (requiresResponsesAPI(normalizedModel)) {
+        const responsesProvider = createOpenAIResponsesProvider({
+          ...commonOptions,
+        });
+        return responsesProvider(normalizedModel, settings) as unknown as LanguageModel;
+      }
+      
+      // Use standard Chat Completions API for other models
       const openai = createOpenAI({
         ...commonOptions,
         compatibility: "compatible",
