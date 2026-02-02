@@ -6,19 +6,15 @@ import {
 } from "@/utils/openai-models";
 
 describe("normalizeOpenAIModel", () => {
-  it("maps hypothetical GPT-5.2 variants to supported models", () => {
-    expect(normalizeOpenAIModel("gpt-5.2-pro")).toBe("o1");
-    expect(normalizeOpenAIModel("gpt-5.2-pro-reasoning")).toBe("o1");
-    expect(normalizeOpenAIModel("gpt-5.2-pro-chat")).toBe("gpt-4o");
-    expect(normalizeOpenAIModel("gpt-5.2-turbo")).toBe("gpt-4o");
-    expect(normalizeOpenAIModel("gpt-5.2-turbo-reasoning")).toBe("o1-mini");
+  it("preserves legitimate 2026 models without mapping them to old versions", () => {
+    expect(normalizeOpenAIModel("gpt-5.2-pro")).toBe("gpt-5.2-pro");
+    expect(normalizeOpenAIModel("gpt-5.2-pro-reasoning")).toBe("gpt-5.2-pro-reasoning");
+    expect(normalizeOpenAIModel("gpt-5")).toBe("gpt-5");
   });
 
-  it("maps GPT-5 placeholders to the closest available chat models", () => {
-    expect(normalizeOpenAIModel("gpt-5")).toBe("o1");
-    expect(normalizeOpenAIModel("gpt-5-turbo")).toBe("gpt-4o");
-    expect(normalizeOpenAIModel("gpt-5-32k")).toBe("gpt-4o");
-    expect(normalizeOpenAIModel("gpt-5-chat-latest")).toBe("gpt-4o");
+  it("maps semantic aliases to their concrete models", () => {
+    expect(normalizeOpenAIModel("gpt-latest")).toBe("gpt-5.2");
+    expect(normalizeOpenAIModel("gpt-reasoning")).toBe("o3-mini");
   });
 
   it("returns the original model when no mapping exists", () => {
@@ -37,7 +33,7 @@ describe("usesOpenAIResponsesAPI", () => {
 
   it("treats chat-first models as chat/completions", () => {
     expect(usesOpenAIResponsesAPI("gpt-4o")).toBe(false);
-    expect(usesOpenAIResponsesAPI("gpt-5.2-pro-chat")).toBe(false);
+    expect(usesOpenAIResponsesAPI("gpt-4-turbo")).toBe(false);
   });
 });
 
@@ -49,7 +45,7 @@ describe("normalizeOpenAISlugForModel", () => {
       "completions",
     ], "gpt-5.2-pro");
 
-    expect(result.model).toBe("o1");
+    expect(result.model).toBe("gpt-5.2-pro");
     expect(result.slug).toEqual(["v1", "responses"]);
   });
 
@@ -58,7 +54,7 @@ describe("normalizeOpenAISlugForModel", () => {
       "v1",
       "chat",
       "completions",
-    ], "gpt-5.2-pro-chat");
+    ], "gpt-4o");
 
     expect(result.model).toBe("gpt-4o");
     expect(result.slug).toEqual(["v1", "chat", "completions"]);

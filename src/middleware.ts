@@ -32,6 +32,10 @@ const getEnvConfig = () => ({
   fireworksApiKey: process.env.FIREWORKS_API_KEY || "",
   moonshotApiKey: process.env.MOONSHOT_API_KEY || "",
   mistralApiKey: process.env.MISTRAL_API_KEY || "",
+  cohereApiKey: process.env.COHERE_API_KEY || "",
+  togetherApiKey: process.env.TOGETHER_API_KEY || "",
+  groqApiKey: process.env.GROQ_API_KEY || "",
+  perplexityApiKey: process.env.PERPLEXITY_API_KEY || "",
   tavilyApiKey: process.env.TAVILY_API_KEY || "",
   firecrawlApiKey: process.env.FIRECRAWL_API_KEY || "",
   exaApiKey: process.env.EXA_API_KEY || "",
@@ -53,6 +57,7 @@ export async function middleware(request: NextRequest) {
     accessPassword,
     anthropicApiKey,
     bochaApiKey,
+    cohereApiKey,
     deepSeekApiKey,
     disabledAIProvider,
     disabledSearchProvider,
@@ -60,12 +65,15 @@ export async function middleware(request: NextRequest) {
     firecrawlApiKey,
     googleGenerativeAIKey,
     fireworksApiKey,
+    groqApiKey,
     moonshotApiKey,
     mistralApiKey,
     modelList,
     openRouterApiKey,
     openaiApiKey,
+    perplexityApiKey,
     tavilyApiKey,
+    togetherApiKey,
     xaiApiKey,
   } = getEnvConfig();
 
@@ -238,6 +246,50 @@ export async function middleware(request: NextRequest) {
     return handler(request, accessPassword, disabledAIProviders);
   }
 
+  // Cohere
+  if (pathname.startsWith("/api/ai/cohere")) {
+    const handler = createAIProviderHandler(
+      "cohere",
+      () => cohereApiKey,
+      () => requestBody,
+      () => hasDisabledAIModel(requestBody)
+    );
+    return handler(request, accessPassword, disabledAIProviders);
+  }
+
+  // Together AI
+  if (pathname.startsWith("/api/ai/together")) {
+    const handler = createAIProviderHandler(
+      "together",
+      () => togetherApiKey,
+      () => requestBody,
+      () => hasDisabledAIModel(requestBody)
+    );
+    return handler(request, accessPassword, disabledAIProviders);
+  }
+
+  // Groq
+  if (pathname.startsWith("/api/ai/groq")) {
+    const handler = createAIProviderHandler(
+      "groq",
+      () => groqApiKey,
+      () => requestBody,
+      () => hasDisabledAIModel(requestBody)
+    );
+    return handler(request, accessPassword, disabledAIProviders);
+  }
+
+  // Perplexity
+  if (pathname.startsWith("/api/ai/perplexity")) {
+    const handler = createAIProviderHandler(
+      "perplexity",
+      () => perplexityApiKey,
+      () => requestBody,
+      () => hasDisabledAIModel(requestBody)
+    );
+    return handler(request, accessPassword, disabledAIProviders);
+  }
+
   // ============================================================
   // SEARCH PROVIDER ROUTES
   // ============================================================
@@ -351,7 +403,5 @@ export async function middleware(request: NextRequest) {
   }
 
   // Default: pass through
-  return NextResponse.next({
-    request: clonedRequest,
-  });
+  return NextResponse.next();
 }

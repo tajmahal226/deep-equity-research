@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import toast from "react-hot-toast";
 import {
   LoaderCircle,
   SquarePlus,
@@ -67,10 +68,20 @@ function Topic() {
   });
 
   function handleCheck(): boolean {
-    const { mode } = useSettingStore.getState();
+    const { mode, provider } = useSettingStore.getState();
+    
+    // Check if provider is configured
+    if (!provider) {
+      toast.error(t("errors.noProviderConfigured", "Please configure an AI provider in Settings first. Click the ⚙️ icon in the top right."));
+      const { setOpenSetting } = useGlobalStore.getState();
+      setOpenSetting(true);
+      return false;
+    }
+    
     if ((mode === "local" && hasApiKey()) || mode === "proxy") {
       return true;
     } else {
+      toast.error(t("errors.noApiKeyConfigured", "Please add your API key in Settings. The app requires you to bring your own API key."));
       const { setOpenSetting } = useGlobalStore.getState();
       setOpenSetting(true);
       return false;

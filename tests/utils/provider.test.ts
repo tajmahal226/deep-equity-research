@@ -66,8 +66,8 @@ describe("resolveProviderModels", () => {
     });
 
     expect(resolveProviderModels(store, "openrouter")).toEqual({
-      thinkingModel: "anthropic/claude-3.5-sonnet",
-      taskModel: "anthropic/claude-3.5-sonnet",
+      thinkingModel: "anthropic/claude-opus-4-5",
+      taskModel: "anthropic/claude-sonnet-4-5",
     });
   });
 

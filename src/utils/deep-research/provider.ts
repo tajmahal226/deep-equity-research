@@ -3,11 +3,14 @@ import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createDeepSeek } from "@ai-sdk/deepseek";
 import { createMistral } from "@ai-sdk/mistral";
-import { createXai } from "@ai-sdk/xai";
+// Note: @ai-sdk/xai uses v1 spec which is incompatible with AI SDK 5
+// Using createOpenAI instead since xAI has OpenAI-compatible API
 import { createOllama } from "ollama-ai-provider";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createXAIProvider } from "../xai-provider";
 import { LanguageModel } from "ai";
 import { normalizeOpenAIModel, usesOpenAIResponsesAPI } from "../openai-models";
+import { normalizeXAIModel, isXAIReasoningModel } from "../xai-models";
 
 export interface AIProviderOptions {
   provider: string;
@@ -45,6 +48,16 @@ export function filterModelSettings(
         filteredSettings.temperature > 1
       ) {
         filteredSettings.temperature = 1;
+      }
+      break;
+    }
+    case "xai": {
+      // Reasoning models may not support temperature
+      if (
+        isXAIReasoningModel(model) &&
+        "temperature" in filteredSettings
+      ) {
+        delete filteredSettings.temperature;
       }
       break;
     }
@@ -99,8 +112,12 @@ export async function createAIProvider({
       return mistral(model, settings) as unknown as LanguageModel;
 
     case "xai":
-      const xai = createXai(commonOptions);
-      return xai(model, settings) as unknown as LanguageModel;
+      // xAI uses OpenAI-compatible API, use custom provider to bypass AI SDK 5 validation
+      const normalizedXAIModel = normalizeXAIModel(model);
+      const xaiProvider = createXAIProvider({
+        ...commonOptions,
+      });
+      return xaiProvider(normalizedXAIModel, settings) as unknown as LanguageModel;
 
     case "ollama":
       const ollama = createOllama({
@@ -118,11 +135,33 @@ export async function createAIProvider({
 
     case "fireworks":
     case "moonshot":
-      const fireworksCompatible = createOpenAI({
+    case "together":
+    case "perplexity":
+      // These providers use OpenAI-compatible APIs
+      // Use "compatible" mode to skip strict model validation (non-OpenAI model names)
+      const openaiCompatible = createOpenAI({
         ...commonOptions,
-        compatibility: "strict",
+        compatibility: "compatible",
       });
-      return fireworksCompatible(model, settings) as unknown as LanguageModel;
+      return openaiCompatible(model, settings) as unknown as LanguageModel;
+
+    case "groq":
+      // Groq uses OpenAI-compatible API
+      // Use "compatible" mode to skip strict model validation (non-OpenAI model names)
+      const groq = createOpenAI({
+        ...commonOptions,
+        compatibility: "compatible",
+      });
+      return groq(model, settings) as unknown as LanguageModel;
+
+    case "cohere":
+      // Cohere uses OpenAI-compatible API for chat completions
+      // Use "compatible" mode to skip strict model validation (non-OpenAI model names)
+      const cohere = createOpenAI({
+        ...commonOptions,
+        compatibility: "compatible",
+      });
+      return cohere(model, settings) as unknown as LanguageModel;
 
     default:
       throw new Error(`Unsupported provider: ${provider}`);

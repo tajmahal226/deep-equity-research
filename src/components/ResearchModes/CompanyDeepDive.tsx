@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import dynamic from "next/dynamic";
+import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +27,7 @@ import { downloadFile } from "@/utils/file";
 import { logger } from "@/utils/logger";
 import { useSettingStore } from "@/store/setting";
 import { useTaskStore } from "@/store/task";
+import { useGlobalStore } from "@/store/global";
 import { getProviderStateKey, getProviderApiKey, resolveActiveProvider } from "@/utils/provider";
 import { useResearchCache } from "@/hooks/useResearchCache";
 
@@ -126,7 +128,26 @@ export default function CompanyDeepDive() {
   };
 
   const handleSearch = async (forceRefresh = false) => {
-    if (!companyName.trim()) return;
+    if (!companyName.trim()) {
+      toast.error(t("errors.companyNameRequired", "Please enter a company name"));
+      return;
+    }
+
+    // Check if provider is configured
+    const currentProvider = resolveActiveProvider(settingStore);
+    if (!currentProvider) {
+      toast.error(t("errors.noProviderConfigured", "Please configure an AI provider in Settings first. Click the ⚙️ icon in the top right."));
+      useGlobalStore.getState().setOpenSetting(true);
+      return;
+    }
+
+    // Check if API key is configured
+    const apiKey = getProviderApiKey(settingStore, currentProvider);
+    if (!apiKey) {
+      toast.error(t("errors.noApiKeyConfigured", "Please add your API key in Settings. The app requires you to bring your own API key."));
+      useGlobalStore.getState().setOpenSetting(true);
+      return;
+    }
 
     // Abort any existing request
     if (abortController) {
@@ -138,7 +159,6 @@ export default function CompanyDeepDive() {
 
     try {
       // Get current AI provider and model settings from user configuration
-      const currentProvider = resolveActiveProvider(settingStore);
       const providerKey = getProviderStateKey(currentProvider);
       const thinkingModel = settingStore[
         `${providerKey}ThinkingModel` as keyof typeof settingStore

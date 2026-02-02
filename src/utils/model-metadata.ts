@@ -44,6 +44,11 @@ export const MODEL_RELEASE_DATES: Record<string, Record<string, string>> = {
   },
   
   anthropic: {
+    // Claude 4.5 Series (2025)
+    'claude-opus-4-5-20251101': '2025-11',
+    'claude-sonnet-4-5-20251101': '2025-11',
+    'claude-opus-4.5': '2025-11',
+    'claude-sonnet-4.5': '2025-11',
     // Claude 4.x Series (2025)
     'claude-opus-4-1-20250805': '2025-08',
     'claude-sonnet-4-0-20250805': '2025-08',
@@ -62,9 +67,11 @@ export const MODEL_RELEASE_DATES: Record<string, Record<string, string>> = {
 
   google: {
     // Gemini 3 Series (2025)
+    'gemini-3-pro-preview': '2025-11',
+    'gemini-3-flash-preview': '2025-11',
     'gemini-3-pro': '2025-11',
-    'gemini-3-pro-vision': '2025-11',
     'gemini-3-flash': '2025-11',
+    'gemini-3-pro-vision': '2025-11',
     'gemini-3-flash-vision': '2025-11',
     'gemini-3-flash-thinking': '2025-11',
     // Gemini 2.5 Series (2025)

@@ -7,6 +7,7 @@ import { useGlobalStore } from "@/store/global";
 import { useSettingStore } from "@/store/setting";
 
 const Header = dynamic(() => import("@/components/Internal/Header"));
+const OnboardingBanner = dynamic(() => import("@/components/Internal/OnboardingBanner"), { ssr: false });
 const Setting = dynamic(() => import("@/components/Setting"));
 const ResearchTabs = dynamic(() => import("@/components/Internal/ResearchTabs"));
 const FreeFormResearch = dynamic(() => import("@/components/ResearchModes/FreeFormResearch"));
@@ -41,6 +42,7 @@ function Home() {
   return (
     <div className="max-lg:max-w-screen-md max-w-screen-lg mx-auto px-4">
       <Header />
+      <OnboardingBanner />
       <main>
         <ResearchTabs defaultTab="free-form">
           {{

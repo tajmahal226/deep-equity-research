@@ -20,8 +20,8 @@ describe('Setting Store', () => {
     const store = useSettingStore.getState();
 
     expect(store.provider).toBe('');
-    expect(store.openAIThinkingModel).toBe('gpt-4o');
-    expect(store.anthropicThinkingModel).toBe('claude-3-5-sonnet-20241022');
+    expect(store.openAIThinkingModel).toBe('gpt-5.2-pro');
+    expect(store.anthropicThinkingModel).toBe('claude-opus-4-5');
     expect(store.deepseekThinkingModel).toBe('deepseek-reasoner');
     expect(store.temperature).toBe(0.7);
     expect(store.cacheEnabled).toBe('enable');
@@ -174,7 +174,7 @@ describe('Setting Store', () => {
     const { useSettingStore } = await import('../../src/store/setting');
 
     const providers = [
-      { key: 'openai', thinkingModel: 'gpt-4o', networkingModel: 'gpt-4o-mini' },
+      { key: 'openai', thinkingModel: 'gpt-5.2-pro', networkingModel: 'gpt-5.2' },
       { key: 'anthropic', thinkingModel: 'claude-3-5-sonnet-20241022', networkingModel: 'claude-3-5-haiku-20241022' },
       { key: 'deepseek', thinkingModel: 'deepseek-reasoner', networkingModel: 'deepseek-chat' },
       { key: 'xAI', thinkingModel: 'grok-2-1212', networkingModel: 'grok-2-mini-1212' },

@@ -89,40 +89,60 @@ type ProviderModelPair = {
 
 const PROVIDER_MODEL_DEFAULTS: Record<string, ProviderModelPair> = {
   anthropic: {
-    thinkingModel: "claude-3-5-sonnet-20241022",
-    taskModel: "claude-3-5-haiku-20241022",
+    thinkingModel: "claude-opus-4-5",
+    taskModel: "claude-sonnet-4-5",
   },
   deepseek: {
     thinkingModel: "deepseek-reasoner",
     taskModel: "deepseek-chat",
   },
   mistral: {
-    thinkingModel: "mistral-large-latest",
-    taskModel: "mistral-medium-latest",
+    thinkingModel: "mistral-large-2512",
+    taskModel: "mistral-medium-2508",
   },
   xai: {
-    thinkingModel: "grok-2-1212",
-    taskModel: "grok-2-mini-1212",
+    thinkingModel: "grok-4",
+    taskModel: "grok-4-1-fast-non-reasoning",
   },
   google: {
-    thinkingModel: "gemini-2.5-flash-thinking",
-    taskModel: "gemini-2.5-pro",
+    thinkingModel: "gemini-3-pro-preview",
+    taskModel: "gemini-3-flash-preview",
   },
   openrouter: {
-    thinkingModel: "anthropic/claude-3.5-sonnet",
-    taskModel: "anthropic/claude-3.5-sonnet",
+    thinkingModel: "anthropic/claude-opus-4-5",
+    taskModel: "anthropic/claude-sonnet-4-5",
   },
   openai: {
-    thinkingModel: "gpt-4o",
-    taskModel: "gpt-4o-mini",
+    thinkingModel: "gpt-5.2-pro",
+    taskModel: "gpt-5.2",
   },
   fireworks: {
-    thinkingModel: "accounts/fireworks/models/firefunction-v2",
-    taskModel: "accounts/fireworks/models/firefunction-v2",
+    thinkingModel: "accounts/fireworks/models/kimi-k2p5",
+    taskModel: "accounts/fireworks/models/llama4-maverick-instruct-basic",
   },
   moonshot: {
-    thinkingModel: "moonshot-v1-32k",
-    taskModel: "moonshot-v1-8k",
+    thinkingModel: "kimi-k2.5",
+    taskModel: "kimi-k2.5",
+  },
+  cohere: {
+    thinkingModel: "command-r-plus",
+    taskModel: "command-r",
+  },
+  together: {
+    thinkingModel: "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+    taskModel: "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+  },
+  groq: {
+    thinkingModel: "llama-4-maverick",
+    taskModel: "llama-4-scout",
+  },
+  perplexity: {
+    thinkingModel: "sonar-reasoning-pro",
+    taskModel: "sonar",
+  },
+  ollama: {
+    thinkingModel: "llama4:maverick",
+    taskModel: "llama4:scout",
   },
 };
 

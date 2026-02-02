@@ -174,7 +174,7 @@ export class CompanyDeepResearch {
         const serverApiKey = getAIProviderApiKeyWithFallback(thinkingProvider);
         const apiKey = clientApiKey || serverApiKey;
         if (!apiKey && thinkingProvider !== "ollama") {
-          const envVarNames = getAIProviderEnvVarNames(thinkingProvider);
+          const envVarNames = getAIProviderEnvVarNames(thinkingProvider) || [];
           const envVarList = envVarNames.length > 0 ? envVarNames.join(" or ") : `${thinkingProvider.toUpperCase()}_API_KEY`;
           const envVarLabel = envVarNames.length > 1 ? "environment variables" : "environment variable";
           throw new Error(
@@ -199,7 +199,7 @@ export class CompanyDeepResearch {
         const serverApiKey = getAIProviderApiKeyWithFallback(taskProvider);
         const apiKey = clientApiKey || serverApiKey;
         if (!apiKey && taskProvider !== "ollama") {
-          const envVarNames = getAIProviderEnvVarNames(taskProvider);
+          const envVarNames = getAIProviderEnvVarNames(taskProvider) || [];
           const envVarList = envVarNames.length > 0 ? envVarNames.join(" or ") : `${taskProvider.toUpperCase()}_API_KEY`;
           const envVarLabel = envVarNames.length > 1 ? "environment variables" : "environment variable";
           throw new Error(

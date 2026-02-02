@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Enable corepack for pnpm
 RUN corepack enable
@@ -24,7 +24,7 @@ ENV NODE_ENV production
 RUN pnpm run build:standalone
 
 # Production stage
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 
 # Set working directory
 WORKDIR /app
