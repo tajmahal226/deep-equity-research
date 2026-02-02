@@ -73,7 +73,6 @@ function useDeepResearch() {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          // @ts-expect-error ai sdk type mismatch
           part.textDelta,
           (data) => {
             content += data;
@@ -83,9 +82,8 @@ function useDeepResearch() {
             reasoning += data;
           }
         );
-      } else if (part.type === "reasoning-delta") {
-        // @ts-expect-error ai sdk type mismatch
-        reasoning += part.textDelta;
+      } else if ((part as any).type === "reasoning-delta") {
+        reasoning += (part as any).textDelta;
       }
     }
     if (reasoning) logger.log(reasoning);
@@ -110,7 +108,6 @@ function useDeepResearch() {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          // @ts-expect-error ai sdk type mismatch
           part.textDelta,
           (data) => {
             content += data;
@@ -120,9 +117,8 @@ function useDeepResearch() {
             reasoning += data;
           }
         );
-      } else if (part.type === "reasoning-delta") {
-        // @ts-expect-error ai sdk type mismatch
-        reasoning += part.textDelta;
+      } else if ((part as any).type === "reasoning-delta") {
+        reasoning += (part as any).textDelta;
       }
     }
     if (reasoning) logger.log(reasoning);
@@ -161,7 +157,7 @@ function useDeepResearch() {
       for await (const part of searchResult.fullStream) {
         if (part.type === "text-delta") {
           thinkTagStreamProcessor.processChunk(
-            // @ts-expect-error ai sdk type mismatch
+            
             part.textDelta,
             (data) => {
               content += data;
@@ -171,9 +167,9 @@ function useDeepResearch() {
               reasoning += data;
             }
           );
-        } else if (part.type === "reasoning-delta") {
-          // @ts-expect-error ai sdk type mismatch
-          reasoning += part.textDelta;
+        } else if ((part as any).type === "reasoning-delta") {
+          
+          reasoning += (part as any).textDelta;
         }
       }
       if (reasoning) logger.log(reasoning);
@@ -370,7 +366,7 @@ function useDeepResearch() {
             for await (const part of searchResult.fullStream) {
               if (part.type === "text-delta") {
                 thinkTagStreamProcessor.processChunk(
-                  // @ts-expect-error ai sdk type mismatch
+                  
                   part.textDelta,
                   (data) => {
                     content += data;
@@ -380,16 +376,16 @@ function useDeepResearch() {
                     reasoning += data;
                   }
                 );
-              } else if (part.type === "reasoning-delta") {
-                // @ts-expect-error ai sdk type mismatch
-                reasoning += part.textDelta;
+              } else if ((part as any).type === "reasoning-delta") {
+                
+                reasoning += (part as any).textDelta;
               } else if (part.type === "source") {
-                // @ts-expect-error ai sdk type mismatch
+                
                 sources.push(part.source);
               } else if (part.type === "finish") {
-                // @ts-expect-error ai sdk type mismatch
+                
                 if (part.providerMetadata?.google) {
-                  // @ts-expect-error ai sdk type mismatch
+                  
                   const { groundingMetadata } = part.providerMetadata.google;
                   const googleGroundingMetadata =
                     groundingMetadata as GoogleGenerativeAIProviderMetadata["groundingMetadata"];
@@ -408,7 +404,7 @@ function useDeepResearch() {
                       }
                     );
                   }
-                  // @ts-expect-error ai sdk type mismatch
+                  
                 } else if (part.providerMetadata?.openai) {
                   // Fixed the problem that OpenAI cannot generate markdown reference link syntax properly in Chinese context
                   content = content.replaceAll("【", "[").replaceAll("】", "]");
@@ -575,7 +571,7 @@ function useDeepResearch() {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          // @ts-expect-error ai sdk type mismatch
+          
           part.textDelta,
           (data) => {
             content += data;
@@ -585,9 +581,9 @@ function useDeepResearch() {
             reasoning += data;
           }
         );
-      } else if (part.type === "reasoning-delta") {
-        // @ts-expect-error ai sdk type mismatch
-        reasoning += part.textDelta;
+      } else if ((part as any).type === "reasoning-delta") {
+        
+        reasoning += (part as any).textDelta;
       }
     }
     if (reasoning) logger.log(reasoning);

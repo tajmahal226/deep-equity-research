@@ -304,7 +304,7 @@ class DeepResearch {
             processResultPrompt(item.query, item.researchGoal),
             this.getResponseLanguagePrompt(),
           ].join("\n\n"),
-          // @ts-expect-error ai sdk type mismatch
+          
           tools: await getTools(),
           providerOptions: getProviderOptions(),
         });
