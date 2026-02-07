@@ -6,7 +6,11 @@ type RouteParams = {
     slug?: string[];
 };
 
-export function createProxyHandler(apiBaseUrl: string) {
+export type ProxyOptions = {
+    headers?: (req: NextRequest) => Record<string, string>;
+};
+
+export function createProxyHandler(apiBaseUrl: string, options: ProxyOptions = {}) {
     return async function handler(
         req: NextRequest,
         context: { params: Promise<RouteParams> }
@@ -32,11 +36,14 @@ export function createProxyHandler(apiBaseUrl: string) {
                 req.nextUrl.searchParams
             );
 
+            const customHeaders = options.headers ? options.headers(req) : {};
+
             const payload: RequestInit = {
                 method: req.method,
                 headers: {
                     "Content-Type": req.headers.get("Content-Type") || "application/json",
                     Authorization: req.headers.get("Authorization") || "",
+                    ...customHeaders,
                 },
             };
 

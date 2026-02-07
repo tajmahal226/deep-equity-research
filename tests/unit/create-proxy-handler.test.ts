@@ -53,4 +53,28 @@ describe("createProxyHandler", () => {
         });
         expect(callArgs[1].body).toBe(JSON.stringify({ model: "test" }));
     });
+
+
+    it("proxies with custom headers", async () => {
+        const handler = createProxyHandler("https://api.example.com", {
+            headers: (req) => ({
+                "x-custom-key": req.headers.get("x-header") || "fallback",
+            }),
+        });
+        const req = new NextRequest("http://localhost/api/ai/test/v1/models", {
+            headers: { "x-header": "custom-value" },
+        });
+        const context = { params: Promise.resolve({ slug: ["v1", "models"] }) };
+        (global.fetch as any).mockResolvedValue(new Response("{}", { status: 200 }));
+
+        await handler(req, context);
+
+        const callArgs = (global.fetch as any).mock.calls[0];
+        expect(callArgs[0]).toBe("https://api.example.com/v1/models");
+        expect(callArgs[1].headers).toEqual({
+            "Content-Type": "application/json",
+            "Authorization": "",
+            "x-custom-key": "custom-value",
+        });
+    });
 });
