@@ -9,6 +9,7 @@ import { LanguageModel } from "ai";
 import { normalizeOpenAIModel, usesOpenAIResponsesAPI } from "../openai-models";
 import { normalizeXAIModel, isXAIReasoningModel } from "../xai-models";
 import { createOpenAIResponsesProvider, requiresResponsesAPI } from "../openai-responses-provider";
+import { createXAIProvider } from "../xai-provider";
 
 export interface AIProviderOptions {
   provider: string;
@@ -87,7 +88,7 @@ export async function createAIProvider({
   switch (provider) {
     case "openai": {
       const normalizedModel = normalizeOpenAIModel(model);
-      
+
       // Use Responses API for models that require it (GPT-5.2, o1, o3, etc.)
       if (requiresResponsesAPI(normalizedModel)) {
         const responsesProvider = createOpenAIResponsesProvider({
@@ -95,7 +96,7 @@ export async function createAIProvider({
         });
         return responsesProvider(normalizedModel, settings) as unknown as LanguageModel;
       }
-      
+
       // Use standard Chat Completions API for other models
       const openai = createOpenAI({
         ...commonOptions,
@@ -125,12 +126,10 @@ export async function createAIProvider({
     }
 
     case "xai": {
-      // xAI uses OpenAI-compatible API
-      // Use compatibility mode to bypass model validation
+      // Use custom provider to bypass SDK validation
       const normalizedXAIModel = normalizeXAIModel(model);
-      const xai = createOpenAI({
+      const xai = createXAIProvider({
         ...commonOptions,
-        compatibility: "compatible",
       });
       return xai(normalizedXAIModel, settings) as unknown as LanguageModel;
     }

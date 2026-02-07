@@ -1,4 +1,5 @@
-import { proxyHandler } from "./proxy-handler";
+import { MOONSHOT_BASE_URL } from "@/constants/urls";
+import { createProxyHandler } from "../../create-proxy-handler";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -12,4 +13,8 @@ export const preferredRegion = [
   "kix1",
 ];
 
-export { proxyHandler as GET, proxyHandler as POST, proxyHandler as PUT, proxyHandler as DELETE };
+const API_PROXY_BASE_URL = process.env.MOONSHOT_API_BASE_URL || MOONSHOT_BASE_URL;
+
+const handler = createProxyHandler(API_PROXY_BASE_URL);
+
+export { handler as GET, handler as POST, handler as PUT, handler as DELETE };

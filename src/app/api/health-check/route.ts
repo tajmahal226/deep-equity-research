@@ -248,10 +248,12 @@ export async function GET() {
       provider => provider.status === "healthy"
     ).length;
 
-    const configuredTotal = configuredProviders.length || 1; // avoid divide-by-zero
+    const configuredTotal = configuredProviders.length;
 
     let overallStatus: "healthy" | "degraded" | "unhealthy";
-    if (healthyCount >= configuredTotal * 0.7) {
+    if (configuredTotal === 0) {
+      overallStatus = "degraded";
+    } else if (healthyCount >= configuredTotal * 0.7) {
       overallStatus = "healthy";
     } else if (healthyCount >= configuredTotal * 0.3) {
       overallStatus = "degraded";

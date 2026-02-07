@@ -1,0 +1,14 @@
+
+> tj-deep-research@0.0.1 test
+> vitest run tests/unit/xai-integration.test.ts
+
+
+ RUN  v3.2.4 /home/tyler/deep-equity-research
+
+ Γ£ô tests/unit/xai-integration.test.ts (1 test) 3ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  06:02:17
+   Duration  793ms (transform 132ms, setup 99ms, collect 196ms, tests 3ms, environment 0ms, prepare 141ms)
+

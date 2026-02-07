@@ -1,0 +1,35 @@
+
+> tj-deep-research@0.0.1 test
+> vitest run tests/unit/xai-integration.test.ts
+
+
+ RUN  v3.2.4 /home/tyler/deep-equity-research
+
+ Γ¥» tests/unit/xai-integration.test.ts (1 test | 1 failed) 14ms
+   ├ù createAIProvider > uses custom XAI provider for xai models 12ms
+     ΓåÆ expected 'openai.chat' to be 'xai' // Object.is equality
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Failed Tests 1 ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+ FAIL  tests/unit/xai-integration.test.ts > createAIProvider > uses custom XAI provider for xai models
+AssertionError: expected 'openai.chat' to be 'xai' // Object.is equality
+
+Expected: "xai"
+Received: "openai.chat"
+
+ Γ¥» tests/unit/xai-integration.test.ts:16:35
+     14|         // The custom XAILanguageModel sets this property to "xai"
+     15|         // The generic OpenAI compatible wrapper usually sets it to "oΓÇª
+     16|         expect(provider.provider).toBe("xai");
+       |                                   ^
+     17|     });
+     18| });
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»[1/1]ΓÄ»
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  06:01:06
+   Duration  1.11s (transform 179ms, setup 249ms, collect 349ms, tests 14ms, environment 0ms, prepare 164ms)
+

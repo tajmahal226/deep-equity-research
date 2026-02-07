@@ -1,7 +1,5 @@
-import { NextResponse, type NextRequest } from "next/server";
 import { XAI_BASE_URL } from "@/constants/urls";
-import { buildUpstreamURL, createProxiedResponse } from "../../helpers";
-import { rateLimit, RATE_LIMITS } from "@/app/api/middleware/rate-limit";
+import { createProxyHandler } from "../../create-proxy-handler";
 
 export const runtime = "edge";
 export const preferredRegion = [
@@ -17,48 +15,6 @@ export const preferredRegion = [
 
 const API_PROXY_BASE_URL = process.env.XAI_API_BASE_URL || XAI_BASE_URL;
 
-type RouteParams = {
-  slug?: string[];
-};
-
-async function handler(
-  req: NextRequest,
-  context: { params: Promise<RouteParams> },
-) {
-  const __rl = rateLimit(req, RATE_LIMITS.AI_PROXY);
-  if (__rl) return __rl;
-  let body;
-  if (req.method.toUpperCase() !== "GET") {
-    body = await req.json();
-  }
-  const { slug = [] } = await context.params;
-  const slugSegments = slug;
-
-  try {
-    const url = buildUpstreamURL(
-      API_PROXY_BASE_URL,
-      slugSegments,
-      req.nextUrl.searchParams,
-    );
-    const payload: RequestInit = {
-      method: req.method,
-      headers: {
-        "Content-Type": req.headers.get("Content-Type") || "application/json",
-        Authorization: req.headers.get("Authorization") || "",
-      },
-    };
-    if (body) payload.body = JSON.stringify(body);
-    const response = await fetch(url, payload);
-    return createProxiedResponse(response);
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error);
-      return NextResponse.json(
-        { code: 500, message: error.message },
-        { status: 500 }
-      );
-    }
-  }
-}
+const handler = createProxyHandler(API_PROXY_BASE_URL);
 
 export { handler as GET, handler as POST, handler as PUT, handler as DELETE };

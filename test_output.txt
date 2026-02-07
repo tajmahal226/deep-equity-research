@@ -1,0 +1,36 @@
+
+> tj-deep-research@0.0.1 test
+> vitest run tests/unit/xai-integration.test.ts
+
+
+ RUN  v3.2.4 /home/tyler/deep-equity-research
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Unhandled Errors ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ» Unhandled Error ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+Error: require() of ES Module /home/tyler/deep-equity-research/node_modules/.pnpm/@exodus+bytes@1.7.0/node_modules/@exodus/bytes/encoding-lite.js from /home/tyler/deep-equity-research/node_modules/.pnpm/html-encoding-sniffer@6.0.0/node_modules/html-encoding-sniffer/lib/html-encoding-sniffer.js not supported.
+Instead change the require of encoding-lite.js in /home/tyler/deep-equity-research/node_modules/.pnpm/html-encoding-sniffer@6.0.0/node_modules/html-encoding-sniffer/lib/html-encoding-sniffer.js to a dynamic import() which is available in all CommonJS modules.
+ Γ¥» Object.<anonymous> node_modules/.pnpm/html-encoding-sniffer@6.0.0/node_modules/html-encoding-sniffer/lib/html-encoding-sniffer.js:2:41
+ Γ¥» Object.<anonymous> node_modules/.pnpm/jsdom@27.4.0/node_modules/jsdom/lib/api.js:6:27
+ Γ¥» Object.setup node_modules/.pnpm/vitest@3.2.4_@types+debug@4.1.12_@types+node@20.19.1_jiti@1.21.7_jsdom@27.4.0_yaml@2.8.0/node_modules/vitest/dist/chunks/index.CmSc2RE5.js:469:64
+ Γ¥» withEnv node_modules/.pnpm/vitest@3.2.4_@types+debug@4.1.12_@types+node@20.19.1_jiti@1.21.7_jsdom@27.4.0_yaml@2.8.0/node_modules/vitest/dist/chunks/runBaseTests.9Ij9_de-.js:82:14
+ Γ¥» run node_modules/.pnpm/vitest@3.2.4_@types+debug@4.1.12_@types+node@20.19.1_jiti@1.21.7_jsdom@27.4.0_yaml@2.8.0/node_modules/vitest/dist/chunks/runBaseTests.9Ij9_de-.js:109:2
+ Γ¥» runBaseTests node_modules/.pnpm/vitest@3.2.4_@types+debug@4.1.12_@types+node@20.19.1_jiti@1.21.7_jsdom@27.4.0_yaml@2.8.0/node_modules/vitest/dist/chunks/base.DfmxU-tU.js:32:2
+ Γ¥» ForksBaseWorker.executeTests node_modules/.pnpm/vitest@3.2.4_@types+debug@4.1.12_@types+node@20.19.1_jiti@1.21.7_jsdom@27.4.0_yaml@2.8.0/node_modules/vitest/dist/workers/forks.js:29:4
+ Γ¥» execute node_modules/.pnpm/vitest@3.2.4_@types+debug@4.1.12_@types+node@20.19.1_jiti@1.21.7_jsdom@27.4.0_yaml@2.8.0/node_modules/vitest/dist/worker.js:108:3
+ Γ¥» onMessage node_modules/.pnpm/tinypool@1.1.1/node_modules/tinypool/dist/entry/process.js:39:18
+
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+Serialized Error: { code: 'ERR_REQUIRE_ESM' }
+ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»ΓÄ»
+
+
+ Test Files   (1)
+      Tests  no tests
+     Errors  1 error
+   Start at  05:20:08
+   Duration  458ms (transform 20ms, setup 0ms, collect 0ms, tests 0ms, environment 0ms, prepare 0ms)
+

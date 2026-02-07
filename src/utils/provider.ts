@@ -101,8 +101,8 @@ const PROVIDER_MODEL_DEFAULTS: Record<string, ProviderModelPair> = {
     taskModel: "mistral-medium-2508",
   },
   xai: {
-    thinkingModel: "grok-4",
-    taskModel: "grok-4-1-fast-non-reasoning",
+    thinkingModel: "grok-2-latest",
+    taskModel: "grok-2-latest",
   },
   google: {
     thinkingModel: "gemini-3-pro-preview",
@@ -141,8 +141,8 @@ const PROVIDER_MODEL_DEFAULTS: Record<string, ProviderModelPair> = {
     taskModel: "sonar",
   },
   ollama: {
-    thinkingModel: "llama4:maverick",
-    taskModel: "llama4:scout",
+    thinkingModel: "deepseek-r1:latest",
+    taskModel: "llama3.2:latest",
   },
 };
 
