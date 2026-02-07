@@ -78,4 +78,30 @@ describe("createProxyHandler", () => {
             "x-custom-key": "custom-value",
         });
     });
+
+
+    it("modifies body and slug via preprocess hook", async () => {
+        const handler = createProxyHandler("https://api.example.com", {
+            preprocess: async (body, slug) => {
+                return {
+                    body: { ...body, modified: true },
+                    slug: ["v2", ...slug],
+                };
+            },
+        });
+
+        const req = new NextRequest("http://localhost/api/ai/test/v1/chat", {
+            method: "POST",
+            body: JSON.stringify({ original: true }),
+        });
+        const context = { params: Promise.resolve({ slug: ["v1", "chat"] }) };
+
+        (global.fetch as any).mockResolvedValue(new Response("{}", { status: 200 }));
+
+        await handler(req, context);
+
+        const callArgs = (global.fetch as any).mock.calls[0];
+        expect(callArgs[0]).toBe("https://api.example.com/v2/v1/chat");
+        expect(JSON.parse(callArgs[1].body)).toEqual({ original: true, modified: true });
+    });
 });

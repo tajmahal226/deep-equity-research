@@ -8,6 +8,7 @@ type RouteParams = {
 
 export type ProxyOptions = {
     headers?: (req: NextRequest) => Record<string, string>;
+    preprocess?: (body: any, slug: string[]) => { body: any; slug: string[] } | Promise<{ body: any; slug: string[] }>;
 };
 
 export function createProxyHandler(apiBaseUrl: string, options: ProxyOptions = {}) {
@@ -27,7 +28,14 @@ export function createProxyHandler(apiBaseUrl: string, options: ProxyOptions = {
             }
         }
 
-        const { slug = [] } = await context.params;
+        const { slug: initialSlug = [] } = await context.params;
+        let slug = initialSlug;
+
+        if (options.preprocess) {
+            const result = await options.preprocess(body, slug);
+            body = result.body;
+            slug = result.slug;
+        }
 
         try {
             const url = buildUpstreamURL(
@@ -66,3 +74,4 @@ export function createProxyHandler(apiBaseUrl: string, options: ProxyOptions = {
         }
     };
 }
+
