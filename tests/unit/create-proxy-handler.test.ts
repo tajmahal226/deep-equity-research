@@ -12,6 +12,7 @@ vi.mock("@/app/api/middleware/rate-limit", () => ({
 describe("createProxyHandler", () => {
     const baseUrl = "https://api.example.com";
     const handler = createProxyHandler(baseUrl);
+    console.log("TEST START: createProxyHandler suite");
 
     beforeEach(() => {
         vi.clearAllMocks();

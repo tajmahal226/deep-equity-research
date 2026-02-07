@@ -24,6 +24,7 @@
       }
     ],
     "types": [
+      "node",
       "./src/types"
     ],
     "paths": {
@@ -43,11 +44,6 @@
     "node_modules",
     "poml",
     "venv",
-    "tests",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx",
     "vitest.config.ts",
     "playwright.config.ts"
   ]
