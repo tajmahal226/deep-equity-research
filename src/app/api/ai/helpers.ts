@@ -26,10 +26,28 @@ export function buildUpstreamURL(
   return url;
 }
 
+// Headers that should NOT be copied from upstream response
+// These cause issues with Next.js edge runtime streaming
+const FORBIDDEN_HEADERS = new Set([
+  "content-encoding",
+  "content-length",
+  "transfer-encoding",
+  "connection",
+  "keep-alive",
+]);
+
 export function createProxiedResponse(response: Response): NextResponse {
+  // Copy only safe headers from upstream response
+  const headers = new Headers();
+  for (const [key, value] of response.headers.entries()) {
+    if (!FORBIDDEN_HEADERS.has(key.toLowerCase())) {
+      headers.set(key, value);
+    }
+  }
+
   return new NextResponse(response.body, {
     status: response.status,
     statusText: response.statusText,
-    headers: response.headers,
+    headers,
   });
 }

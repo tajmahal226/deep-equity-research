@@ -1,4 +1,4 @@
-// @vitest-environment node
+
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createProxyHandler } from "@/app/api/ai/create-proxy-handler";
 import { NextRequest } from "next/server";
@@ -16,19 +16,19 @@ describe("createProxyHandler", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        global.fetch = vi.fn();
+        globalThis.fetch = vi.fn();
     });
 
     it("proxies GET requests correctly", async () => {
         const req = new NextRequest("http://localhost/api/ai/test/v1/models");
         const context = { params: Promise.resolve({ slug: ["v1", "models"] }) };
 
-        (global.fetch as any).mockResolvedValue(new Response(JSON.stringify({ data: [] }), { status: 200 }));
+        (globalThis.fetch as any).mockResolvedValue(new Response(JSON.stringify({ data: [] }), { status: 200 }));
 
         const res = await handler(req, context);
         expect(res.status).toBe(200);
 
-        const callArgs = (global.fetch as any).mock.calls[0];
+        const callArgs = (globalThis.fetch as any).mock.calls[0];
         expect(callArgs[0]).toBe("https://api.example.com/v1/models");
         expect(callArgs[1].method).toBe("GET");
     });
@@ -41,11 +41,11 @@ describe("createProxyHandler", () => {
         });
         const context = { params: Promise.resolve({ slug: ["v1", "chat", "completions"] }) };
 
-        (global.fetch as any).mockResolvedValue(new Response("{}", { status: 200 }));
+        (globalThis.fetch as any).mockResolvedValue(new Response("{}", { status: 200 }));
 
         await handler(req, context);
 
-        const callArgs = (global.fetch as any).mock.calls[0];
+        const callArgs = (globalThis.fetch as any).mock.calls[0];
         expect(callArgs[0]).toBe("https://api.example.com/v1/chat/completions");
         expect(callArgs[1].method).toBe("POST");
         expect(callArgs[1].headers).toEqual({
@@ -66,11 +66,11 @@ describe("createProxyHandler", () => {
             headers: { "x-header": "custom-value" },
         });
         const context = { params: Promise.resolve({ slug: ["v1", "models"] }) };
-        (global.fetch as any).mockResolvedValue(new Response("{}", { status: 200 }));
+        (globalThis.fetch as any).mockResolvedValue(new Response("{}", { status: 200 }));
 
         await handler(req, context);
 
-        const callArgs = (global.fetch as any).mock.calls[0];
+        const callArgs = (globalThis.fetch as any).mock.calls[0];
         expect(callArgs[0]).toBe("https://api.example.com/v1/models");
         expect(callArgs[1].headers).toEqual({
             "Content-Type": "application/json",
@@ -96,11 +96,11 @@ describe("createProxyHandler", () => {
         });
         const context = { params: Promise.resolve({ slug: ["v1", "chat"] }) };
 
-        (global.fetch as any).mockResolvedValue(new Response("{}", { status: 200 }));
+        (globalThis.fetch as any).mockResolvedValue(new Response("{}", { status: 200 }));
 
         await handler(req, context);
 
-        const callArgs = (global.fetch as any).mock.calls[0];
+        const callArgs = (globalThis.fetch as any).mock.calls[0];
         expect(callArgs[0]).toBe("https://api.example.com/v2/v1/chat");
         expect(JSON.parse(callArgs[1].body)).toEqual({ original: true, modified: true });
     });
