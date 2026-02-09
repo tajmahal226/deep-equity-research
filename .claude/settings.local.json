@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm test:*)",
+      "mcp__plugin_github_github__create_repository",
+      "Bash(git pull:*)",
+      "Bash(git push:*)",
+      "Bash(git rebase:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(npm view:*)",
+      "WebSearch",
+      "Bash(gh pr comment:*)",
+      "Bash(git -C /home/tyler/railway-equity-research status --short)",
+      "Bash(pnpm install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(python3:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm outdated:*)",
+      "Bash(if:*)",
+      "Bash(then echo \"COMPLETED\")",
+      "Bash(else echo \"STILL RUNNING\")",
+      "Bash(fi:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git show:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(node:*)",
+      "Bash(done:*)",
+      "Bash(pnpm build:*)",
+      "Bash(xargs:*)",
+      "Bash(pnpm ls:*)",
+      "Bash(1)"
+    ]
+  },
+  "outputStyle": "Explanatory"
+}
