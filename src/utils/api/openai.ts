@@ -27,7 +27,7 @@ export class OpenAIProvider implements Provider {
             prompt,
             temperature: options.temperature,
             
-            maxTokens: options.maxTokens,
+            maxOutputTokens: options.maxTokens,
             abortSignal: options.signal,
           }),
           options.timeout || 60000
@@ -47,7 +47,7 @@ export class OpenAIProvider implements Provider {
         prompt,
         temperature: options.temperature,
         
-        maxTokens: options.maxTokens,
+        maxOutputTokens: options.maxTokens,
         abortSignal: options.signal,
       });
 
