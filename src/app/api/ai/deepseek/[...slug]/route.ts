@@ -1,20 +1,15 @@
-import { DEEPSEEK_BASE_URL } from "@/constants/urls";
-import { createProxyHandler } from "../../create-proxy-handler";
+import { proxyHandler } from './proxy-handler';
 
-export const runtime = "edge";
+export const runtime = 'edge';
 export const preferredRegion = [
-  "cle1",
-  "iad1",
-  "pdx1",
-  "sfo1",
-  "sin1",
-  "syd1",
-  "hnd1",
-  "kix1",
+  'cle1',
+  'iad1',
+  'pdx1',
+  'sfo1',
+  'sin1',
+  'syd1',
+  'hnd1',
+  'kix1',
 ];
 
-const API_PROXY_BASE_URL = process.env.DEEPSEEK_API_BASE_URL || DEEPSEEK_BASE_URL;
-
-const handler = createProxyHandler(API_PROXY_BASE_URL);
-
-export { handler as GET, handler as POST, handler as PUT, handler as DELETE };
+export { proxyHandler as GET, proxyHandler as POST, proxyHandler as PUT, proxyHandler as DELETE };

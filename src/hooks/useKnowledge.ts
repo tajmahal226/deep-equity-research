@@ -101,7 +101,7 @@ function useKnowledge() {
         if (part.type === "text-delta") {
           thinkTagStreamProcessor.processChunk(
             
-            part.textDelta,
+            part.text,
             (data) => {
               content += data;
             },

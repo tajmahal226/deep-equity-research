@@ -73,7 +73,7 @@ function useDeepResearch() {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.textDelta,
+          part.text,
           (data) => {
             content += data;
             updateQuestions(content);
@@ -108,7 +108,7 @@ function useDeepResearch() {
     for await (const part of result.fullStream) {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
-          part.textDelta,
+          part.text,
           (data) => {
             content += data;
             updateReportPlan(content);
@@ -158,7 +158,7 @@ function useDeepResearch() {
         if (part.type === "text-delta") {
           thinkTagStreamProcessor.processChunk(
             
-            part.textDelta,
+            part.text,
             (data) => {
               content += data;
               updateTask(query, { learning: content });
@@ -367,7 +367,7 @@ function useDeepResearch() {
               if (part.type === "text-delta") {
                 thinkTagStreamProcessor.processChunk(
                   
-                  part.textDelta,
+                  part.text,
                   (data) => {
                     content += data;
                     updateTask(item.query, { learning: content });
@@ -380,13 +380,14 @@ function useDeepResearch() {
                 
                 reasoning += (part as any).textDelta;
               } else if (part.type === "source") {
-                
-                sources.push(part.source);
+                if (part.sourceType === "url") {
+                  sources.push({ url: part.url, title: part.title });
+                }
               } else if (part.type === "finish") {
-                
-                if (part.providerMetadata?.google) {
-                  
-                  const { groundingMetadata } = part.providerMetadata.google;
+                const finishPart = part as any;
+
+                if (finishPart.providerMetadata?.google) {
+                  const { groundingMetadata } = finishPart.providerMetadata.google;
                   const googleGroundingMetadata =
                     groundingMetadata as GoogleGenerativeAIProviderMetadata["groundingMetadata"];
                   if (googleGroundingMetadata?.groundingSupports) {
@@ -404,8 +405,7 @@ function useDeepResearch() {
                       }
                     );
                   }
-                  
-                } else if (part.providerMetadata?.openai) {
+                } else if (finishPart.providerMetadata?.openai) {
                   // Fixed the problem that OpenAI cannot generate markdown reference link syntax properly in Chinese context
                   content = content.replaceAll("【", "[").replaceAll("】", "]");
                 }
@@ -572,7 +572,7 @@ function useDeepResearch() {
       if (part.type === "text-delta") {
         thinkTagStreamProcessor.processChunk(
           
-          part.textDelta,
+          part.text,
           (data) => {
             content += data;
             updateFinalReport(content);
