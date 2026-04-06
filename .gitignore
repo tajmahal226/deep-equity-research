@@ -66,3 +66,6 @@ public/swe-worker*
 *.bak
 *.bak2
 package-lock.json
+
+# Test output files
+test_output*.txt
