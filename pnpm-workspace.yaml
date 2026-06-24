@@ -1,11 +1,9 @@
-overrides:
-  vite: 7.3.0
-  mdast-util-to-hast: 13.2.1
-  js-yaml: 4.1.1
-  glob: 10.5.0
-  lodash-es: ^4.17.23
-
 onlyBuiltDependencies:
   - esbuild
   - sharp
   - unrs-resolver
+
+allowBuilds:
+  esbuild: set this to true or false
+  sharp: set this to true or false
+  unrs-resolver: set this to true or false
